@@ -1,5 +1,5 @@
 <script setup>
-import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
+import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 
 const router = useRouter()
 const ability = useAbility()
@@ -38,41 +38,8 @@ const userProfileList = [
       params: { id: 21 },
     },
   },
-  {
-    type: 'navItem',
-    icon: 'tabler-settings',
-    title: 'Settings',
-    to: {
-      name: 'pages-account-settings-tab',
-      params: { tab: 'account' },
-    },
-  },
-  {
-    type: 'navItem',
-    icon: 'tabler-file-dollar',
-    title: 'Billing Plan',
-    to: {
-      name: 'pages-account-settings-tab',
-      params: { tab: 'billing-plans' },
-    },
-    badgeProps: {
-      color: 'error',
-      content: '4',
-    },
-  },
-  { type: 'divider' },
-  {
-    type: 'navItem',
-    icon: 'tabler-currency-dollar',
-    title: 'Pricing',
-    to: { name: 'pages-pricing' },
-  },
-  {
-    type: 'navItem',
-    icon: 'tabler-question-mark',
-    title: 'FAQ',
-    to: { name: 'pages-faq' },
-  },
+
+
 ]
 </script>
 

@@ -38,7 +38,7 @@ export default defineComponent({
       if (!configStore.isLessThanOverlayNavBreakpoint && isLayoutOverlayVisible.value)
         isLayoutOverlayVisible.value = false
     })
-    
+
     return () => {
       const verticalNavAttrs = toRef(props, 'verticalNavAttrs')
       const { wrapper: verticalNavWrapper, wrapperProps: verticalNavWrapperProps, ...additionalVerticalNavAttrs } = verticalNavAttrs.value

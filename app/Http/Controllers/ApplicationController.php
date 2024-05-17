@@ -6,6 +6,7 @@ use App\Models\ApplicationList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\ApplicationDocument;
+use Illuminate\Support\Str;
 
 class ApplicationController extends Controller
 {
@@ -15,6 +16,25 @@ class ApplicationController extends Controller
     public function index()
     {
         //
+        $searchQuery = strtoupper(strtolower(trim(request()->query('q'))));
+        $perPage = (int)request()->query('perPage') ?: 10;
+        $sortBy = (string)request()->query('sortBy');
+        $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
+        $queryResult = ApplicationList::when($searchQuery, function ($query, $searchQuery) {
+            return $query->where(function ($query) use ($searchQuery) {
+                $query->where('application_id', 'LIKE', "%$searchQuery%");
+
+            });
+        })
+       ->when($perPage, function ($query, $perPage) {
+           return $query->paginate($perPage);
+       }, function ($query) {
+           return $query->get();
+       })
+        ->toArray();
+        $products = $perPage ? $queryResult['data'] : $queryResult;
+        $totalRows = $perPage ? $queryResult['total'] : count($queryResult);
+        return $this->successJsonResponse("Product Information found!", $products, $totalRows);
 
     }
 
@@ -50,7 +70,11 @@ class ApplicationController extends Controller
         DB::beginTransaction();
 
         try {
+            $applicationId = Str::random(8);
             $applicationData = $request->except('document_paths');
+            $userId = 1;
+            $applicationData['application_id'] = $applicationId;
+            $applicationData['user_id'] = $userId;
             $application = ApplicationList::create($applicationData);
             if (!empty($validatedData['document_paths'])) {
                 foreach ($validatedData['document_paths'] as $path) {

@@ -1,10 +1,9 @@
 <script setup>
-import { useDisplay } from 'vuetify'
-import { useWindowScroll } from '@vueuse/core'
 import navImg from '@images/front-pages/misc/nav-item-col-img.png'
-import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
+import { useWindowScroll } from '@vueuse/core'
+import { useDisplay } from 'vuetify'
 
 const props = defineProps({ activeId: String })
 
@@ -362,7 +361,7 @@ const isPageActive = computed(() => menuItems.some(item => item.navItems.some(li
         <VSpacer />
 
         <div class="d-flex gap-x-4">
-          <NavbarThemeSwitcher />
+
 
           <VBtn
             v-if="$vuetify.display.lgAndUp"
