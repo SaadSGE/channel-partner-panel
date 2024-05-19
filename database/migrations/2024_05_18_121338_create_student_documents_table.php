@@ -10,12 +10,12 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('application_documents', function (Blueprint $table) {
+        Schema::create('student_documents', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('application_id');
+            $table->unsignedBigInteger('student_id');
             $table->string('path');
             $table->timestamps();
-            $table->foreign('application_id')->references('id')->on('application_lists')->onDelete('cascade');
+            $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
         });
     }
 
@@ -24,6 +24,6 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('application_documents');
+        Schema::dropIfExists('student_documents');
     }
 };

@@ -6,6 +6,7 @@
         ref="pond"
         name="test"
         :allow-multiple="true"
+        allowRemove="true"
         :files="files"
         :server="server"
         label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>"
@@ -57,6 +58,7 @@ const server = {
       .catch(err => error(err));
   },
   revert: (uniqueFileId, load, error) => {
+
     fileStore.removeFile(uniqueFileId);
     load();
   }

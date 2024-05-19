@@ -68,4 +68,11 @@ export const routes = [
     name: 'apps-ecommerce-dashboard',
     component: () => import('@/pages/dashboards/ecommerce.vue'),
   },
+
+  {
+    path: '/application/details/:id',
+    name: 'application-details',
+    component: () => import('@/pages/application/details.vue'),
+  },
+
 ]

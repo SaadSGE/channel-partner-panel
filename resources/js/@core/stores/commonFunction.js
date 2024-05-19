@@ -63,7 +63,7 @@ export const commonFunction = defineStore({
         async getCountries() {
             try {
                 const response = await $api('/application-country', { method: 'GET' });
-                console.log(response.data)
+
                 this.countries = response.data;
             } catch (error) {
                 console.error('Error fetching countries:', error);
@@ -73,7 +73,7 @@ export const commonFunction = defineStore({
         async getCourses() {
             try {
                 const response = await $api('/course', { method: 'GET' });
-                console.log(response.data)
+
                 this.courses = response.data;
             } catch (error) {
                 console.error('Error fetching courses:', error);
@@ -83,7 +83,7 @@ export const commonFunction = defineStore({
         async getIntakes() {
             try {
                 const response = await $api('/intake', { method: 'GET' });
-                console.log(response.data)
+
                 this.intakes = response.data;
             } catch (error) {
                 console.error('Error fetching intakes:', error);
@@ -93,7 +93,7 @@ export const commonFunction = defineStore({
         async getUniversities() {
             try {
                 const response = await $api('/university', { method: 'GET' });
-                console.log(response.data)
+
                 this.universities = response.data;
             } catch (error) {
                 console.error('Error fetching universites:', error);
@@ -103,9 +103,9 @@ export const commonFunction = defineStore({
         async getCourseDetails() {
             try {
                 const response = await $api('/course-detail', { method: 'GET' });
-                console.log(response.data)
+
                 this.courseDetails = response.data;
-                console.log(this.courseDetails)
+
             } catch (error) {
                 console.error('Error fetching course details:', error);
                 this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];

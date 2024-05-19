@@ -22,12 +22,11 @@ export const useFileStore = defineStore('fileStore', {
     },
     removeFile(fileId) {
       var index = this.filePaths.indexOf(fileId);
-if (index !== -1) {
-  array.splice(index, 1);
-}
+      if (index !== -1) {
+        this.filePaths.splice(index, 1);
+      }
       const file = this.files.find(f => f.id === fileId);
       if (file) {
-
 
         this.filePaths = this.filePaths.filter(path => path !== file.path);
         // Remove the file from files array

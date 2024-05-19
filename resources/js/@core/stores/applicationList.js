@@ -6,6 +6,9 @@ export const useApplicationListStore = defineStore( {
   state: () => ({
     errors: [],
     successMessage: '',
+    applicationData:'',
+    documents:[],
+    students:[],
   }),
   actions: {
     async getApplicationList ()
@@ -23,6 +26,26 @@ export const useApplicationListStore = defineStore( {
             this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
             throw error;
         }
-    }
+    },
+    async getApplicationDetails(id) {
+      try {
+          const response = await $api(`/application/${id}`, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+          });
+        this.applicationData = response.data
+        this.documents = response.data.student.document;
+        this.students = response.data.student;
+          return response.data;
+      } catch (error) {
+          console.error('Error getting application details:', error);
+          this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+          throw error;
+      }
+  }
+
+
   },
 });

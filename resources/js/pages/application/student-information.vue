@@ -157,6 +157,7 @@
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useFileStore } from "@/@core/stores/fileStore";
 import { useApplicationStore } from "@/@core/stores/submitApplication";
+import Swal from 'sweetalert2';
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 const fileStore = useFileStore();
@@ -209,7 +210,7 @@ const submit = async () => {
   const universityId = commonFunctionStore.selectedUniversityId;
   const countryId = commonFunctionStore.selectedCountryId;
   const courseDetailsId = commonFunctionStore.selectedCourseDetailsId;
-  const isDialogVisible = ref(false)
+
   const filePaths = fileStore.filePaths;
   const studentData = {
     student_passport_no: studentPassportNo.value,
@@ -230,8 +231,14 @@ const submit = async () => {
 
   try {
     await applicationStore.submitApplication(studentData, courseId, intakeId, universityId, countryId, courseDetailsId, filePaths);
-    alert('Application Submited')
-    console.log(applicationStore.successMessage);
+    Swal.fire({
+      icon: 'success',
+      title: 'Application Successful',
+      text: 'You have been submitted application successfully! Please waith for admin review',
+      confirmButtonText: 'OK'
+    });
+    router.push({ name: "application" });
+
   } catch (error) {
     console.error(applicationStore.errors);
   }

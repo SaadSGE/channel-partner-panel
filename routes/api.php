@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ApplicationCountryController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseDetailsController;
 use App\Http\Controllers\IntakeController;
@@ -21,3 +22,6 @@ Route::apiResource('university', UniversityController::class);
 Route::apiResource('course-detail', CourseDetailsController::class);
 Route::apiResource('application', ApplicationController::class);
 Route::post('student-document-upload', [StudentFileController::class,'upload']);
+
+Route::post('register', [AuthController::class,'register']);
+Route::post('login', [AuthController::class,'login']);
