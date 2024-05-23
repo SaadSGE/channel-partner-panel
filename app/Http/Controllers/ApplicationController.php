@@ -17,7 +17,6 @@ class ApplicationController extends Controller
      */
     public function index()
     {
-        //
         $searchQuery = strtoupper(strtolower(trim(request()->query('q'))));
         $perPage = (int)request()->query('perPage') ?: 10;
         $sortBy = (string)request()->query('sortBy');
@@ -27,6 +26,20 @@ class ApplicationController extends Controller
                 $query->where('application_id', 'LIKE', "%$searchQuery%");
 
             });
+        })
+        ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
+            return
+                $query->when($sortBy === 'id', function ($sq) use ($sortDesc) {
+                    return $sq->when($sortDesc, function ($ssq) {
+                        return $ssq->orderBy('P.id', 'DESC');
+                    }, function ($ssq) {
+                        return $ssq->orderBy('P.id');
+                    });
+                });
+
+
+        }, function ($query) {
+            return $query->latest('created_at');
         })
        ->when($perPage, function ($query, $perPage) {
            return $query->paginate($perPage);

@@ -26,6 +26,8 @@
 
 import { useFileStore } from "@/@core/stores/fileStore";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css";
+import FilePondPluginPdfPreview from "filepond-plugin-pdf-preview";
+import "filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.min.css";
 import "filepond/dist/filepond.min.css";
 import { ref } from 'vue';
 import vueFilePond from "vue-filepond";
@@ -34,7 +36,8 @@ import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 const FilePond = vueFilePond(
   FilePondPluginFileValidateType,
-  FilePondPluginImagePreview
+  FilePondPluginImagePreview,
+  FilePondPluginPdfPreview
 );
 const emit = defineEmits(['update:uploadDocumentShow', 'update:studentFormShow']);
 const errorMessage = ref<string | null>(null);
@@ -50,9 +53,11 @@ const next = () => {
 
 const fileStore = useFileStore();
 const files = ref(fileStore.files);
+console.log(files.value)
 
 const server = {
   process: (fieldName, file, metadata, load, error, progress, abort) => {
+    console.log(file)
     fileStore.uploadFile(fieldName, file)
       .then(response => load(response))
       .catch(err => error(err));

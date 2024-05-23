@@ -19,7 +19,7 @@
               <VCol cols="12" md="6">
                 <AppDateTimePicker
                   v-model="dateOfBirth"
-                  label="Default"
+                  label="Date of birth"
                   placeholder="Select date"
                   :rules="[requiredValidator]"
                 />
