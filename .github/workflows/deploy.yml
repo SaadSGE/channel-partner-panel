@@ -38,7 +38,7 @@ jobs:
           DO_KEY: ${{ secrets.DO_KEY }}
         run: |
           ssh -o StrictHostKeyChecking=no -i $DO_KEY $DO_USER@$DO_HOST "
-            cd /var/www/your_project &&
+            cd /var/www/html &&
             git pull &&
             composer install --no-dev --prefer-dist --optimize-autoloader &&
             npm install &&
