@@ -191,18 +191,20 @@ const countries = ref([
 ]);
 const openDialog = async () => {
   refForm.value.validate().then(success => {
-    console.log(success)
+
     if (!success.valid) {
      return;
+    }
+    else{
+      isDialogVisible.value = true;
     }
   });
 
 
-    isDialogVisible.value = true;
+
 
 };
 const submit = async () => {
-
   isDialogVisible.value = false;
 
   const courseId = commonFunctionStore.selectedCourseId;
@@ -234,15 +236,42 @@ const submit = async () => {
     Swal.fire({
       icon: 'success',
       title: 'Application Successful',
-      text: 'You have been submitted application successfully! Please waith for admin review',
+      text: 'You have been submitted application successfully! Please wait for admin review',
       confirmButtonText: 'OK'
     });
+
+    // Reset store values after successful submission
+    commonFunctionStore.selectedCourseId = null;
+    commonFunctionStore.selectedIntakeId = null;
+    commonFunctionStore.selectedUniversityId = null;
+    commonFunctionStore.selectedCountryId = null;
+    commonFunctionStore.selectedCourseDetailsId = null;
+
+    fileStore.filePaths = [];
+
+    studentPassportNo.value = '';
+    dateOfBirth.value = '';
+    studentFirstName.value = '';
+    studentLastName.value = '';
+    studentWhatsappNumber.value = '';
+    counsellorNumber.value = '';
+    studentEmail.value = '';
+    counsellorEmail.value = '';
+    studentAddress.value = '';
+    studentCity.value = '';
+    studentCountry.value = '';
+    studentRegionState.value = '';
+    gender.value = '';
+    visaRefusal.value = '';
+
+    // Redirect to application page
     router.push({ name: "application" });
 
   } catch (error) {
     console.error(applicationStore.errors);
   }
 };
+
 
 const states = ref(["State 1", "State 2", "State 3", "State 4", "State 5"]);
 
