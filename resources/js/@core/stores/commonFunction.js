@@ -18,18 +18,24 @@ export const commonFunction = defineStore({
 
     getters: {
         getFilteredCourseDetails: (state) => (countryId, courseId, intakeId, universityId) => {
+            console.log(countryId)
+            console.log(courseId)
+              console.log(intakeId)
+            console.log(universityId)
+
             state.selectedCountryId = countryId
             state.selectedCourseId = courseId
             state.selectedIntakeId = intakeId
             state.selectedUniversityId = universityId
           const filtered = state.courseDetails.find(
             (detail) =>
-              detail.country_id === countryId &&
-              detail.course_id === courseId &&
-              detail.intake_id === intakeId &&
-              detail.university_id === universityId
+                parseInt(detail.country_id, 10) === countryId &&
+            parseInt(detail.course_id, 10) === courseId &&
+            parseInt(detail.intake_id, 10) === intakeId &&
+            parseInt(detail.university_id, 10) === universityId
           );
-
+          console.log(state.courseDetails)
+          console.log(filtered)
           if (filtered) {
             state.selectedCourseDetailsId = filtered.id
             return {
