@@ -42,6 +42,7 @@ class AuthController extends Controller
                      'city' => $request->city,
                      'post_code' => $request->postCode,
                      'country' => $request->country,
+                     'role' => 'admin',
                      'recruit_countries' => json_encode($request->recruite_countries),
                      'password' => bcrypt($request->password)
                  ]);
