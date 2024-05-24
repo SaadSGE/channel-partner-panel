@@ -60,6 +60,7 @@ const filteredCourseDetails = computed(() => {
     course.value,
     intake.value,
     university.value
+
   );
 });
 
