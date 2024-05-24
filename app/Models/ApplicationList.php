@@ -9,7 +9,17 @@ use Carbon\Carbon;
 class ApplicationList extends Model
 {
     protected $guarded = [];
+    protected $casts = [
+        'course_id' => 'integer',
+        'country_id' => 'integer',
+        'intake_id' => 'integer',
+        'university_id' => 'integer',
+        'course_details_id' => 'integer',
+        'user_id' => 'integer',
+        'student_id' => 'integer',
+        'status' => 'integer',
 
+    ];
     public function course()
     {
         return $this->belongsTo(Course::class);
