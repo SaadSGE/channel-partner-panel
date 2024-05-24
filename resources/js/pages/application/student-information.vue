@@ -248,6 +248,7 @@ const submit = async () => {
     commonFunctionStore.selectedCourseDetailsId = null;
 
     fileStore.filePaths = [];
+    fileStore.files = [];
 
     studentPassportNo.value = '';
     dateOfBirth.value = '';
