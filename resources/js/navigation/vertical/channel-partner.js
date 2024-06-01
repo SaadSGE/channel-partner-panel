@@ -18,6 +18,31 @@ export default [
       to: 'application',
     },
 
+    {
+      title: 'Record',
+      icon: { icon: 'tabler-files' },
+      children: [
+        {
+          title: 'All Record',
+          to: 'record',
+
+        },
+        {
+          title: 'University',
+          to: 'record-university',
+
+        },
+
+        {
+          title: 'Intake',
+          to: 'record-intake',
+
+        },
+
+
+      ],
+    },
+
 
 
   ]

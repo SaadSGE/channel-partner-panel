@@ -1,5 +1,5 @@
 
-<script lang="ts" setup>
+<script lang="js" setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";

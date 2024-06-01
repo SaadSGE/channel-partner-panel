@@ -22,6 +22,7 @@ Route::apiResource('university', UniversityController::class);
 Route::apiResource('course-detail', CourseDetailsController::class);
 Route::apiResource('application', ApplicationController::class);
 Route::post('student-document-upload', [StudentFileController::class,'upload']);
+Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
 
 Route::post('register', [AuthController::class,'register']);
 Route::post('login', [AuthController::class,'login']);

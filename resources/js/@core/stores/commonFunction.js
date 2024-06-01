@@ -5,65 +5,65 @@ export const commonFunction = defineStore({
     state: () => ({
         countries: [],
         courses: [],
-        intakes:[],
+        intakes: [],
         errors: [],
-        universities:[],
-        courseDetails:[],
-        selectedCountryId:null,
-        selectedCourseId:null,
-        selectedIntakeId:null,
-        selectedUniversityId:null,
-        selectedCourseDetailsId:null
+        universities: [],
+        courseDetails: [],
+        selectedCountryId: null,
+        selectedCourseId: null,
+        selectedIntakeId: null,
+        selectedUniversityId: null,
+        selectedCourseDetailsId: null
     }),
 
     getters: {
         getFilteredCourseDetails: (state) => (countryId, courseId, intakeId, universityId) => {
-            console.log(countryId)
-            console.log(courseId)
-              console.log(intakeId)
-            console.log(universityId)
+            console.log(countryId);
+            console.log(courseId);
+            console.log(intakeId);
+            console.log(universityId);
 
-            state.selectedCountryId = countryId
-            state.selectedCourseId = courseId
-            state.selectedIntakeId = intakeId
-            state.selectedUniversityId = universityId
-          const filtered = state.courseDetails.find(
-            (detail) =>
-                parseInt(detail.country_id, 10) === countryId &&
-            parseInt(detail.course_id, 10) === courseId &&
-            parseInt(detail.intake_id, 10) === intakeId &&
-            parseInt(detail.university_id, 10) === universityId
-          );
-          console.log(state.courseDetails)
-          console.log(filtered)
-          if (filtered) {
-            state.selectedCourseDetailsId = filtered.id
-            return {
-              courseName: filtered.course?.name || '',
-              intake: filtered.intake?.name || '',
-              tuitionFee: filtered.tuition_fee || '',
-              courseDuration: filtered.course_duration || '',
-              courseLabel: filtered.course?.type || '',
-              location: filtered.country?.name || '',
-              universityLogo: filtered.university?.logo || '',
-              academicRequirement: filtered.academic_requirement || '',
-              englishRequirement: filtered.english_requirement || '',
-            };
-          } else {
-            return {
-              courseName: '',
-              intake: '',
-              tuitionFee: '',
-              courseDuration: '',
-              courseLabel: '',
-              location: '',
-              universityLogo: '',
-              academicRequirement: '',
-              englishRequirement: '',
-            };
-          }
+            state.selectedCountryId = countryId;
+            state.selectedCourseId = courseId;
+            state.selectedIntakeId = intakeId;
+            state.selectedUniversityId = universityId;
+            const filtered = state.courseDetails.find(
+                (detail) =>
+                    parseInt(detail.country_id, 10) === countryId &&
+                    parseInt(detail.course_id, 10) === courseId &&
+                    parseInt(detail.intake_id, 10) === intakeId &&
+                    parseInt(detail.university_id, 10) === universityId
+            );
+            console.log(state.courseDetails);
+            console.log(filtered);
+            if (filtered) {
+                state.selectedCourseDetailsId = filtered.id;
+                return {
+                    courseName: filtered.course?.name || '',
+                    intake: filtered.intake?.name || '',
+                    tuitionFee: filtered.tuition_fee || '',
+                    courseDuration: filtered.course_duration || '',
+                    courseLabel: filtered.course?.type || '',
+                    location: filtered.country?.name || '',
+                    universityLogo: filtered.university?.logo || '',
+                    academicRequirement: filtered.academic_requirement || '',
+                    englishRequirement: filtered.english_requirement || '',
+                };
+            } else {
+                return {
+                    courseName: '',
+                    intake: '',
+                    tuitionFee: '',
+                    courseDuration: '',
+                    courseLabel: '',
+                    location: '',
+                    universityLogo: '',
+                    academicRequirement: '',
+                    englishRequirement: '',
+                };
+            }
         }
-      },
+    },
 
     actions: {
         async getCountries() {
@@ -102,7 +102,7 @@ export const commonFunction = defineStore({
 
                 this.universities = response.data;
             } catch (error) {
-                console.error('Error fetching universites:', error);
+                console.error('Error fetching universities:', error);
                 this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
             }
         },
@@ -116,7 +116,99 @@ export const commonFunction = defineStore({
                 console.error('Error fetching course details:', error);
                 this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
             }
-        }
-    }
+        },
+        async addUniversity(university) {
 
-  });
+            try {
+                const response = await $api('/university', {
+                    method: 'POST',
+                    body: university,
+
+                  });
+
+                this.universities.push(response.data);
+            } catch (error) {
+                console.error('Error adding university:', error);
+                this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+        },
+
+        async deleteUniversity(id) {
+            try {
+              await $api(`/university/${id}`, {
+                method: 'DELETE',
+              });
+
+              this.universities = this.universities.filter(university => university.id !== id);
+            } catch (error) {
+              console.error('Error deleting university:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+          },
+          async updateUniversity(id, updatedData) {
+            try {
+              const response = await $api(`/university/${id}`, {
+                method: 'PUT',
+                body: updatedData,
+              });
+
+              // Update the local universities array with the updated university data
+              const index = this.universities.findIndex(university => university.id === id);
+              if (index !== -1) {
+                this.universities.splice(index, 1, response.data);
+              }
+            } catch (error) {
+              console.error('Error updating university:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+          },
+
+          async addIntake(intake) {
+
+            try {
+                const response = await $api('/intake', {
+                    method: 'POST',
+                    body: intake,
+
+                  });
+
+                this.intakes.push(response.data);
+            } catch (error) {
+                console.error('Error adding university:', error);
+                this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+        },
+        async updateIntake(id, updatedData) {
+            try {
+              const response = await $api(`/intake/${id}`, {
+                method: 'PUT',
+                body: updatedData,
+              });
+
+              // Update the local universities array with the updated university data
+              const index = this.intakes.findIndex(intake => intake.id === id);
+              if (index !== -1) {
+                this.intakes.splice(index, 1, response.data);
+              }
+            } catch (error) {
+              console.error('Error updating university:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+          },
+          async deleteIntake(id) {
+            try {
+              await $api(`/intake/${id}`, {
+                method: 'DELETE',
+              });
+
+              this.intakes = this.intakes.filter(intake => intake.id !== id);
+            } catch (error) {
+              console.error('Error deleting intake:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+          },
+
+
+
+    }
+});

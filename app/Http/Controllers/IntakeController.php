@@ -24,6 +24,14 @@ class IntakeController extends Controller
     public function store(Request $request)
     {
         //
+        try {
+            $intakes = Intake::create([
+                'name' => $request->name
+            ]);
+            return $this->successJsonResponse('Intake created successfully', $intakes);
+        } catch(\Throwable $th) {
+            return $this->exceptionJsonResponse('Intake creation failed', $th);
+        }
     }
 
     /**
@@ -39,7 +47,15 @@ class IntakeController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try {
+            $intake = Intake::findOrFail($id);
+            $intake->name = $request->name;
+            $intake->save();
+            return $this->successJsonResponse('Intake updated successfully', $intake);
+        } catch(\Throwable $th) {
+            Log::error($th);
+            return $this->exceptionJsonResponse('An unexpected error occurred', $th);
+        }
     }
 
     /**
@@ -47,6 +63,14 @@ class IntakeController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $intake = Intake::findOrFail($id);
+
+            $intake->delete();
+            return $this->successJsonResponse('Intake deleted successfully');
+        } catch(\Throwable $th) {
+            \Log::error('Intake delete error: ' . $th);
+            return $this->exceptionJsonResponse('An unexpected error occurred', $th);
+        }
     }
 }
