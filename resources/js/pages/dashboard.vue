@@ -1,4 +1,10 @@
-<script setup>
+<script lang="js" setup>
+definePage({
+  meta: {
+    action: 'read',
+    subject: 'public',
+  },
+})
 import { commonFunction } from "@/@core/stores/commonFunction";
 import AppllicatationOverviewTable from "@/views/dashboards/crm/ApplicationOverviewTable.vue";
 import CrmEarningReportsYearlyOverview from "@/views/dashboards/crm/CrmEarningReportsYearlyOverview.vue";

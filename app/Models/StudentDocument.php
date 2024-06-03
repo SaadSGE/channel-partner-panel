@@ -29,17 +29,37 @@ class StudentDocument extends Model
 
     public function getPathAttribute($value)
     {
-        $url = Storage::disk('public')->url($value);
-        if (pathinfo($url, PATHINFO_EXTENSION) === 'pdf') {
+        $fileType = $this->determineFileType($value);
+        return [
+            'path' => env('DO_URL').$value,
+            'file_name' => basename($value),
+            'file_type' => $fileType
+        ];
 
-            $value = "https://linkedme.ams3.cdn.digitaloceanspaces.com/test/content/document/4Vdx1nQb91f72f19CnXqiyAqDpG19qh1tRszlnDt.pdf";
-            $client = new Client();
-            $response = $client->get($value);
-            $pdfContents = $response->getBody()->getContents();
-            $pdfContents = base64_encode($pdfContents);
-            return response($pdfContents);
+    }
+    private function determineFileType($filePath)
+    {
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        $fileType = '';
+
+        switch (strtolower($extension)) {
+            case 'pdf':
+                $fileType = 'pdf';
+                break;
+            case 'jpg':
+            case 'jpeg':
+            case 'png':
+            case 'gif':
+                $fileType = 'image';
+                break;
+            case 'doc':
+            case 'docx':
+                $fileType = 'document';
+                break;
+            default:
+                $fileType = 'unknown';
         }
-        return $url;
 
+        return $fileType;
     }
 }

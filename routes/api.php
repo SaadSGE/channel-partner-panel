@@ -20,6 +20,7 @@ Route::apiResource('course', CourseController::class);
 Route::apiResource('intake', IntakeController::class);
 Route::apiResource('university', UniversityController::class);
 Route::apiResource('course-detail', CourseDetailsController::class);
+Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAll']);
 Route::apiResource('application', ApplicationController::class);
 Route::post('student-document-upload', [StudentFileController::class,'upload']);
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);

@@ -13,26 +13,29 @@ class StudentFileController extends Controller
     public function upload(Request $request)
     {
 
-        $request->validate([
-            'test' => 'required',
-        ]);
 
         try {
+            $file = $request->file('student_document');
+            $originalFileName = $file->getClientOriginalName();
+            $randomNumber = rand(100000, 999999);
+            $filePath = 'channelPartnerPanel/studentDocument/' . $randomNumber;
+            $path = Storage::disk('do_spaces')->putFileAs(
+                $filePath,
+                $file,
+                $originalFileName,
+                'public'
+            );
 
-            $path = Storage::disk('public')->putFile('document', $request->file('test'));
-            return $this->successJsonResponse('File uploaded successfully', $path);
+
+            return $this->successJsonResponse('File uploaded successfully', [
+                'path' => $path,
+                'originalFileName' => $originalFileName
+            ]);
 
         } catch (\Throwable $th) {
-
-            \Log::error('File upload error: ' .$th);
-
-            return $this->errorJsonResponse('File upload failed', $th);
-        } catch (\Throwable $th) {
-            // Log the error for debugging
             \Log::error('File upload error: ' . $th);
 
-            // Return an exception response
-            return $this->exceptionJsonResponse('An unexpected error occurred', $th);
+            return $this->errorJsonResponse('File upload failed', $th);
         }
     }
 

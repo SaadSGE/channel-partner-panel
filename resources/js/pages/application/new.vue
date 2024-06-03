@@ -1,5 +1,11 @@
 
 <script lang="js" setup>
+definePage({
+  meta: {
+    action: 'create',
+    subject: 'application',
+  },
+})
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";

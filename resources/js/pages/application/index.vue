@@ -1,4 +1,11 @@
 <script setup>
+definePage({
+  alias: '/pages/dashboard',
+  meta: {
+    action: 'view',
+    subject: 'application',
+  },
+})
 import { useApplicationListStore } from '@/@core/stores/applicationList';
 import { useRouter } from "vue-router";
 const store = useApplicationListStore();

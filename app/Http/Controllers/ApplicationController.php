@@ -9,6 +9,7 @@ use App\Models\ApplicationDocument;
 use Illuminate\Support\Str;
 use App\Models\Student;
 use App\Models\StudentDocument;
+use Illuminate\Support\Facades\Storage;
 
 class ApplicationController extends Controller
 {
@@ -79,7 +80,6 @@ class ApplicationController extends Controller
             'gender' => 'required|in:male,female',
             'visa_refusal' => 'required|in:yes,no',
             'document_paths' => 'nullable|array',
-            'document_paths.*' => 'string'
         ]);
 
         DB::beginTransaction();
@@ -106,9 +106,12 @@ class ApplicationController extends Controller
 
             if (!empty($validatedData['document_paths'])) {
                 foreach ($validatedData['document_paths'] as $path) {
+                    $filename = basename($path['path']);
+                    $newPath = 'channelPartnerPanel/studentDocument/' . $student->id . '/' . $student->email . '_' . $filename;
+                    Storage::disk('do_spaces')->move($path['path'], $newPath);
                     StudentDocument::create([
                         'student_id' => $student->id,
-                        'path' => $path
+                        'path' => $newPath
                     ]);
                 }
             }
@@ -137,7 +140,8 @@ class ApplicationController extends Controller
             return $this->successJsonResponse('Application created successfully', $application, '', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return $this->errorJsonResponse('Failed to create applcation', $th);
+            \Log::error($th);
+            return $this->exceptionJsonResponse('Failed to create applcation', $th);
 
         }
     }

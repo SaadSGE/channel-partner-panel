@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { useApplicationListStore } from '@/@core/stores/applicationList';
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";

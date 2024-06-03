@@ -7,27 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Log;
+use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        // $request->validate([
-        //     'firstName' => 'required|string|max:255',
-        //     'lastName' => 'nullable|string|max:255',
-        //     'email' => 'required|email|max:255',
-        //     'mobileNumber' => 'nullable|string|max:255',
-        //     'whatsappNumber' => 'nullable|string|max:255',
-        //     'companyName' => 'required|string|max:255',
-        //     'website' => 'nullable|url|max:255',
-        //     'address' => 'required|string|max:255',
-        //     'city' => 'required|string|max:255',
-        //     'postCode' => 'required|string|max:255',
-        //     'country' => 'required|string|max:255',
-        //     'recruite_countries' => 'required|array',
-        //     'password' => 'required',
-        // ]);
-
 
 
         $userDetail = new User([
@@ -42,12 +27,15 @@ class AuthController extends Controller
                      'city' => $request->city,
                      'post_code' => $request->postCode,
                      'country' => $request->country,
-                     'role' => 'admin',
+                     'role' => 'channel partner',
                      'recruit_countries' => json_encode($request->recruite_countries),
                      'password' => bcrypt($request->password)
                  ]);
 
         $userDetail->save();
+        $channelPartnerRole = Role::where('name', 'channel partner')->first();
+
+        $userDetail->assignRole($channelPartnerRole);
         return $this->successJsonResponse('User Registration Successfull', $userDetail);
     }
 
@@ -59,14 +47,8 @@ class AuthController extends Controller
     */
     public function login(Request $request)
     {
-        Log::info($request->all());
-        // Validate the login request
-        // $request->validate([
-        //     'email' => 'required|email',
-        //     'password' => 'required|string|min:6',
-        // ]);
 
-        // Attempt to authenticate the user
+
         $credentials = $request->only('email', 'password');
 
         if (!Auth::attempt($credentials)) {
@@ -76,10 +58,17 @@ class AuthController extends Controller
         // Get the authenticated user
         $user = Auth::user();
 
-        // Generate a Sanctum token for the user
+        $abilities = $user->getUserAbilitiesAttribute();
+
+        $formattedAbilities = [];
+        foreach ($abilities as $ability) {
+            list($action, $subject) = explode('.', $ability);
+            $formattedAbilities[] = ['action' => $subject, 'subject' => $action];
+        }
+
         $token = $user->createToken('authToken')->plainTextToken;
         return $this->successJsonResponse('Credential match', [ 'accessToken' => $token,
-        'userData' => $user,]);
+        'userData' => $user,'abilities' => $formattedAbilities]);
 
 
     }

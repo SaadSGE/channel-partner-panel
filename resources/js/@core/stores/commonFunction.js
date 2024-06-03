@@ -108,7 +108,7 @@ export const commonFunction = defineStore({
         },
         async getCourseDetails() {
             try {
-                const response = await $api('/course-detail', { method: 'GET' });
+                const response = await $api('/course-detail-all', { method: 'GET' });
 
                 this.courseDetails = response.data;
 

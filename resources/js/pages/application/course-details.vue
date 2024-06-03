@@ -77,10 +77,10 @@ const studentFormShow = ref(false)
         <VCardText>
           <VWindow v-model="currentTab">
             <VWindowItem value="item-1">
-              <div>{{ courseDetails.academicRequirement }}</div>
+              <div v-html="courseDetails.academicRequirement"></div>
             </VWindowItem>
             <VWindowItem value="item-2">
-              <div>{{ courseDetails.englishRequirement }}</div>
+              <div v-html="courseDetails.academicRequirement"></div>
             </VWindowItem>
           </VWindow>
         </VCardText>

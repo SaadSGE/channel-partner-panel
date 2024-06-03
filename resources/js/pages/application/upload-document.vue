@@ -4,7 +4,7 @@
     <VCardText>
       <file-pond
         ref="pond"
-        name="test"
+        name="student_document"
         :allow-multiple="true"
         allowRemove="true"
         :files="files"
@@ -53,7 +53,7 @@ const next = () => {
 
 const fileStore = useFileStore();
 const files = ref(fileStore.files);
-console.log(files.value)
+
 
 const server = {
   process: (fieldName, file, metadata, load, error, progress, abort) => {

@@ -45,7 +45,7 @@ const onSubmit = () => {
       try {
         const res = await authStore.login(credentials.value.email, credentials.value.password)
 
-        const { accessToken, userData } = res
+        const { accessToken, userData, abilities} = res
 
        const abilityRules= [
         {
@@ -53,8 +53,10 @@ const onSubmit = () => {
           subject: 'all',
         },
       ]
+        //const abilityRules = abilities
 
-        useCookie('userAbilityRules').value = abilityRules
+
+    useCookie('userAbilityRules').value = abilities
     ability.update(abilityRules)
     useCookie('userData').value = userData
     useCookie('accessToken').value = accessToken
