@@ -68,7 +68,7 @@ class CourseDetailsController extends Controller
                 'courseType' => 'required|string',
                 'universityId' => 'required|exists:universities,id',
                 'course' => 'required|string',
-                'tutionFee' => 'required|numeric',
+                'tutionFee' => 'required',
                 'courseDuration' => 'required|string',
                 'academicRequirement' => 'required|string',
                 'englishRequirement' => 'required|string',
