@@ -33,8 +33,8 @@ const router = useRouter()
 const ability = useAbility()
 
 const credentials = ref({
-  email: 'test@gmail.com',
-  password: '123456'
+  email: 'test.admin@gmail.com',
+  password: 'password'
 })
 
 const onSubmit = () => {
@@ -53,11 +53,13 @@ const onSubmit = () => {
           subject: 'all',
         },
       ]
+      console.log(abilityRules)
+      console.log(abilities)
         //const abilityRules = abilities
 
 
     useCookie('userAbilityRules').value = abilities
-    ability.update(abilityRules)
+    ability.update(abilities)
     useCookie('userData').value = userData
     useCookie('accessToken').value = accessToken
 

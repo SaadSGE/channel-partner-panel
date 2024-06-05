@@ -1,5 +1,4 @@
 import { useAbility } from '@casl/vue'
-
 /**
  * Returns ability result if ACL is configured or else just return true
  * We should allow passing string | undefined to can because for admin ability we omit defining action & subject
@@ -11,11 +10,12 @@ import { useAbility } from '@casl/vue'
  * @param {string} subject CASL Subject // https://casl.js.org/v4/en/guide/intro#basics
  */
 export const can = (action, subject) => {
+
   const vm = getCurrentInstance()
   if (!vm)
     return false
   const localCan = vm.proxy && '$can' in vm.proxy
-    
+
   return localCan ? vm.proxy?.$can(action, subject) : true
 }
 
@@ -31,11 +31,16 @@ export const canViewNavMenuGroup = item => {
   // Else check for ability using provided subject and action along with checking if has any visible child
   if (!(item.action && item.subject))
     return hasAnyVisibleChild
-  
+
   return can(item.action, item.subject) && hasAnyVisibleChild
 }
 export const canNavigate = to => {
+
   const ability = useAbility()
-    
-  return to.matched.some(route => ability.can(route.meta.action, route.meta.subject))
+
+  return to.matched.some(route => {
+    console.log('route.meta.action:', route.meta.action);
+    console.log('route.meta.subject:', route.meta.subject);
+    return ability.can(route.meta.action, route.meta.subject);
+  })
 }

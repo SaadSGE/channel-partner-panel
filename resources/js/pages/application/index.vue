@@ -1,8 +1,7 @@
 <script setup>
 definePage({
-  alias: '/pages/dashboard',
   meta: {
-    action: 'view',
+    action: 'read',
     subject: 'application',
   },
 })

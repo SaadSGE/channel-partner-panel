@@ -2,7 +2,7 @@
 definePage({
   meta: {
     action: 'read',
-    subject: 'public',
+    subject: 'dashboard',
   },
 })
 import { commonFunction } from "@/@core/stores/commonFunction";

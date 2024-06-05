@@ -4,7 +4,7 @@ export default [
       title: 'Dashboard',
       icon: { icon: 'tabler-smart-home' },
       to: 'dashboard',
-      action: 'view',
+      action: 'read',
       subject: 'application',
     },
 
@@ -20,14 +20,14 @@ export default [
       title: 'Application History',
       icon: { icon: 'tabler-apps' },
       to: 'application',
-      action: 'view',
+      action: 'read',
       subject: 'application',
     },
 
     {
       title: 'Record',
       icon: { icon: 'tabler-files' },
-      action: 'create',
+      action: 'read',
       subject: 'record',
       children: [
         {
