@@ -40,7 +40,8 @@ class PermissionSeeder extends Seeder
         }
 
         $adminRole = Role::create(['name' => 'admin']);
-        $adminRole->givePermissionTo(['application.read','dashboard.read']);
+        $adminRole->givePermissionTo(['application.create', 'application.edit', 'application.read', 'application.delete','record.create', 'record.edit', 'record.read', 'record.delete',
+        'dashboard.read']);
 
         $channelPartnerRole = Role::create(['name' => 'channel partner']);
         $channelPartnerRole->givePermissionTo(['application.create', 'application.edit', 'application.read', 'application.delete','dashboard.read']);

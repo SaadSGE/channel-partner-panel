@@ -58,8 +58,8 @@ const onSubmit = () => {
         //const abilityRules = abilities
 
 
-    useCookie('userAbilityRules').value = abilities
-    ability.update(abilities)
+    useCookie('userAbilityRules').value = abilityRules
+    ability.update(abilityRules)
     useCookie('userData').value = userData
     useCookie('accessToken').value = accessToken
 
