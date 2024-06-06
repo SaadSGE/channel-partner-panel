@@ -157,6 +157,14 @@ const headers = [
     key: 'university.name',
   },
   {
+    title: 'Course Type',
+    key: 'course.type',
+  },
+  {
+    title: 'Course Name',
+    key: 'course.name',
+  },
+  {
     title: 'Tution Fee',
     key: 'tuition_fee',
   },

@@ -35,11 +35,11 @@ export default [
           to: 'record',
 
         },
-        {
-          title: 'Add Record',
-          to: 'record-add',
+        // {
+        //   title: 'Add Record',
+        //   to: 'record-add',
 
-        },
+        // },
         {
           title: 'University',
           to: 'record-university',
