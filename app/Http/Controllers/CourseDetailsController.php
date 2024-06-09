@@ -94,6 +94,7 @@ class CourseDetailsController extends Controller
             // Commit the transaction
             DB::commit();
 
+
             // Log the newly created course detail
             Log::info('CourseDetail created: ', $courseDetail->toArray());
 
@@ -122,15 +123,75 @@ class CourseDetailsController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try {
+
+            DB::beginTransaction();
+
+            $validatedData = $request->validate([
+                'countryId' => 'required|exists:application_countries,id',
+                'intakeId' => 'required|exists:intakes,id',
+                'courseType' => 'required|string',
+                'universityId' => 'required|exists:universities,id',
+                'course' => 'required|string',
+                'tutionFee' => 'required',
+                'courseDuration' => 'required|string',
+                'academicRequirement' => 'required|string',
+                'englishRequirement' => 'required|string',
+            ]);
+
+
+            $courseDetail = CourseDetails::findOrFail($id);
+
+
+            $course = Course::firstOrCreate(
+                ['type' => $validatedData['courseType'], 'name' => $validatedData['course']]
+            );
+
+
+            $courseDetail->update([
+                'course_id' => $course->id,
+                'country_id' => $validatedData['countryId'],
+                'intake_id' => $validatedData['intakeId'],
+                'university_id' => $validatedData['universityId'],
+                'tuition_fee' => $validatedData['tutionFee'],
+                'course_duration' => $validatedData['courseDuration'],
+                'academic_requirement' => $validatedData['academicRequirement'],
+                'english_requirement' => $validatedData['englishRequirement'],
+            ]);
+
+            // Commit the transaction
+            DB::commit();
+
+            // Log the updated course detail
+            Log::info('CourseDetail updated: ', $courseDetail->toArray());
+
+            return $this->successJsonResponse('Course details updated successfully', $courseDetail);
+        } catch (\Throwable $th) {
+            // Rollback the transaction
+            DB::rollBack();
+
+            // Log the error
+            Log::error('Error updating CourseDetail: ', ['error' => $th]);
+            return $this->exceptionJsonResponse('Error updating CourseDetail', $th);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $courseDetail = CourseDetails::findOrFail($id);
+
+            $courseDetail->delete();
+            return $this->successJsonResponse('Course detail deleted successfully');
+        } catch (\Throwable $th) {
+
+            \Log::error('Course detail delete error: ' . $th);
+            return $this->exceptionJsonResponse('An unexpected error occurred', $th);
+        }
     }
 
     public function courseDetailsAll()

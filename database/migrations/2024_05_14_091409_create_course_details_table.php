@@ -16,7 +16,7 @@ return new class () extends Migration {
             $table->unsignedBigInteger('country_id');
             $table->foreignId('intake_id')->constrained()->onDelete('cascade');
             $table->foreignId('university_id')->constrained()->onDelete('cascade');
-            $table->decimal('tuition_fee', 10, 2);
+            $table->string('tuition_fee');
             $table->string('course_duration');
             $table->text('academic_requirement');
             $table->text('english_requirement');
