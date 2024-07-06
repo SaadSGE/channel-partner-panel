@@ -1,5 +1,6 @@
 
 <script lang="js" setup>
+import ShowMore from "@/@core/components/ShowMore.vue";
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useRecordStore } from "@/@core/stores/recordStore";
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
@@ -512,10 +513,10 @@ onMounted(async () => {
         @update:options="updateOptions"
       >
         <template #item.academic_requirement="{ item }">
-          <div v-html="item.academic_requirement"></div>
+          <ShowMore :text="item.academic_requirement" :lines="3" />
         </template>
         <template #item.english_requirement="{ item }">
-          <div v-html="item.english_requirement"></div>
+          <ShowMore :text="item.english_requirement" :lines="3" />
         </template>
         <template #bottom>
           <TablePagination
@@ -549,5 +550,17 @@ onMounted(async () => {
   height: 250px;
   max-height: 250px;
   overflow: auto;
+}
+
+.v-data-table > .v-data-table__wrapper > table > thead > tr > th,td {
+  max-width: 30rem; /* Adjust the max-width as needed */
+  overflow: auto;
+  white-space: nowrap;
+  word-wrap: break-word;
+
+}
+
+.v-table__wrapper{
+  max-height: 35rem !important;
 }
 </style>
