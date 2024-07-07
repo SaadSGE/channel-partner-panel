@@ -5,7 +5,7 @@ export default [
       icon: { icon: 'tabler-smart-home' },
       to: 'dashboard',
       action: 'read',
-      subject: 'application',
+      subject: 'dashboard',
     },
 
     {
@@ -33,6 +33,8 @@ export default [
         {
           title: 'All Record',
           to: 'record',
+          action: 'read',
+          subject: 'record'
 
         },
         // {
@@ -43,12 +45,16 @@ export default [
         {
           title: 'University',
           to: 'record-university',
+           action: 'read',
+          subject: 'record'
 
         },
 
         {
           title: 'Intake',
           to: 'record-intake',
+           action: 'read',
+          subject: 'record'
 
         },
 

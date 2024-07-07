@@ -1,4 +1,10 @@
 <script lang="js" setup>
+definePage({
+  meta: {
+    action: 'read',
+    subject: 'record',
+  },
+})
 import { commonFunction } from "@/@core/stores/commonFunction";
 import Swal from 'sweetalert2';
 import { onMounted, ref } from "vue";

@@ -46,8 +46,8 @@ class PermissionSeeder extends Seeder
         $channelPartnerRole = Role::create(['name' => 'channel partner']);
         $channelPartnerRole->givePermissionTo(['application.create', 'application.edit', 'application.read', 'application.delete','dashboard.read']);
 
-        $dataEntryOperatorRole = Role::create(['name' => 'data entry operator']);
-        $dataEntryOperatorRole->givePermissionTo(['record.create', 'record.edit', 'record.read', 'record.delete','dashboard.read']);
+        $dataEntryOperatorRole = Role::create(['name' => 'editor']);
+        $dataEntryOperatorRole->givePermissionTo(['record.create', 'record.edit', 'record.read', 'record.delete']);
 
         $users = User::all();
         foreach($users as $user) {
@@ -57,7 +57,7 @@ class PermissionSeeder extends Seeder
             if($user->role == 'channel partner') {
                 $user->assignRole($channelPartnerRole);
             }
-            if($user->role == 'data entry operator') {
+            if($user->role == 'editor') {
                 $user->assignRole($dataEntryOperatorRole);
             }
         }

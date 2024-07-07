@@ -1,5 +1,11 @@
 
 <script lang="js" setup>
+definePage({
+  meta: {
+    action: 'read',
+    subject: 'record',
+  },
+})
 import ShowMore from "@/@core/components/ShowMore.vue";
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useRecordStore } from "@/@core/stores/recordStore";

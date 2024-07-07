@@ -105,7 +105,7 @@ const userProfileList = [
             <VListItemTitle class="font-weight-medium">
               {{ userData.fullName || userData.username }}
             </VListItemTitle>
-            <VListItemSubtitle>{{ userData.role }}</VListItemSubtitle>
+            <VListItemSubtitle>{{ userData.main_role }}</VListItemSubtitle>
           </VListItem>
 
           <PerfectScrollbar :options="{ wheelPropagation: false }">

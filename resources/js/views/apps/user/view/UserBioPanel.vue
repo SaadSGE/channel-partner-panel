@@ -45,7 +45,7 @@ const resolveUserRoleVariant = role => {
       color: 'secondary',
       icon: 'tabler-server-2',
     }
-  
+
   return {
     color: 'primary',
     icon: 'tabler-user',
@@ -86,11 +86,11 @@ const resolveUserRoleVariant = role => {
           <!-- 👉 Role chip -->
           <VChip
             label
-            :color="resolveUserRoleVariant(props.userData.role).color"
+            :color="resolveUserRoleVariant(props.userData.main_role).color"
             size="small"
             class="text-capitalize mt-4"
           >
-            {{ props.userData.role }}
+            {{ props.userData.main_role }}
           </VChip>
         </VCardText>
 

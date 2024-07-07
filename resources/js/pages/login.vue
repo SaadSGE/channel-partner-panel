@@ -1,86 +1,88 @@
 <script setup>
-import { useAuthStore } from '@/@core/stores/auth'
-import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
-import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
-import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
-import authV2LoginIllustrationDark from '@images/pages/auth-v2-login-illustration-dark.png'
-import authV2LoginIllustrationLight from '@images/pages/auth-v2-login-illustration-light.png'
-import loginImage from '@images/pages/login-image.png'
-import authV2MaskDark from '@images/pages/misc-mask-dark.png'
-import authV2MaskLight from '@images/pages/misc-mask-light.png'
-import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
-import { themeConfig } from '@themeConfig'
-import Swal from 'sweetalert2'
+import { useAuthStore } from "@/@core/stores/auth";
+import { useGenerateImageVariant } from "@core/composable/useGenerateImageVariant";
+import authV2LoginIllustrationBorderedDark from "@images/pages/auth-v2-login-illustration-bordered-dark.png";
+import authV2LoginIllustrationBorderedLight from "@images/pages/auth-v2-login-illustration-bordered-light.png";
+import authV2LoginIllustrationDark from "@images/pages/auth-v2-login-illustration-dark.png";
+import authV2LoginIllustrationLight from "@images/pages/auth-v2-login-illustration-light.png";
+import loginImage from "@images/pages/login-image.png";
+import authV2MaskDark from "@images/pages/misc-mask-dark.png";
+import authV2MaskLight from "@images/pages/misc-mask-light.png";
+import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
+import { themeConfig } from "@themeConfig";
+import Swal from "sweetalert2";
 // import { useRoute, useRouter } from "vue-router"
-import { VForm } from 'vuetify/components/VForm'
-const authThemeImg = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
-const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
-const loginImage2 = useGenerateImageVariant(loginImage)
+import { VForm } from "vuetify/components/VForm";
+const authThemeImg = useGenerateImageVariant(
+  authV2LoginIllustrationLight,
+  authV2LoginIllustrationDark,
+  authV2LoginIllustrationBorderedLight,
+  authV2LoginIllustrationBorderedDark,
+  true
+);
+const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
+const loginImage2 = useGenerateImageVariant(loginImage);
 
 definePage({
   meta: {
-    layout: 'blank',
+    layout: "blank",
     unauthenticatedOnly: true,
   },
-})
+});
 
-const isPasswordVisible = ref(false)
-const refVForm = ref()
+const isPasswordVisible = ref(false);
+const refVForm = ref();
 
-const authStore = useAuthStore()
-const route = useRoute()
-const router = useRouter()
-const ability = useAbility()
+const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
+const ability = useAbility();
 
 const credentials = ref({
-  email: 'test.admin@gmail.com',
-  password: 'password'
-})
+  email: "",
+  password: "",
+});
 
 const onSubmit = () => {
-
-
   refVForm.value?.validate().then(async ({ valid: isValid }) => {
     if (isValid) {
       try {
-        const res = await authStore.login(credentials.value.email, credentials.value.password)
+        const res = await authStore.login(
+          credentials.value.email,
+          credentials.value.password
+        );
 
-        const { accessToken, userData, abilities} = res
+        const { accessToken, userData, abilities } = res;
 
-       const abilityRules= [
-        {
-          action: 'manage',
-          subject: 'all',
-        },
-      ]
-      console.log(abilityRules)
-      console.log(abilities)
-        //const abilityRules = abilities
-
-
-    useCookie('userAbilityRules').value = abilityRules
-    ability.update(abilityRules)
-    useCookie('userData').value = userData
-    useCookie('accessToken').value = accessToken
+        useCookie("userAbilityRules").value = abilities;
+        ability.update(abilities);
+        userData.main_role = userData.role;
+        userData.role = "admin";
+        useCookie("userData").value = userData;
+        useCookie("accessToken").value = accessToken;
 
         await nextTick(() => {
-      router.replace(route.query.to ? String(route.query.to) : '/')
-    })
+          if(userData.main_role=='editor'){
+            router.replace(route.query.to ? String(route.query.to) : "/record");
+          }
+          else{
+            router.replace(route.query.to ? String(route.query.to) : "/");
+          }
 
+        });
       } catch (err) {
-
         Swal.fire({
-      icon: 'error',
-      title: 'Login Failed',
-      text: 'Credential not match',
-      confirmButtonText: 'OK'
-    });
+          icon: "error",
+          title: "Login Failed",
+          text: "Credential not match",
+          confirmButtonText: "OK",
+        });
         // Handle and display error messages
-        console.error('Login error:', err)
+        console.error("Login error:", err);
       }
     }
-  })
-}
+  });
+};
 </script>
 
 <template>
@@ -93,23 +95,14 @@ const onSubmit = () => {
     </div>
   </RouterLink>
 
-  <VRow
-    no-gutters
-    class="auth-wrapper bg-surface"
-  >
-    <VCol
-      md="8"
-      class="d-none d-md-flex"
-    >
+  <VRow no-gutters class="auth-wrapper bg-surface">
+    <VCol md="8" class="d-none d-md-flex">
       <div class="position-relative bg-background w-100 me-0">
         <div
           class="d-flex align-center justify-center w-100 h-100"
-          style="padding-inline: 6.25rem;"
+          style="padding-inline: 6.25rem"
         >
-          <VImg
-            :src="loginImage2"
-            class="auth-illustration mt-16 mb-2"
-          />
+          <VImg :src="loginImage2" class="auth-illustration mt-16 mb-2" />
         </div>
       </div>
     </VCol>
@@ -119,14 +112,12 @@ const onSubmit = () => {
       md="4"
       class="auth-card-v2 d-flex align-center justify-center"
     >
-      <VCard
-        flat
-        :max-width="500"
-        class="mt-12 mt-sm-0 pa-4"
-      >
+      <VCard flat :max-width="500" class="mt-12 mt-sm-0 pa-4">
         <VCardText>
           <h4 class="text-h4 mb-1">
-            Welcome to <span class="text-capitalize"> {{ themeConfig.app.title }} </span>! 👋🏻
+            Welcome to
+            <span class="text-capitalize"> {{ themeConfig.app.title }} </span>!
+            👋🏻
           </h4>
           <p class="mb-0">
             Please sign-in to your account and start the adventure
@@ -134,10 +125,7 @@ const onSubmit = () => {
         </VCardText>
 
         <VCardText>
-          <VForm
-            ref="refVForm"
-            @submit.prevent="onSubmit"
-          >
+          <VForm ref="refVForm" @submit.prevent="onSubmit">
             <VRow>
               <!-- email -->
               <VCol cols="12">
@@ -161,30 +149,26 @@ const onSubmit = () => {
                   :rules="[requiredValidator]"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :error-messages="authStore.errors.password"
-                  :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                  :append-inner-icon="
+                    isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'
+                  "
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
                 />
 
-                <div class="d-flex align-center flex-wrap justify-space-between my-6">
+                <div
+                  class="d-flex align-center flex-wrap justify-space-between my-6"
+                >
                   <VCheckbox
                     v-model="authStore.rememberMe"
                     label="Remember Me"
                   />
                 </div>
 
-                <VBtn
-                  block
-                  type="submit"
-                >
-                  Login
-                </VBtn>
+                <VBtn block type="submit"> Login </VBtn>
               </VCol>
 
               <!-- create account -->
-              <VCol
-                cols="12"
-                class="text-center"
-              >
+              <VCol cols="12" class="text-center">
                 <span>New on our platform?</span>
                 <RouterLink
                   class="text-primary ms-1"

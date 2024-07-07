@@ -1,5 +1,11 @@
 
 <script lang="js" setup>
+definePage({
+  meta: {
+    action: 'read',
+    subject: 'record',
+  },
+})
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useRecordStore } from "@/@core/stores/recordStore";
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';

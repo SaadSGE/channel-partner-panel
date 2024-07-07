@@ -25,10 +25,10 @@ export const can = (action, subject) => {
  * @param {object} item navigation object item
  */
 export const canViewNavMenuGroup = item => {
+  console.log('hello2')
   const hasAnyVisibleChild = item.children.some(i => can(i.action, i.subject))
 
-  // If subject and action is defined in item => Return based on children visibility (Hide group if no child is visible)
-  // Else check for ability using provided subject and action along with checking if has any visible child
+
   if (!(item.action && item.subject))
     return hasAnyVisibleChild
 
@@ -37,7 +37,7 @@ export const canViewNavMenuGroup = item => {
 export const canNavigate = to => {
 
   const ability = useAbility()
-
+  //console.log(ability)
   return to.matched.some(route => {
     console.log('route.meta.action:', route.meta.action);
     console.log('route.meta.subject:', route.meta.subject);
