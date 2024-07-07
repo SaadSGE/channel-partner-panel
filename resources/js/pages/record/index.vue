@@ -83,8 +83,8 @@ const filteredCourseDetails = computed(() => {
 });
 
 // Methods
-const getRecord = async () => {
-  const fetchRecord = await recordStore.fetchRecord();
+const getRecord = async (page=1) => {
+  const fetchRecord = await recordStore.fetchRecord(page,searchQuery.value);
   records.value = fetchRecord.data;
   total.value = fetchRecord.total;
 };
@@ -227,6 +227,11 @@ const deleteItem = async (item) => {
 };
 
 
+const isLoading  = ref(false)
+const searchQuery = ref('')
+const updateOptions = (event) =>{
+  getRecord(event.page)
+}
 
 onMounted(async () => {
   if (commonFunctionStore.countries.length === 0) await commonFunctionStore.getCountries();
