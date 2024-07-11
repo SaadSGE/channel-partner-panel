@@ -199,4 +199,10 @@ class CourseDetailsController extends Controller
         $courseDetails = CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
         return $this->successJsonResponse('Course details found', $courseDetails);
     }
+
+    public function countryIntakeUniversityCourse()
+    {
+        $data = DB::table('country_intake_course_university_map_view')->get();
+        return $this->successJsonResponse('Course Intake University Details Found', $data);
+    }
 }

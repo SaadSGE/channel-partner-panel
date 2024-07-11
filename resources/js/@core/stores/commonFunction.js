@@ -9,6 +9,7 @@ export const commonFunction = defineStore({
         errors: [],
         universities: [],
         courseDetails: [],
+        countryIntakeUniversityCourse:[],
         selectedCountryId: null,
         selectedCourseId: null,
         selectedIntakeId: null,
@@ -18,11 +19,6 @@ export const commonFunction = defineStore({
 
     getters: {
         getFilteredCourseDetails: (state) => (countryId, courseId, intakeId, universityId) => {
-            console.log(countryId);
-            console.log(courseId);
-            console.log(intakeId);
-            console.log(universityId);
-
             state.selectedCountryId = countryId;
             state.selectedCourseId = courseId;
             state.selectedIntakeId = intakeId;
@@ -66,7 +62,33 @@ export const commonFunction = defineStore({
     },
 
     actions: {
+      async getCountryIntakeUniversityCourse(){
+        try {
+          const response = await $api('/get-country-intake-university-course', { method: 'GET' });
+
+          this.countryIntakeUniversityCourse = response.data;
+
+          // Extract unique countries
+          const countryMap = new Map();
+
+          response.data.forEach(item => {
+              if (!countryMap.has(item.country_id)) {
+                  countryMap.set(item.country_id, { id: item.country_id, name: item.country_name });
+              }
+          });
+
+          // Convert Map values to array
+          this.countries = Array.from(countryMap.values());
+
+
+      } catch (error) {
+          console.error('Error fetching countries:', error);
+          this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+      }
+      },
         async getCountries() {
+
+
             try {
                 const response = await $api('/application-country', { method: 'GET' });
 

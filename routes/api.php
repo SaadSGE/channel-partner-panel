@@ -24,6 +24,7 @@ Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAl
 Route::apiResource('application', ApplicationController::class);
 Route::post('student-document-upload', [StudentFileController::class,'upload']);
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
+Route::get('get-country-intake-university-course', [CourseDetailsController::class,'countryIntakeUniversityCourse']);
 
 Route::post('register', [AuthController::class,'register']);
 Route::post('login', [AuthController::class,'login']);
