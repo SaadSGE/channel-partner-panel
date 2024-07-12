@@ -85,7 +85,7 @@ class ApplicationController extends Controller
         DB::beginTransaction();
 
         try {
-
+            $userId = auth('api')->user()->id;
             $student = Student::create([
                 'student_id' => Str::random(10),
                 'first_name' => $validatedData['student_first_name'],
@@ -129,7 +129,7 @@ class ApplicationController extends Controller
                 'intake_id' => $validatedData['intake_id'],
                 'university_id' => $validatedData['university_id'],
                 'course_details_id' => $validatedData['course_details_id'],
-                'user_id' => 1,
+                'user_id' => $userId,
                 'student_id' => $student->id,
                 'counsellor_number' => $validatedData['counsellor_number'],
                 'counsellor_email' => $validatedData['counsellor_email'],
