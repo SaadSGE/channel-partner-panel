@@ -44,6 +44,21 @@ export const useApplicationListStore = defineStore({
         this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
         throw error;
       }
-    }
+    },
+
+
+    async deleteItem(id) {
+      try {
+        await $api(`/application/${id}`, {
+          method: 'DELETE',
+        });
+        // Refresh the application list after deletion
+        await this.getApplicationList();
+      } catch (error) {
+        console.error('Error deleting application:', error);
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+      }
+    },
+
   },
 });

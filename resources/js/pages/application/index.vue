@@ -6,6 +6,7 @@ definePage({
   },
 })
 import { useApplicationListStore } from '@/@core/stores/applicationList';
+import Swal from 'sweetalert2';
 import { useRouter } from "vue-router";
 const store = useApplicationListStore();
 const applicationLists = ref();
@@ -91,6 +92,29 @@ const viewApplicationDetail = (applicationId) => {
   router.push({ name: 'application-details', params: { id: applicationId } });
 };
 
+const deleteItem = async (itemId) => {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'Do you want to delete this item?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await store.deleteItem(itemId);
+      applicationLists.value = await store.getApplicationList();
+      Swal.fire('Deleted!', 'The item has been deleted.', 'success');
+    } catch (error) {
+      Swal.fire('Error!', 'There was an error deleting the item.', 'error');
+    }
+  }
+}
+
 
 </script>
 
@@ -152,7 +176,7 @@ const viewApplicationDetail = (applicationId) => {
           <IconBtn @click="viewApplicationDetail(item.id)">
           <VIcon icon="tabler-eye" />
         </IconBtn>
-        <IconBtn @click="deleteItem(item.product.id)">
+        <IconBtn @click="deleteItem(item.id)">
           <VIcon icon="tabler-trash" />
         </IconBtn>
         </div>

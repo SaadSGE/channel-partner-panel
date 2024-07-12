@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use Illuminate\Support\Facades\Storage;
+use Log;
 
 class ApplicationController extends Controller
 {
@@ -170,8 +171,34 @@ class ApplicationController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    /**
+ * Remove the specified resource from storage.
+ */
     public function destroy(string $id)
     {
-        //
+
+        try {
+            // Start the transaction
+            DB::beginTransaction();
+
+            // Find the application by id
+            $application = ApplicationList::findOrFail($id);
+
+            // Get the student associated with the application
+
+            $application->delete();
+
+            // Commit the transaction
+            DB::commit();
+
+            return $this->successJsonResponse('Application deleted successfully');
+        } catch (\Exception $e) {
+            // Rollback the transaction if any error occurs
+            DB::rollBack();
+            Log::error('Failed to delete application', ['error' => $e->getMessage()]);
+
+            return $this->exceptionJsonResponse('Failed to delete application', $e);
+        }
     }
+
 }
