@@ -44,9 +44,9 @@
         </VCardText>
       </VCard>
       <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
-      <div class="d-flex justify-end mt-4">
+      <!-- <div class="d-flex justify-end mt-4">
         <VBtn color="primary" @click="next()">Next</VBtn>
-      </div>
+      </div> -->
     </VCardText>
   </VCard>
 </template>
@@ -113,15 +113,7 @@ const getUploadedFile = async (url, fileName, arr) => {
   }
 };
 
-const next = () => {
-  if (files.value.length === 0) {
-    errorMessage.value = "Please upload at least one file.";
-  } else {
-    errorMessage.value = null;
-    emit("update:uploadDocumentShow", false);
-    emit("update:studentFormShow", true);
-  }
-};
+
 
 const server = {
   process: (fieldName, file, metadata, load, error, progress, abort) => {
