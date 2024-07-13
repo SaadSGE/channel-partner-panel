@@ -73,6 +73,10 @@ export const routes = [
     path: '/application/details/:id',
     name: 'application-details',
     component: () => import('@/pages/application/details.vue'),
+    meta: {
+      action: 'read',
+      subject: 'application',
+    },
   },
 
 ]

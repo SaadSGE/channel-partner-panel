@@ -1,4 +1,10 @@
-<script lang="ts" setup>
+<script setup>
+definePage({
+  meta: {
+    action: 'read',
+    subject: 'application',
+  },
+})
 import { ref } from "vue";
 import StudentInformation from "./student-information.vue";
 import UploadDocuemnt from "./upload-document.vue";

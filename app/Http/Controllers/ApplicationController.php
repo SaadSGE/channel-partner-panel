@@ -178,17 +178,13 @@ class ApplicationController extends Controller
     {
 
         try {
-            // Start the transaction
+
             DB::beginTransaction();
 
-            // Find the application by id
             $application = ApplicationList::findOrFail($id);
-
-            // Get the student associated with the application
-
             $application->delete();
 
-            // Commit the transaction
+
             DB::commit();
 
             return $this->successJsonResponse('Application deleted successfully');

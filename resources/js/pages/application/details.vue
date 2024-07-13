@@ -1,5 +1,10 @@
-<script setup lang="ts">
-
+<script setup>
+definePage({
+  meta: {
+    action: 'read',
+    subject: 'application',
+  },
+})
 import { useApplicationListStore } from '@/@core/stores/applicationList';
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
