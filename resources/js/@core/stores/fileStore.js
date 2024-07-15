@@ -71,6 +71,8 @@ export const useFileStore = defineStore('fileStore', {
         this.errors.push(error.response ? error.response.data.errors : ['An unexpected error occurred']);
         throw error;
       }
-    }
+    },
+
+
   }
 });

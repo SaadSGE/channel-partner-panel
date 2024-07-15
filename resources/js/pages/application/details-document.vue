@@ -1,10 +1,14 @@
 <template>
   <VCard class="mx-auto">
-    <VCardTitle>Please upload only color scan copy files</VCardTitle>
+    <VCardTitle>Please upload only color scan copy files {{ tempFileCount }}
+       </VCardTitle>
+       <div class="d-flex justify-end mt-2" v-if=" tempFileCount > 0">
+        <VBtn color="primary" @click="next()">Update New File</VBtn>
+      </div>
     <VCardText>
       <file-pond
         ref="pond"
-        name="test"
+        name="student_document"
         :allow-multiple="true"
         allowRemove="true"
         :files="files"
@@ -43,17 +47,13 @@
           </VBtn>
         </VCardText>
       </VCard>
-      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
-      <!-- <div class="d-flex justify-end mt-4">
-        <VBtn color="primary" @click="next()">Next</VBtn>
-      </div> -->
+
     </VCardText>
   </VCard>
 </template>
 
 <script lang="ts" setup>
 import { useFileStore } from "@/@core/stores/fileStore";
-import axios from "axios";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css";
@@ -83,59 +83,45 @@ const emit = defineEmits([
 const errorMessage = ref<string | null>(null);
 
 const currentDocuments = ref(props.existingDocuments);
-console.log(currentDocuments.value);
+
 const files = ref([]);
 const fileStore = useFileStore();
 
 const test = ref([]);
 
-const getUploadedFile = async (url, fileName, arr) => {
-  try {
-    const response = await axios.get(url, {
-      responseType: "blob",
-    });
-    const blob = response.data;
-    let mimeType = "application/octet-stream";
 
-    if (fileName.endsWith(".pdf")) {
-      mimeType = "application/pdf";
-    } else if (fileName.endsWith(".doc")) {
-      mimeType = "application/msword";
-    } else if (fileName.endsWith(".docx")) {
-      mimeType =
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    }
 
-    const file = new File([blob], fileName, { type: mimeType });
-    arr.push(file);
-  } catch (error) {
-    console.error("Error fetching the file:", error);
+const next = () => {
+  if (files.value.length === 0) {
+    errorMessage.value = "Please upload at least one file.";
+  } else {
+    errorMessage.value = null;
+    emit("update:uploadDocumentShow", false);
+    emit("update:studentFormShow", true);
   }
 };
-
-
-
+const tempFileCount = ref(0);
 const server = {
   process: (fieldName, file, metadata, load, error, progress, abort) => {
+    tempFileCount.value+=1
     fileStore
       .uploadFile(fieldName, file)
       .then((response) => load(response))
       .catch((err) => error(err));
   },
   revert: (uniqueFileId, load, error) => {
+    tempFileCount.value-=1
     fileStore.removeFile(uniqueFileId);
     load();
   },
 };
 
 const removeFile = (fileId) => {
+
   fileStore.removeFile(fileId);
 };
 
-// Watch existingDocuments prop to initialize files
-// watch(() => props.existingDocuments, (newDocs) => {
-//   files.value = newDocs;
-// }, { immediate: true });
+
 </script>
 
 <style scoped>

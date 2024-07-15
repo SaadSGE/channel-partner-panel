@@ -4,24 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
-class ApplicationList extends Model
+class ApplicationStatusHistory extends Model
 {
     use HasFactory;
 
     protected $guarded = [];
-
-    protected $casts = [
-        'course_id' => 'integer',
-        'country_id' => 'integer',
-        'intake_id' => 'integer',
-        'university_id' => 'integer',
-        'course_details_id' => 'integer',
-        'user_id' => 'integer',
-        'student_id' => 'integer',
-        'status' => 'integer',
-    ];
 
     // Define status constants
     public const STATUS_APPLICATION_PROCESSING = 0;
@@ -52,52 +40,12 @@ class ApplicationList extends Model
         self::STATUS_APPLICATION_REJECTED => 'Application Rejected',
         self::STATUS_SESSION_EXPIRED => 'Session Expired',
         self::STATUS_DOC_RECEIVED => 'Doc Received',
-        self::STATUS_PARTIAL_PAYMENT => 'Partial Payment (number input)',
+        self::STATUS_PARTIAL_PAYMENT => 'Partial Payment',
     ];
 
     // Accessor for status text
     public function getStatusTextAttribute()
     {
-        return self::$statusTexts[$this->status] ?? 'Unknown Status';
-    }
-
-    public function course()
-    {
-        return $this->belongsTo(Course::class);
-    }
-
-    public function country()
-    {
-        return $this->belongsTo(ApplicationCountry::class);
-    }
-
-    public function intake()
-    {
-        return $this->belongsTo(Intake::class);
-    }
-
-    public function university()
-    {
-        return $this->belongsTo(University::class);
-    }
-
-    public function courseDetails()
-    {
-        return $this->belongsTo(CourseDetails::class);
-    }
-
-    public function getCreatedAtAttribute($value)
-    {
-        return Carbon::parse($value)->format('d-m-Y H:i');
-    }
-
-    public function applicationDocument()
-    {
-        return $this->hasMany(ApplicationDocument::class, 'application_id');
-    }
-
-    public function student()
-    {
-        return $this->belongsTo(Student::class);
+        return self::$statusTexts[$this->status];
     }
 }

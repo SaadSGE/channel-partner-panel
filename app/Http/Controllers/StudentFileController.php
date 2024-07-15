@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 use Log;
+use App\Services\FileUploadService;
 
 class StudentFileController extends Controller
 {
@@ -13,19 +14,35 @@ class StudentFileController extends Controller
     public function upload(Request $request)
     {
 
-
         try {
             $file = $request->file('student_document');
+            $filePath = 'channelPartnerPanel/studentDocument/';
             $originalFileName = $file->getClientOriginalName();
-            $randomNumber = rand(100000, 999999);
-            $filePath = 'channelPartnerPanel/studentDocument/' . $randomNumber;
-            $path = Storage::disk('do_spaces')->putFileAs(
-                $filePath,
-                $file,
-                $originalFileName,
-                'public'
-            );
+            $fileUploadService = new FileUploadService();
+            $path = $fileUploadService->upload($filePath, $file);
 
+            return $this->successJsonResponse('File uploaded successfully', [
+                'path' => $path,
+                'originalFileName' => $originalFileName
+            ]);
+
+        } catch (\Throwable $th) {
+            \Log::error('File upload error: ' . $th);
+
+            return $this->errorJsonResponse('File upload failed', $th);
+        }
+    }
+
+    public function uploadExistingApplication(Request $request)
+    {
+
+        try {
+            Log::info($request->application_id);
+            $file = $request->file('student_document');
+            $filePath = 'channelPartnerPanel/studentDocument/';
+            $originalFileName = $file->getClientOriginalName();
+            $fileUploadService = new FileUploadService();
+            $path = $fileUploadService->upload($filePath, $file);
 
             return $this->successJsonResponse('File uploaded successfully', [
                 'path' => $path,

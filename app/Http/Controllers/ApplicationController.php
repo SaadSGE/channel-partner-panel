@@ -103,19 +103,6 @@ class ApplicationController extends Controller
                 'gender' => $validatedData['gender'],
                 'visa_refusal' => $validatedData['visa_refusal'],
             ]);
-
-
-            if (!empty($validatedData['document_paths'])) {
-                foreach ($validatedData['document_paths'] as $path) {
-                    $filename = basename($path['path']);
-                    $newPath = 'channelPartnerPanel/studentDocument/' . $student->id . '/' . $student->email . '_' . $filename;
-                    Storage::disk('do_spaces')->move($path['path'], $newPath);
-                    StudentDocument::create([
-                        'student_id' => $student->id,
-                        'path' => $newPath
-                    ]);
-                }
-            }
             $randomNumber = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
 
 
@@ -136,6 +123,20 @@ class ApplicationController extends Controller
                 'counsellor_email' => $validatedData['counsellor_email'],
                 'status' => 0,
             ]);
+
+            if (!empty($validatedData['document_paths'])) {
+                foreach ($validatedData['document_paths'] as $path) {
+                    $filename = basename($path['path']);
+                    $newPath = 'channelPartnerPanel/studentDocument/' . $student->id . '/' . $student->email . '_' . $filename;
+                    Storage::disk('do_spaces')->move($path['path'], $newPath);
+                    StudentDocument::create([
+                        'student_id' => $student->id,
+                        'application_id' => $application->id,
+                        'path' => $newPath
+                    ]);
+                }
+            }
+
 
             DB::commit();
             return $this->successJsonResponse('Application created successfully', $application, '', 201);
