@@ -26,6 +26,7 @@ Route::post('student-document-upload', [StudentFileController::class,'upload']);
 Route::post('student-document-upload-existing-application', [StudentFileController::class,'uploadExistingApplication']);
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
 Route::get('get-country-intake-university-course', [CourseDetailsController::class,'countryIntakeUniversityCourse']);
+Route::post('update-application-file', [ApplicationController::class,'updateApplicationFile']);
 
 Route::post('register', [AuthController::class,'register']);
 Route::post('login', [AuthController::class,'login']);

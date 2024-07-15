@@ -11,6 +11,7 @@ use App\Models\Student;
 use App\Models\StudentDocument;
 use Illuminate\Support\Facades\Storage;
 use Log;
+use App\Models\User;
 
 class ApplicationController extends Controller
 {
@@ -196,6 +197,28 @@ class ApplicationController extends Controller
 
             return $this->exceptionJsonResponse('Failed to delete application', $e);
         }
+    }
+
+    public function updateApplicationFile(Request $request)
+    {
+
+        $applicationId = (int)$request->application_id;
+        $applicationDocument = StudentDocument::where('application_id', $applicationId)->first();
+        $studentId = $applicationDocument->student_id;
+        $student = Student::where('id', $studentId)->first();
+        if (!empty($request->document_paths)) {
+            foreach ($request->document_paths as $path) {
+                $filename = basename($path['path']);
+                $newPath = 'channelPartnerPanel/studentDocument/' . $studentId . '/' . $student->email . '_' . $filename;
+                Storage::disk('do_spaces')->move($path['path'], $newPath);
+                StudentDocument::create([
+                    'student_id' => $student->id,
+                    'application_id' => $applicationId,
+                    'path' => $newPath
+                ]);
+            }
+        }
+
     }
 
 }

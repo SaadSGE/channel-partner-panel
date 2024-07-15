@@ -1,5 +1,5 @@
-// src/store/fileStore.ts
 import { defineStore } from 'pinia';
+
 const generateUniqueId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
 };
@@ -20,17 +20,12 @@ export const useFileStore = defineStore('fileStore', {
         file.progress = progress;
       }
     },
-    removeFile(fileId) {
-      var index = this.filePaths.indexOf(fileId);
-      if (index !== -1) {
-        this.filePaths.splice(index, 1);
-      }
-      const file = this.files.find(f => f.id === fileId);
-      if (file) {
-
+    async removeFile(fileId) {
+      const fileIndex = this.files.findIndex(f => f.id === fileId);
+      if (fileIndex !== -1) {
+        const file = this.files[fileIndex];
         this.filePaths = this.filePaths.filter(path => path !== file.path);
-        // Remove the file from files array
-        this.files = this.files.filter(f => f.id !== fileId);
+        this.files.splice(fileIndex, 1);
       }
     },
     updateFilePath(fileId, path) {
@@ -65,14 +60,13 @@ export const useFileStore = defineStore('fileStore', {
           }
         });
         this.updateFilePath(fileId, response.data);
-        return response.data;
+        console.log(this.filePaths)
+        return fileId;  // Return the fileId instead of the response data
       } catch (error) {
         console.error('Error uploading file:', error);
         this.errors.push(error.response ? error.response.data.errors : ['An unexpected error occurred']);
         throw error;
       }
-    },
-
-
+    }
   }
 });
