@@ -9,6 +9,8 @@ export const useApplicationListStore = defineStore({
     applicationData: '',
     documents: [], // Ensure documents is an array
     students: [],
+    statuses:[],
+    allStatuses:[],
   }),
   actions: {
     async getApplicationList() {
@@ -59,6 +61,53 @@ export const useApplicationListStore = defineStore({
         this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
       }
     },
+
+    async getApplicationStatusses(id)
+    {
+      try {
+        const response = await $api(`/application-statuses/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        this.statuses =  response.data;
+      } catch (error) {
+        console.error('Error getting application list:', error);
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        throw error;
+      }
+    },
+    async getApplicationAllStatuses() {
+      try {
+        const response = await $api('/application-all-statuses', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        this.allStatuses =  response.data;
+      } catch (error) {
+        console.error('Error getting application list:', error);
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        throw error;
+      }
+    },
+    async updateStatus(id, formData) {
+
+      try {
+        const response = await $api(`/application/${id}/status`, {
+          method: 'POST',
+          body: formData,
+
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Error updating status:', error);
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        throw error;
+      }
+    }
 
   },
 });

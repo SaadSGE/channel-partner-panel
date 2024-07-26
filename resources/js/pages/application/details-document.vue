@@ -2,7 +2,7 @@
   <VCard class="mx-auto">
     <VCardTitle>Please upload only color scan copy files</VCardTitle>
     <div class="d-flex justify-end mt-2" v-if="tempFileCount > 0">
-      <VBtn color="primary" @click="update()">Add New Document</VBtn>
+      <VBtn color="primary" @click="update()">Update New Document</VBtn>
     </div>
     <VCardText>
       <file-pond
@@ -80,6 +80,7 @@ const update = () => {
     });
     tempFileCount.value =0
 };
+ fileStore.resetFiles()
 
 const next = () => {
   if (files.value.length === 0) {

@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class ApplicationStatusHistory extends Model
 {
     use HasFactory;
 
     protected $guarded = [];
+    protected $appends = ['status_text'];
 
     // Define status constants
     public const STATUS_APPLICATION_PROCESSING = 0;
@@ -47,5 +49,17 @@ class ApplicationStatusHistory extends Model
     public function getStatusTextAttribute()
     {
         return self::$statusTexts[$this->status];
+    }
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d-m-Y H:i');
+    }
+
+    public function getDocumentAttribute($value)
+    {
+        if($value){
+            return env('DO_URL').$value;
+        }
+        return null;
     }
 }

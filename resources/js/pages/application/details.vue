@@ -1,19 +1,24 @@
 <script setup>
 definePage({
   meta: {
-    action: 'read',
-    subject: 'application',
+    action: "read",
+    subject: "application",
   },
-})
-import { useApplicationListStore } from '@/@core/stores/applicationList';
+});
+import { useApplicationListStore } from "@/@core/stores/applicationList";
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import Document from './details-document.vue';
+import Document from "./details-document.vue";
+
 const route = useRoute();
 const applicationId = route.params.id;
 
 const store = useApplicationListStore();
+
 const currentTab = ref("student-course-details");
+const showModal = ref(false); // Modal visibility state
+const newStatus = ref(""); // Selected new status
+const newComment = ref(""); // New comment
 
 const files = ref([
   { name: "Document1.pdf", progress: 100 },
@@ -32,60 +37,135 @@ const comments = ref([
 
 const statuses = ref([
   {
-    dateAdded: "2024-05-06 19:27:34",
-    comment: "Application Received.",
-    status: "Application Received<br>Secondary Status: No Application Fees",
+    created_at: "",
+    comment: "",
+    status_text: "",
   },
 ]);
+
 const applicationData = ref({
-  application_id:'',
-  created_at:'',
-  counsellor_email:'',
-  counsellor_number:'',
-
+  application_id: "",
+  created_at: "",
+  counsellor_email: "",
+  counsellor_number: "",
 });
+const statusFile = ref();
+const statusLoading = ref(true);
 const studentData = ref({
-    id: null,
-    student_id: null,
-    first_name: null,
-    last_name: null,
-    passport_no: null,
-    date_of_birth: null,
-    whatsapp_number: null,
-    email: null,
-    address: null,
-    city: null,
-    country: null,
-    region: null,
-    state: null,
-    gender: null,
-    visa_refusal: null,
-    created_at: null,
-    updated_at: null,
-    document: [
-        {
-            id: null,
-            student_id: null,
-            path: null,
-            created_at: null,
-            updated_at: null,
-        }
-    ]
+  id: null,
+  student_id: null,
+  first_name: null,
+  last_name: null,
+  passport_no: null,
+  date_of_birth: null,
+  whatsapp_number: null,
+  email: null,
+  address: null,
+  city: null,
+  country: null,
+  region: null,
+  state: null,
+  gender: null,
+  visa_refusal: null,
+  created_at: null,
+  updated_at: null,
+  document: [
+    {
+      id: null,
+      student_id: null,
+      path: null,
+      created_at: null,
+      updated_at: null,
+    },
+  ],
 });
-const documents = ref([])
-onMounted(async () => {
-    await store.getApplicationDetails(applicationId);
-    applicationData.value = store.applicationData
-    documents.value = store.documents
-    studentData.value = store.students
 
+const documents = ref([]);
+const allStatuses = ref([]);
+onMounted(async () => {
+  await refreshData();
 });
+
+const refreshData = async () => {
+  await store.getApplicationDetails(applicationId);
+  await store.getApplicationStatusses(applicationId);
+  await store.getApplicationAllStatuses();
+
+  applicationData.value = store.applicationData;
+  documents.value = store.documents;
+  studentData.value = store.students;
+  statuses.value = store.statuses;
+  allStatuses.value = store.allStatuses.filter(
+    (status) => status.id !== applicationData.value.status
+  );
+};
+
+
+
+const handleStatusChange = async () => {
+  try {
+    let data = new FormData();
+    data.append('status', newStatus.value);
+    data.append('comment', newComment.value);
+    if (statusFile.value) {
+      data.append('file', statusFile.value[0]);
+    }
+
+    await store.updateStatus(applicationId, data);
+    showModal.value = false;
+    await refreshData(); // Ensure refreshData is called to update the UI
+  } catch (error) {
+    console.error('Error updating status:', error);
+  }
+};
+
+
+
 </script>
 
 <template>
   <VCard>
     <VCardTitle>Application Details</VCardTitle>
     <VCardText>
+      <!-- Modal for changing status -->
+      <VDialog v-model="showModal" max-width="500px">
+        <VCard>
+          <VCardTitle>Change Current Status</VCardTitle>
+          <VCardText>
+            <VForm @submit.prevent="handleStatusChange">
+              <AppAutocomplete
+                v-model="newStatus"
+                :items="allStatuses"
+                :item-title="(item) => item.name"
+                :item-value="(item) => item.id"
+                label="Status"
+                placeholder="Select Status"
+                :rules="[requiredValidator]"
+              />
+              <VLabel class="mt-2">Add any necessary file (Optional)</VLabel>
+              <VFileInput
+                v-model="statusFile"
+                color="primary"
+                label="File input"
+                variant="outlined"
+                class="mt-2"
+              />
+
+              <VLabel class="mt-2">Comment (Optional)</VLabel>
+              <AppTextarea
+                v-model="newComment"
+                placeholder="Place any comment regarding status"
+              />
+            </VForm>
+          </VCardText>
+          <VCardActions>
+            <VSpacer></VSpacer>
+            <VBtn color="primary" @click="handleStatusChange">Submit</VBtn>
+            <VBtn @click="showModal = false">Cancel</VBtn>
+          </VCardActions>
+        </VCard>
+      </VDialog>
+
       <VTabs v-model="currentTab">
         <VTab value="student-course-details">Student/Course Details</VTab>
         <VTab value="upload-download">Upload/Download</VTab>
@@ -110,13 +190,15 @@ onMounted(async () => {
                     </tr>
                     <tr>
                       <td><strong>Student ID</strong></td>
-                      <td>{{ studentData.student_id??'' }}</td>
+                      <td>{{ studentData.student_id ?? "" }}</td>
                       <td><strong>Student Passport No.</strong></td>
                       <td>{{ studentData.passport_no }}</td>
                     </tr>
                     <tr>
                       <td><strong>Student Name</strong></td>
-                      <td>{{ studentData.first_name }} {{ studentData.last_name }}</td>
+                      <td>
+                        {{ studentData.first_name }} {{ studentData.last_name }}
+                      </td>
                       <td><strong>Student Date of Birth</strong></td>
                       <td>{{ studentData.date_of_birth }}</td>
                     </tr>
@@ -140,30 +222,51 @@ onMounted(async () => {
 
           <!-- Upload/Download Tab -->
           <VWindowItem value="upload-download">
-           <Document :existing-documents="documents"/>
+            <Document :existing-documents="documents" />
           </VWindowItem>
 
           <!-- Status Tab -->
           <VWindowItem value="status">
             <VRow>
+              <VCol cols="12" class="d-flex justify-end">
+                <VBtn
+                  v-if="currentTab === 'status'"
+                  @click="showModal = true"
+                  color="primary"
+                  >Change Current Status</VBtn
+                >
+              </VCol>
               <VCol cols="12">
                 <VTable>
                   <thead>
                     <tr>
                       <th>Date Added</th>
                       <th>Comment</th>
-                      <th>Status</th>
+                      <th>Status and Document</th> <!-- Combined column -->
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="(status, index) in statuses" :key="index">
-                      <td>{{ status.dateAdded }}</td>
+                      <td>{{ status.created_at }}</td>
                       <td>{{ status.comment }}</td>
-                      <td v-html="status.status"></td>
+                      <td>
+                        <div>
+                          <span v-html="status.status_text"></span>
+                          <span v-if="index === 0" class="current-status-label">(Current Status)</span>
+                          <!-- Display file name and download link below the status -->
+                          <div v-if="status.document">
+                            <div>{{ status.file_name }}</div>
+                            <a :href="status.document" target="_blank" class="download-link">Document</a>
+
+                          </div>
+                        </div>
+                      </td>
                     </tr>
                   </tbody>
                 </VTable>
               </VCol>
+
+
             </VRow>
           </VWindowItem>
 
@@ -272,5 +375,11 @@ onMounted(async () => {
 .comment-body {
   font-size: 14px;
   color: #333;
+}
+
+.current-status-label {
+  color: red;
+  font-weight: bold;
+  margin-left: 5px;
 }
 </style>

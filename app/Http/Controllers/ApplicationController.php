@@ -6,13 +6,14 @@ use App\Models\ApplicationList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\ApplicationDocument;
+use App\Models\ApplicationStatusHistory;
 use Illuminate\Support\Str;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use Illuminate\Support\Facades\Storage;
 use Log;
 use App\Models\User;
-
+use App\Services\FileUploadService;
 class ApplicationController extends Controller
 {
     /**
@@ -220,5 +221,77 @@ class ApplicationController extends Controller
         }
 
     }
+
+    public function applicationStatuses(Request $request)
+    {
+        $applicationId = $request->id;
+        $applicationStatuses = ApplicationStatusHistory::where('application_id',$applicationId)->latest()->get();
+
+        return $this->successJsonResponse('Status found successfully',$applicationStatuses);
+
+    }
+
+    public function getAllApplicationStatuses()
+    {
+        $statuses = collect(ApplicationStatusHistory::$statusTexts)->map(function ($name, $id) {
+            return [
+                'id' => $id,
+                'name' => $name,
+            ];
+        })->values();
+        return $this->successJsonResponse('Status foound',$statuses);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+
+        $validatedData = $request->validate([
+            'status' => 'required',
+            'comment' => 'nullable',
+            'file' => 'nullable|file', // Ensure this validation is correct for your case
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Find the application
+            $application = ApplicationList::findOrFail($id);
+
+            // Update the application's status
+            $application->status = $validatedData['status'];
+            $application->save();
+
+            $path = null;
+            // Handle file upload with FileUploadService
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $filePath = 'channelPartnerPanel/studentDocument/' . $application->student_id;
+                $fileUploadService = new FileUploadService();
+                $path = $fileUploadService->upload($filePath, $file);
+
+            }
+
+            // Add status history
+            ApplicationStatusHistory::create([
+                'application_id' => $application->id,
+                'status' => $validatedData['status'],
+                'comment' => $validatedData['comment'],
+                'document' => $path
+            ]);
+
+            DB::commit();
+            return $this->successJsonResponse('Status updated successfully', $application, '', 200);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('Failed to update status', ['error' => $th->getMessage()]);
+            return $this->exceptionJsonResponse('Failed to update status', $th);
+        }
+    }
+
+
+
+
+
+
 
 }

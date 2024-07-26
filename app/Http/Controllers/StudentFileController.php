@@ -14,6 +14,7 @@ class StudentFileController extends Controller
     public function upload(Request $request)
     {
 
+
         try {
             $file = $request->file('student_document');
             $filePath = 'channelPartnerPanel/studentDocument/';
