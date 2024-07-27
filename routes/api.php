@@ -30,7 +30,9 @@ Route::post('update-application-file', [ApplicationController::class,'updateAppl
 Route::get('application-statuses/{id}',[ApplicationController::class,'applicationStatuses']);
 Route::get('application-all-statuses',[ApplicationController::class,'getAllApplicationStatuses']);
 Route::post('/application/{id}/status', [ApplicationController::class, 'updateStatus']);
-Route::post('application-test', [ApplicationController::class, 'updateStatus']);
+Route::post('/application/{id}/comment', [ApplicationController::class, 'addComment']);
+Route::get('/application/{id}/university-communications', [ApplicationController::class, 'getUniversityCommunications']);
+Route::post('/application/{id}/university-communication', [ApplicationController::class, 'addUniversityCommunication']);
 
 Route::post('register', [AuthController::class,'register']);
 Route::post('login', [AuthController::class,'login']);

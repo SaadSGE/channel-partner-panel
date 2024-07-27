@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
 use Log;
 use App\Models\User;
 use App\Services\FileUploadService;
+use App\Models\ApplicationCommentHistory;
+use App\Models\UniversityCommunication;
 class ApplicationController extends Controller
 {
     /**
@@ -157,7 +159,7 @@ class ApplicationController extends Controller
      */
     public function show(int $id)
     {
-        $applicationDetails = ApplicationList::with(['course','country','intake','university','courseDetails','student.document'])->where('id', $id)->first();
+        $applicationDetails = ApplicationList::with(['course','country','intake','university','courseDetails','student.document','comments.user','universityCommunications.user'])->where('id', $id)->first();
         if ($applicationDetails) {
             return $this->successJsonResponse("Application Information found!", $applicationDetails);
         }
@@ -276,7 +278,7 @@ class ApplicationController extends Controller
                 'application_id' => $application->id,
                 'status' => $validatedData['status'],
                 'comment' => $validatedData['comment'],
-                'document' => $path
+                'document' => $path,
             ]);
 
             DB::commit();
@@ -289,7 +291,43 @@ class ApplicationController extends Controller
     }
 
 
+    public function addComment(Request $request, $id)
+    {
+        $request->validate([
+            'comment' => 'required|string',
+        ]);
 
+        $comment = new ApplicationCommentHistory();
+        $comment->application_id = $id;
+        $comment->comment = $request->comment;
+        $comment->status = 0;
+        $comment->save();
+
+        return response()->json(['message' => 'Comment added successfully', 'comment' => $comment], 201);
+    }
+
+    public function getUniversityCommunications($id)
+    {
+        $communications = UniversityCommunication::where('application_id', $id)->with('user')->get();
+        return response()->json($communications);
+    }
+
+    public function addUniversityCommunication(Request $request, $id)
+    {
+        $request->validate([
+            'subject' => 'required|string',
+            'message' => 'required|string',
+        ]);
+
+        $communication = new UniversityCommunication();
+        $communication->application_id = $id;
+        $communication->subject = $request->subject;
+        $communication->message = $request->message;
+        $communication->created_by = auth('api')->user()->id; // Set the user who made the communication
+        $communication->save();
+
+        return response()->json(['message' => 'Communication added successfully', 'communication' => $communication], 201);
+    }
 
 
 

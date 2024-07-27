@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ApplicationList extends Model
 {
@@ -99,5 +100,30 @@ class ApplicationList extends Model
     public function student()
     {
         return $this->belongsTo(Student::class);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+
+            if (auth('api')->check()) {
+                $model->created_by = auth('api')->user()->id;
+            }
+        });
+    }
+
+    public function getCreatedByAttribute($value)
+    {
+        return $value;
+    }
+    public function comments()
+    {
+        return $this->hasMany(ApplicationCommentHistory::class, 'application_id');
+    }
+    public function universityCommunications()
+    {
+        return $this->hasMany(UniversityCommunication::class, 'application_id');
     }
 }

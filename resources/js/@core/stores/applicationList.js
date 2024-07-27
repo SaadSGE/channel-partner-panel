@@ -11,6 +11,8 @@ export const useApplicationListStore = defineStore({
     students: [],
     statuses:[],
     allStatuses:[],
+    comments: [],
+    universityCommunications: [],
   }),
   actions: {
     async getApplicationList() {
@@ -40,6 +42,8 @@ export const useApplicationListStore = defineStore({
         // Assuming response.data.student.document is an array of objects with a `path` property
         this.documents = response.data.student.document.map(doc => doc.path);
         this.students = response.data.student;
+        this.comments = response.data.comments;
+        this.universityCommunications = response.data.university_communications;
         return response.data;
       } catch (error) {
         console.error('Error getting application details:', error);
@@ -107,7 +111,48 @@ export const useApplicationListStore = defineStore({
         this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
         throw error;
       }
-    }
+    },
+    async addComment(id, comment) {
+      try {
+        const response = await $api(`/application/${id}/comment`, {
+          method: 'POST',
+          body: JSON.stringify({ comment }),
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Error adding comment:', error);
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        throw error;
+      }
+    },
+    async getUniversityCommunications(id) {
+      try {
+        const response = await $api(`/application/${id}/university-communications`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        this.universityCommunications = response.data;
+      } catch (error) {
+        console.error('Error getting university communications:', error);
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        throw error;
+      }
+    },
+    async addUniversityCommunication(id, { subject, message }) {
+      try {
+        const response = await $api(`/application/${id}/university-communication`, {
+          method: 'POST',
+          body: JSON.stringify({ subject, message }),
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Error adding university communication:', error);
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        throw error;
+      }
+    },
 
   },
 });

@@ -89,7 +89,6 @@ class CourseDetailsController extends Controller
                 'course_duration' => $validatedData['courseDuration'],
                 'academic_requirement' => $validatedData['academicRequirement'],
                 'english_requirement' => $validatedData['englishRequirement'],
-                'created_by' => auth('api')->user()->id
             ]);
 
             // Commit the transaction

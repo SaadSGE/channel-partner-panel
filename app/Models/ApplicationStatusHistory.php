@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ApplicationStatusHistory extends Model
 {
@@ -50,6 +50,7 @@ class ApplicationStatusHistory extends Model
     {
         return self::$statusTexts[$this->status];
     }
+
     public function getCreatedAtAttribute($value)
     {
         return Carbon::parse($value)->format('d-m-Y H:i');
@@ -57,9 +58,26 @@ class ApplicationStatusHistory extends Model
 
     public function getDocumentAttribute($value)
     {
-        if($value){
-            return env('DO_URL').$value;
+        if ($value) {
+            return env('DO_URL') . $value;
         }
         return null;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            // Ensure the user is authenticated
+            if (auth('api')->check()) {
+                $model->created_by = auth('api')->user()->id;
+            }
+        });
+    }
+
+    public function getCreatedByAttribute($value)
+    {
+        return $value;
     }
 }

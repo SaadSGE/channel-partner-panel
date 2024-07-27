@@ -17,8 +17,14 @@ const store = useApplicationListStore();
 
 const currentTab = ref("student-course-details");
 const showModal = ref(false); // Modal visibility state
+const showCommentModal = ref(false); // Modal visibility state for comments
+const showUniversityCommModal = ref(false); // Modal visibility state for university communications
 const newStatus = ref(""); // Selected new status
 const newComment = ref(""); // New comment
+const newUniversityComm = ref({
+  subject: "",
+  message: "",
+}); // New university communication
 
 const files = ref([
   { name: "Document1.pdf", progress: 100 },
@@ -27,13 +33,8 @@ const files = ref([
   { name: "Document4.pdf", progress: 100 },
 ]);
 
-const comments = ref([
-  {
-    date: "2024-05-06 19:27:34",
-    status: "Received",
-    body: "Application Received. <br>Forhadul Alam",
-  },
-]);
+const comments = ref([]);
+const universityCommunications = ref([]);
 
 const statuses = ref([
   {
@@ -91,16 +92,17 @@ const refreshData = async () => {
   await store.getApplicationStatusses(applicationId);
   await store.getApplicationAllStatuses();
 
+
   applicationData.value = store.applicationData;
   documents.value = store.documents;
   studentData.value = store.students;
   statuses.value = store.statuses;
+  comments.value = store.comments;
+  universityCommunications.value = store.universityCommunications;
   allStatuses.value = store.allStatuses.filter(
     (status) => status.id !== applicationData.value.status
   );
 };
-
-
 
 const handleStatusChange = async () => {
   try {
@@ -119,8 +121,27 @@ const handleStatusChange = async () => {
   }
 };
 
+const handleAddComment = async () => {
+  try {
+    await store.addComment(applicationId, newComment.value);
+    newComment.value = ''; // Clear the comment input
+    showCommentModal.value = false; // Close the comment modal
+    await refreshData(); // Refresh data to reflect new comment
+  } catch (error) {
+    console.error('Error adding comment:', error);
+  }
+};
 
-
+const handleAddUniversityComm = async () => {
+  try {
+    await store.addUniversityCommunication(applicationId, newUniversityComm.value);
+    newUniversityComm.value = { subject: "", message: "" }; // Clear the input
+    showUniversityCommModal.value = false; // Close the university communication modal
+    await refreshData(); // Refresh data to reflect new communication
+  } catch (error) {
+    console.error('Error adding university communication:', error);
+  }
+};
 </script>
 
 <template>
@@ -162,6 +183,44 @@ const handleStatusChange = async () => {
             <VSpacer></VSpacer>
             <VBtn color="primary" @click="handleStatusChange">Submit</VBtn>
             <VBtn @click="showModal = false">Cancel</VBtn>
+          </VCardActions>
+        </VCard>
+      </VDialog>
+
+      <!-- Modal for adding a comment -->
+      <VDialog v-model="showCommentModal" max-width="500px">
+        <VCard>
+          <VCardTitle>Add a New Comment</VCardTitle>
+          <VCardText>
+            <VForm @submit.prevent="handleAddComment">
+              <VLabel class="mt-2">New Comment</VLabel>
+              <AppTextarea v-model="newComment" placeholder="Add a new comment" class="mt-2" />
+            </VForm>
+          </VCardText>
+          <VCardActions>
+            <VSpacer></VSpacer>
+            <VBtn color="primary" @click="handleAddComment">Submit Comment</VBtn>
+            <VBtn @click="showCommentModal = false">Cancel</VBtn>
+          </VCardActions>
+        </VCard>
+      </VDialog>
+
+      <!-- Modal for adding a university communication -->
+      <VDialog v-model="showUniversityCommModal" max-width="500px">
+        <VCard>
+          <VCardTitle>Add a New University Communication</VCardTitle>
+          <VCardText>
+            <VForm @submit.prevent="handleAddUniversityComm">
+              <VLabel class="mt-2">Subject</VLabel>
+              <VTextField v-model="newUniversityComm.subject" placeholder="Subject" class="mt-2" />
+              <VLabel class="mt-2">Message</VLabel>
+              <AppTextarea v-model="newUniversityComm.message" placeholder="Message" class="mt-2" />
+            </VForm>
+          </VCardText>
+          <VCardActions>
+            <VSpacer></VSpacer>
+            <VBtn color="primary" @click="handleAddUniversityComm">Submit Communication</VBtn>
+            <VBtn @click="showUniversityCommModal = false">Cancel</VBtn>
           </VCardActions>
         </VCard>
       </VDialog>
@@ -229,12 +288,7 @@ const handleStatusChange = async () => {
           <VWindowItem value="status">
             <VRow>
               <VCol cols="12" class="d-flex justify-end">
-                <VBtn
-                  v-if="currentTab === 'status'"
-                  @click="showModal = true"
-                  color="primary"
-                  >Change Current Status</VBtn
-                >
+                <VBtn v-if="currentTab === 'status'" @click="showModal = true" color="primary">Change Current Status</VBtn>
               </VCol>
               <VCol cols="12">
                 <VTable>
@@ -257,7 +311,6 @@ const handleStatusChange = async () => {
                           <div v-if="status.document">
                             <div>{{ status.file_name }}</div>
                             <a :href="status.document" target="_blank" class="download-link">Document</a>
-
                           </div>
                         </div>
                       </td>
@@ -265,30 +318,23 @@ const handleStatusChange = async () => {
                   </tbody>
                 </VTable>
               </VCol>
-
-
             </VRow>
           </VWindowItem>
 
           <!-- Comments Tab -->
           <VWindowItem value="comments">
             <VRow>
+              <VCol cols="12" class="d-flex justify-end">
+                <VBtn @click="showCommentModal = true" color="primary">Add New Comment</VBtn>
+              </VCol>
               <VCol cols="12">
                 <div class="comment-section">
-                  <div
-                    v-for="(comment, index) in comments"
-                    :key="index"
-                    class="comment"
-                  >
+                  <div v-for="(comment, index) in comments" :key="index" class="comment">
                     <div class="comment-header">
-                      <span class="comment-date">{{ comment.date }}</span>
-                      <span class="comment-status badge badge-primary">{{
-                        comment.status
-                      }}</span>
+                      <span class="comment-date">{{ comment.created_at }}</span>
                     </div>
-                    <div class="comment-body" v-html="comment.body"></div>
+                    <div class="comment-body" v-html="comment.comment_with_user"></div>
                   </div>
-                  <!-- Additional comments can be dynamically added here -->
                 </div>
               </VCol>
             </VRow>
@@ -296,26 +342,28 @@ const handleStatusChange = async () => {
 
           <!-- University Communication Tab -->
           <VWindowItem value="university-communication">
-            <VRow>
-              <VCol cols="12">
-                <VTable>
-                  <thead>
-                    <tr>
-                      <th>From</th>
-                      <th>Subject</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- If no data is available, show this message -->
-                    <tr>
-                      <td colspan="3" class="text-center">No Data Found</td>
-                    </tr>
-                  </tbody>
-                </VTable>
-              </VCol>
-            </VRow>
-          </VWindowItem>
+          <VRow>
+            <VCol cols="12" class="d-flex justify-end">
+              <VBtn @click="showUniversityCommModal = true" color="primary">Add New Communication</VBtn>
+            </VCol>
+            <VCol cols="12">
+              <div class="comment-section">
+                <div v-for="(comm, index) in universityCommunications" :key="index" class="comment">
+                  <div class="comment-header">
+                    <span class="comment-date">{{ comm.created_at }}</span>
+                  </div>
+                  <div class="communication-subject">
+                    <strong>Subject:</strong> {{ comm.subject }}
+                  </div>
+                  <div class="comment-body">
+
+                    <div v-html="comm.message"></div>
+                  </div>
+                </div>
+              </div>
+            </VCol>
+          </VRow>
+        </VWindowItem>
         </VWindow>
       </VCardText>
     </VCardText>
@@ -382,4 +430,5 @@ const handleStatusChange = async () => {
   font-weight: bold;
   margin-left: 5px;
 }
+
 </style>
