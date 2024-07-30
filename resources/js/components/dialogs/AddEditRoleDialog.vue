@@ -1,11 +1,18 @@
 <script setup>
-import { VForm } from 'vuetify/components/VForm'
+import { useRolePermissionStore } from "@/@core/stores/rolePermission";
+import { VForm } from 'vuetify/components/VForm';
+const store = useRolePermissionStore();
+onMounted(async () => {
+  await store.getAllPermission()
+  permissions.value = store.permissions
 
+});
 const props = defineProps({
   rolePermissions: {
     type: Object,
     required: false,
     default: () => ({
+      id: '',
       name: '',
       permissions: [],
     }),
@@ -21,65 +28,11 @@ const emit = defineEmits([
   'update:rolePermissions',
 ])
 
-const permissions = ref([
-  {
-    name: 'User Management',
-    read: false,
-    write: false,
-    create: false,
-  },
-  {
-    name: 'Content Management',
-    read: false,
-    write: false,
-    create: false,
-  },
-  {
-    name: 'Disputes Management',
-    read: false,
-    write: false,
-    create: false,
-  },
-  {
-    name: 'Database Management',
-    read: false,
-    write: false,
-    create: false,
-  },
-  {
-    name: 'Financial Management',
-    read: false,
-    write: false,
-    create: false,
-  },
-  {
-    name: 'Reporting',
-    read: false,
-    write: false,
-    create: false,
-  },
-  {
-    name: 'API Control',
-    read: false,
-    write: false,
-    create: false,
-  },
-  {
-    name: 'Repository Management',
-    read: false,
-    write: false,
-    create: false,
-  },
-  {
-    name: 'Payroll',
-    read: false,
-    write: false,
-    create: false,
-  },
-])
+const permissions = ref([])
 
 const isSelectAll = ref(false)
 const role = ref('')
+const roleId = ref(null)
 const refPermissionForm = ref()
 
 const checkedCount = computed(() => {
@@ -90,7 +43,7 @@ const checkedCount = computed(() => {
         counter++
     })
   })
-  
+
   return counter
 })
 
@@ -100,8 +53,9 @@ watch(isSelectAll, val => {
   permissions.value = permissions.value.map(permission => ({
     ...permission,
     read: val,
-    write: val,
+    edit: val,
     create: val,
+    delete: val
   }))
 })
 watch(isIndeterminate, () => {
@@ -115,6 +69,7 @@ watch(permissions, () => {
 watch(props, () => {
   if (props.rolePermissions && props.rolePermissions.permissions.length) {
     role.value = props.rolePermissions.name
+    roleId.value = props.rolePermissions.id
     permissions.value = permissions.value.map(permission => {
       const rolePermission = props.rolePermissions?.permissions.find(item => item.name === permission.name)
       if (rolePermission) {
@@ -123,23 +78,33 @@ watch(props, () => {
           ...rolePermission,
         }
       }
-      
+
       return permission
     })
   }
 })
 
-const onSubmit = () => {
+const onSubmit = async () => {
+
   const rolePermissions = {
+    id:roleId.value,
     name: role.value,
     permissions: permissions.value,
   }
 
-  emit('update:rolePermissions', rolePermissions)
-  emit('update:isDialogVisible', false)
-  isSelectAll.value = false
-  refPermissionForm.value?.reset()
+  try {
+    await store.setRolePermission(rolePermissions);
+    emit('update:rolePermissions', rolePermissions);
+    emit('update:isDialogVisible', false);
+    isSelectAll.value = false;
+    refPermissionForm.value?.reset();
+  } catch (error) {
+    console.error('Failed to save role permissions:', error);
+    // Handle the error appropriately in the UI
+  }
 }
+
+
 
 const onReset = () => {
   emit('update:isDialogVisible', false)
@@ -190,7 +155,7 @@ const onReset = () => {
                   Administrator Access
                 </h6>
               </td>
-              <td colspan="3">
+              <td colspan="4">
                 <div class="d-flex justify-end">
                   <VCheckbox
                     v-model="isSelectAll"
@@ -223,16 +188,24 @@ const onReset = () => {
                 <td>
                   <div class="d-flex justify-end">
                     <VCheckbox
-                      v-model="permission.write"
-                      label="Write"
+                      v-model="permission.create"
+                      label="Create"
                     />
                   </div>
                 </td>
                 <td>
                   <div class="d-flex justify-end">
                     <VCheckbox
-                      v-model="permission.create"
-                      label="Create"
+                      v-model="permission.edit"
+                      label="Edit"
+                    />
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex justify-end">
+                    <VCheckbox
+                      v-model="permission.delete"
+                      label="Delete"
                     />
                   </div>
                 </td>

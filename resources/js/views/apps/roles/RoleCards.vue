@@ -1,210 +1,23 @@
 <script setup>
-import avatar1 from '@images/avatars/avatar-1.png'
-import avatar10 from '@images/avatars/avatar-10.png'
-import avatar2 from '@images/avatars/avatar-2.png'
-import avatar3 from '@images/avatars/avatar-3.png'
-import avatar4 from '@images/avatars/avatar-4.png'
-import avatar5 from '@images/avatars/avatar-5.png'
-import avatar6 from '@images/avatars/avatar-6.png'
-import avatar7 from '@images/avatars/avatar-7.png'
-import avatar8 from '@images/avatars/avatar-8.png'
-import avatar9 from '@images/avatars/avatar-9.png'
-import girlUsingMobile from '@images/pages/girl-using-mobile.png'
+import { useRolePermissionStore } from "@/@core/stores/rolePermission";
+import girlUsingMobile from '@images/pages/girl-using-mobile.png';
 
-const roles = ref([
-  {
-    role: 'Administrator',
-    users: [
-      avatar1,
-      avatar2,
-      avatar3,
-      avatar4,
-    ],
-    details: {
-      name: 'Administrator',
-      permissions: [
-        {
-          name: 'User Management',
-          read: true,
-          write: true,
-          create: true,
-        },
-        {
-          name: 'Disputes Management',
-          read: true,
-          write: true,
-          create: true,
-        },
-        {
-          name: 'API Control',
-          read: true,
-          write: true,
-          create: true,
-        },
-      ],
-    },
-  },
-  {
-    role: 'Manager',
-    users: [
-      avatar1,
-      avatar2,
-      avatar3,
-      avatar4,
-      avatar5,
-      avatar6,
-      avatar7,
-    ],
-    details: {
-      name: 'Manager',
-      permissions: [
-        {
-          name: 'Reporting',
-          read: true,
-          write: true,
-          create: false,
-        },
-        {
-          name: 'Payroll',
-          read: true,
-          write: true,
-          create: true,
-        },
-        {
-          name: 'User Management',
-          read: true,
-          write: true,
-          create: true,
-        },
-      ],
-    },
-  },
-  {
-    role: 'Users',
-    users: [
-      avatar1,
-      avatar2,
-      avatar3,
-      avatar4,
-      avatar5,
-    ],
-    details: {
-      name: 'Users',
-      permissions: [
-        {
-          name: 'User Management',
-          read: true,
-          write: false,
-          create: false,
-        },
-        {
-          name: 'Content Management',
-          read: true,
-          write: false,
-          create: false,
-        },
-        {
-          name: 'Disputes Management',
-          read: true,
-          write: false,
-          create: false,
-        },
-        {
-          name: 'Database Management',
-          read: true,
-          write: false,
-          create: false,
-        },
-      ],
-    },
-  },
-  {
-    role: 'Support',
-    users: [
-      avatar1,
-      avatar2,
-      avatar3,
-      avatar4,
-      avatar5,
-      avatar6,
-    ],
-    details: {
-      name: 'Support',
-      permissions: [
-        {
-          name: 'Repository Management',
-          read: true,
-          write: true,
-          create: false,
-        },
-        {
-          name: 'Content Management',
-          read: true,
-          write: true,
-          create: false,
-        },
-        {
-          name: 'Database Management',
-          read: true,
-          write: true,
-          create: false,
-        },
-      ],
-    },
-  },
-  {
-    role: 'Restricted User',
-    users: [
-      avatar1,
-      avatar2,
-      avatar3,
-      avatar4,
-      avatar5,
-      avatar6,
-      avatar7,
-      avatar8,
-      avatar9,
-      avatar10,
-    ],
-    details: {
-      name: 'Restricted User',
-      permissions: [
-        {
-          name: 'User Management',
-          read: true,
-          write: false,
-          create: false,
-        },
-        {
-          name: 'Content Management',
-          read: true,
-          write: false,
-          create: false,
-        },
-        {
-          name: 'Disputes Management',
-          read: true,
-          write: false,
-          create: false,
-        },
-        {
-          name: 'Database Management',
-          read: true,
-          write: false,
-          create: false,
-        },
-      ],
-    },
-  },
-])
-
+const roles = ref([])
+const store = useRolePermissionStore();
 const isRoleDialogVisible = ref(false)
 const roleDetail = ref()
 const isAddRoleDialogVisible = ref(false)
+onMounted(async () => {
+  await store.getAllRoles()
+  roles.value = store.roles;
 
-const editPermission = value => {
+
+});
+const editPermission = (value,id) => {
+
   isRoleDialogVisible.value = true
   roleDetail.value = value
+  roleDetail.value.id = id
 }
 </script>
 
@@ -221,49 +34,24 @@ const editPermission = value => {
       <VCard>
         <VCardText class="d-flex align-center pb-4">
           <div class="text-body-1">
-            Total {{ item.users.length }} users
+            Total {{ item.details.user_count }} users
           </div>
 
           <VSpacer />
 
-          <div class="v-avatar-group">
-            <template
-              v-for="(user, index) in item.users"
-              :key="user"
-            >
-              <VAvatar
-                v-if="item.users.length > 4 && item.users.length !== 4 && index < 3"
-                size="40"
-                :image="user"
-              />
 
-              <VAvatar
-                v-if="item.users.length === 4"
-                size="40"
-                :image="user"
-              />
-            </template>
-            <VAvatar
-              v-if="item.users.length > 4"
-              :color="$vuetify.theme.current.dark ? '#373B50' : '#EEEDF0'"
-            >
-              <span>
-                +{{ item.users.length - 3 }}
-              </span>
-            </VAvatar>
-          </div>
         </VCardText>
 
         <VCardText>
           <div class="d-flex justify-space-between align-center">
             <div>
               <h5 class="text-h5">
-                {{ item.role }}
+                {{ item.role.toUpperCase() }}
               </h5>
               <div class="d-flex align-center">
                 <a
                   href="javascript:void(0)"
-                  @click="editPermission(item.details)"
+                  @click="editPermission(item.details,item.id)"
                 >
                   Edit Role
                 </a>

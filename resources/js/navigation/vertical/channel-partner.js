@@ -37,11 +37,7 @@ export default [
           subject: 'record'
 
         },
-        // {
-        //   title: 'Add Record',
-        //   to: 'record-add',
 
-        // },
         {
           title: 'University',
           to: 'record-university',
@@ -58,7 +54,32 @@ export default [
 
         },
 
+      ],
+    },
 
+    {
+      title: 'Roles & Permission',
+      icon: { icon: 'tabler-files' },
+      action: 'read',
+      subject: 'record',
+      children: [
+        {
+          title: 'Roles',
+          to: 'roles',
+          action: 'read',
+          subject: 'record'
+
+        },
+
+
+
+        {
+          title: 'Permissions',
+          to: 'permissions',
+           action: 'read',
+          subject: 'record'
+
+        },
 
       ],
     },
