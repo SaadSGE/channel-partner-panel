@@ -1,5 +1,5 @@
 <script setup>
-import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
+import AddNewUserDrawer from '@/pages/user/add/AddNewUserDrawer.vue';
 
 // 👉 Store
 const searchQuery = ref('')
@@ -151,7 +151,7 @@ const resolveUserRoleVariant = role => {
       color: 'primary',
       icon: 'tabler-crown',
     }
-  
+
   return {
     color: 'primary',
     icon: 'tabler-user',
@@ -166,7 +166,7 @@ const resolveUserStatusVariant = stat => {
     return 'success'
   if (statLowerCase === 'inactive')
     return 'secondary'
-  
+
   return 'primary'
 }
 

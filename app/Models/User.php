@@ -26,6 +26,7 @@ class User extends Authenticatable
     //     'password',
     // ];
     protected $guarded = [];
+    protected $appends = ['full_name', 'record_count'];
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -58,5 +59,29 @@ class User extends Authenticatable
             ->unique()
             ->values()
             ->toArray();
+    }
+    public function getFullNameAttribute(): string
+    {
+        return trim("{$this->first_name} {$this->last_name}");
+    }
+    public function applications()
+    {
+        return $this->hasMany(ApplicationList::class, 'created_by');
+    }
+
+    public function courses()
+    {
+        return $this->hasMany(CourseDetails::class, 'created_by');
+    }
+    public function getRecordCountAttribute(): int
+    {
+        switch ($this->role) {
+            case 'channel partner':
+                return $this->applications()->count();
+            case 'editor':
+                return $this->courses()->count();
+            default:
+                return 0;
+        }
     }
 }

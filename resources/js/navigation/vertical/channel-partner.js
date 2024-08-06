@@ -83,6 +83,13 @@ export default [
 
       ],
     },
+    {
+      title: 'User',
+      icon: { icon: 'tabler-apps' },
+      to: 'user',
+      action: 'read',
+      subject: 'dashboard',
+    },
 
 
 

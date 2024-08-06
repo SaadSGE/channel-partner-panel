@@ -10,6 +10,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentFileController;
 use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,7 @@ Route::get('/user', function (Request $request) {
 
 Route::apiResource('application-country', ApplicationCountryController::class);
 Route::apiResource('course', CourseController::class);
+Route::apiResource('users', UserController::class);
 Route::apiResource('intake', IntakeController::class);
 Route::apiResource('university', UniversityController::class);
 Route::apiResource('course-detail', CourseDetailsController::class);
