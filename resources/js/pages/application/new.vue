@@ -82,6 +82,7 @@ onMounted(async () => {
   await commonFunctionStore.getCourses();
   await commonFunctionStore.getIntakes();
   await commonFunctionStore.getUniversities();
+  isLoading.value = false
   await commonFunctionStore.getCourseDetails();
 
   countryIntakeUniversityCourse.value = commonFunctionStore.countryIntakeUniversityCourse;
@@ -89,7 +90,7 @@ onMounted(async () => {
   courses.value = commonFunctionStore.courses;
   intakes.value = commonFunctionStore.intakes;
   universities.value = commonFunctionStore.universities;
-  isLoading.value = false
+
 });
 
 // Utility function to remove duplicates

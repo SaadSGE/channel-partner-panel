@@ -5,6 +5,7 @@ definePage({
     subject: 'application',
   },
 })
+import { useFileStore } from "@/@core/stores/fileStore";
 import { ref } from "vue";
 import StudentInformation from "./student-information.vue";
 import UploadDocuemnt from "./upload-document.vue";
@@ -24,9 +25,15 @@ const back = () => {
   emit('update:showCourseDetails', false);
   emit('update:showApplicationForm', true);
 };
+const fileStore = useFileStore();
 const courseDetailsShow = ref(true)
 const uploadDocumentShow = ref(false)
 const studentFormShow = ref(false)
+const uploadDocument = ()=>{
+  fileStore.resetFiles()
+  uploadDocumentShow.value=true;
+  courseDetailsShow.value=false
+}
 </script>
 <template>
   <VRow>
@@ -93,7 +100,7 @@ const studentFormShow = ref(false)
       </VCard>
       <VCardText class="d-flex justify-space-between flex-wrap gap-4">
               <VBtn color="secondary" @click="back()" >Back</VBtn>
-              <VBtn color="primary" @click="uploadDocumentShow=true;courseDetailsShow=false">Next</VBtn>
+              <VBtn color="primary" @click="uploadDocument">Next</VBtn>
             </VCardText>
       </div>
       <div v-if="uploadDocumentShow">
