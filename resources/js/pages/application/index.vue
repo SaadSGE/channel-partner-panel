@@ -13,7 +13,9 @@ const applicationLists = ref();
 const router = useRouter();
 
 onMounted(async () => {
+  isLoading.value = true
   applicationLists.value = await store.getApplicationList();
+  isLoading.value = false
 });
 const search = ref('')
 
@@ -161,12 +163,12 @@ const deleteItem = async (itemId) => {
   }
 }
 
-
+const isLoading = ref(false)
 </script>
 
 <template>
   <div>
-    <VCard >
+    <AppCardActions title="New Application" :loading="isLoading"   no-actions>
 
 
     <VCardText>
@@ -230,7 +232,7 @@ const deleteItem = async (itemId) => {
       </template>
 
     </VDataTable>
-  </VCard>
+    </AppCardActions>
   </div>
 </template>
 <style scoped>

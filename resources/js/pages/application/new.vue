@@ -89,6 +89,7 @@ onMounted(async () => {
   courses.value = commonFunctionStore.courses;
   intakes.value = commonFunctionStore.intakes;
   universities.value = commonFunctionStore.universities;
+  isLoading.value = false
 });
 
 // Utility function to remove duplicates
@@ -174,11 +175,12 @@ watch(courseType, (newVal) => {
 watch(university, (newVal) => {
   course.value = null;
 });
+const isLoading = ref(true)
 </script>
 
 <template>
   <div v-if="showAppllicationForm">
-    <VCard title="New Application">
+    <AppCardActions title="New Application" :loading="isLoading"   no-actions>
       <VForm ref="refForm" @submit.prevent="() => {}" class="form-padding">
         <VRow>
           <VCol cols="12" md="6">
@@ -263,7 +265,7 @@ watch(university, (newVal) => {
           </VCol>
         </VRow>
       </VForm>
-    </VCard>
+    </AppCardActions>
   </div>
   <div v-if="showCourseDetails">
     <CourseDetails
