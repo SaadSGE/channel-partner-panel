@@ -18,22 +18,7 @@ const dashboards = ref({});
 const userRole = ref('');
 
 onMounted(async () => {
-  // Fetch common data if not already available
-  if (commonFunctionStore.countries.length === 0) {
-    await commonFunctionStore.getCountries();
-  }
-  if (commonFunctionStore.courses.length === 0) {
-    await commonFunctionStore.getCourses();
-  }
-  if (commonFunctionStore.intakes.length === 0) {
-    await commonFunctionStore.getIntakes();
-  }
-  if (commonFunctionStore.universities.length === 0) {
-    await commonFunctionStore.getUniversities();
-  }
-  if (commonFunctionStore.courseDetails.length === 0) {
-    await commonFunctionStore.getCourseDetails();
-  }
+
 
   // Fetch dashboard data
   await dashboardStore.fetchDashboard();
