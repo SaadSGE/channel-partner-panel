@@ -5,6 +5,11 @@ export const $api = ofetch.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   async onRequest({ options }) {
     const accessToken = useCookie('accessToken').value
+    options.headers = {
+      ...options.headers,
+      Accept: 'application/json',  // Ensure the Accept header is always set
+    }
+
     if (accessToken) {
       options.headers = {
         ...options.headers,
