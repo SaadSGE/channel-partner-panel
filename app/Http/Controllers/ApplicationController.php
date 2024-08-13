@@ -88,8 +88,6 @@ class ApplicationController extends Controller
             'student_last_name' => 'required|string|max:255',
             'student_whatsapp_number' => 'nullable|string|max:255',
             'counsellor_number' => 'nullable|string|max:255',
-            'student_email' => 'nullable|string|email|max:255|unique:students,email',
-            'counsellor_email' => 'nullable|string|email|max:255',
             'student_address' => 'nullable|string',
             'student_city' => 'nullable|string|max:255',
             'student_country' => 'nullable|string|max:255',
