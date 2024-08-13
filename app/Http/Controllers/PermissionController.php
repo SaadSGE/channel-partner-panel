@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -32,6 +33,7 @@ class PermissionController extends Controller
         return $this->successJsonResponse('Permissions found', $permissionsList);
     }
 
+
     private function initializePermissionsMap()
     {
         $allPermissions = Permission::all();
@@ -46,7 +48,13 @@ class PermissionController extends Controller
                     'edit' => false,
                     'create' => false,
                     'delete' => false,
+                    'custom_permissions' => []
                 ];
+            }
+
+            // For custom permissions not part of read/edit/create/delete
+            if (!in_array($action, ['read', 'edit', 'create', 'delete'])) {
+                $permissionsMap[$base]['custom_permissions'][$action] = false;
             }
         }
 
@@ -64,17 +72,14 @@ class PermissionController extends Controller
                 'edit' => false,
                 'create' => false,
                 'delete' => false,
+                'custom_permissions' => []
             ];
         }
 
-        if ($action == 'read') {
-            $permissionsMap[$base]['read'] = true;
-        } elseif ($action == 'edit') {
-            $permissionsMap[$base]['edit'] = true;
-        } elseif ($action == 'create') {
-            $permissionsMap[$base]['create'] = true;
-        } elseif ($action == 'delete') {
-            $permissionsMap[$base]['delete'] = true;
+        if (in_array($action, ['read', 'edit', 'create', 'delete'])) {
+            $permissionsMap[$base][$action] = true;
+        } else {
+            $permissionsMap[$base]['custom_permissions'][$action] = true;
         }
 
         return $permissionsMap;

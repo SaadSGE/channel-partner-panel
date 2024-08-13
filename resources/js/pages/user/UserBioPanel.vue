@@ -16,17 +16,17 @@ const isUserInfoEditDialogVisible = ref(false);
 const isUpgradePlanDialogVisible = ref(false);
 
 const resolveUserRoleVariant = (role) => {
-  if (role === "subscriber")
+  if (role === "channel partner")
     return {
       color: "warning",
       icon: "tabler-user",
     };
-  if (role === "author")
+  if (role === "editor")
     return {
       color: "success",
       icon: "tabler-circle-check",
     };
-  if (role === "maintainer")
+  if (role === "admin")
     return {
       color: "primary",
       icon: "tabler-chart-pie-2",
@@ -76,11 +76,11 @@ const resolveUserRoleVariant = (role) => {
           <!-- 👉 Role chip -->
           <VChip
             label
-            :color="resolveUserRoleVariant(props.userData.main_role).color"
+            :color="resolveUserRoleVariant(props.userData.role).color"
             size="small"
             class="text-capitalize mt-4"
           >
-            {{ props.userData.main_role }}
+            {{ props.userData.role }}
           </VChip>
         </VCardText>
 

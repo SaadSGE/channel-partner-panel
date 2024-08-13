@@ -172,6 +172,7 @@ declare module 'vue-router/auto/routes' {
     'user': RouteRecordInfo<'user', '/user', Record<never, never>, Record<never, never>>,
     'user-add-add-new-user-drawer': RouteRecordInfo<'user-add-add-new-user-drawer', '/user/add/AddNewUserDrawer', Record<never, never>, Record<never, never>>,
     'user-add-edit-new-user-drawer': RouteRecordInfo<'user-add-edit-new-user-drawer', '/user/add/EditNewUserDrawer', Record<never, never>, Record<never, never>>,
+    'user-user-bio-panel': RouteRecordInfo<'user-user-bio-panel', '/user/UserBioPanel', Record<never, never>, Record<never, never>>,
     'user-view-id': RouteRecordInfo<'user-view-id', '/user/view/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'wizard-examples-checkout': RouteRecordInfo<'wizard-examples-checkout', '/wizard-examples/checkout', Record<never, never>, Record<never, never>>,
     'wizard-examples-create-deal': RouteRecordInfo<'wizard-examples-create-deal', '/wizard-examples/create-deal', Record<never, never>, Record<never, never>>,

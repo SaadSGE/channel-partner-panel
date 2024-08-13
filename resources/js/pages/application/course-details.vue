@@ -86,7 +86,7 @@ const studentFormShow = ref(false)
               <div v-html="courseDetails.academicRequirement"></div>
             </VWindowItem>
             <VWindowItem value="item-2">
-              <div v-html="courseDetails.academicRequirement"></div>
+              <div v-html="courseDetails.englishRequirement"></div>
             </VWindowItem>
           </VWindow>
         </VCardText>

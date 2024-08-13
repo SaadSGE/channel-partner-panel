@@ -60,14 +60,14 @@ export default [
     {
       title: 'Roles & Permission',
       icon: { icon: 'tabler-files' },
-      action: 'read',
-      subject: 'record',
+      action: 'create',
+      subject: 'dashboard',
       children: [
         {
           title: 'Roles',
           to: 'roles',
-          action: 'read',
-          subject: 'record'
+          action: 'create',
+          subject: 'dashboard'
 
         },
 
@@ -76,8 +76,8 @@ export default [
         {
           title: 'Permissions',
           to: 'permissions',
-           action: 'read',
-          subject: 'record'
+           action: 'create',
+          subject: 'dashboard'
 
         },
 
@@ -87,7 +87,7 @@ export default [
       title: 'User',
       icon: { icon: 'tabler-apps' },
       to: 'user',
-      action: 'read',
+      action: 'create',
       subject: 'dashboard',
     },
 

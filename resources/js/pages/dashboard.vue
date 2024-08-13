@@ -1,107 +1,121 @@
 <script lang="js" setup>
+import { commonFunction } from "@/@core/stores/commonFunction";
+import { useDashboardStore } from "@/@core/stores/dashboard";
+import ApplicationOverviewTable from "@/views/dashboards/crm/ApplicationOverviewTable.vue";
+
+import { onMounted, ref } from 'vue';
+
 definePage({
   meta: {
     action: 'read',
     subject: 'dashboard',
   },
-})
-import { commonFunction } from "@/@core/stores/commonFunction";
-import AppllicatationOverviewTable from "@/views/dashboards/crm/ApplicationOverviewTable.vue";
-import CrmEarningReportsYearlyOverview from "@/views/dashboards/crm/CrmEarningReportsYearlyOverview.vue";
-import { onMounted } from "vue";
-const commonFunctionStore = commonFunction()
-onMounted(async () => {
-  if (commonFunctionStore.countries.length === 0) {
-        await commonFunctionStore.getCountries();
-    }
-    if (commonFunctionStore.courses.length === 0) {
-        await commonFunctionStore.getCourses();
-    }
-    if (commonFunctionStore.intakes.length === 0) {
-        await commonFunctionStore.getIntakes();
-    }
-    if (commonFunctionStore.universities.length === 0) {
-        await commonFunctionStore.getUniversities();
-    }
-    if (commonFunctionStore.courseDetails.length === 0) {
-        await commonFunctionStore.getCourseDetails();
-    }
-
 });
+
+const commonFunctionStore = commonFunction();
+const dashboardStore = useDashboardStore();
+const dashboards = ref({});
+const userRole = ref('');
+
+onMounted(async () => {
+  // Fetch common data if not already available
+  if (commonFunctionStore.countries.length === 0) {
+    await commonFunctionStore.getCountries();
+  }
+  if (commonFunctionStore.courses.length === 0) {
+    await commonFunctionStore.getCourses();
+  }
+  if (commonFunctionStore.intakes.length === 0) {
+    await commonFunctionStore.getIntakes();
+  }
+  if (commonFunctionStore.universities.length === 0) {
+    await commonFunctionStore.getUniversities();
+  }
+  if (commonFunctionStore.courseDetails.length === 0) {
+    await commonFunctionStore.getCourseDetails();
+  }
+
+  // Fetch dashboard data
+  await dashboardStore.fetchDashboard();
+  dashboards.value = dashboardStore.dashboards;
+  const userData =  useCookie('userData').value;
+  userRole.value = userData.main_role;
+});
+
+const formatStatus = (status) => {
+  return status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+};
 </script>
+
+
 
 <template>
   <VRow>
-    <VCol cols="12" md="4" sm="6" lg="3">
+    <!-- Conditional rendering based on user role -->
+    <VCol cols="12" md="4" sm="6" lg="3" v-if="userRole === 'admin'">
       <VCard>
         <VCardItem class="pb-3">
-          <VCardTitle>New Application</VCardTitle>
-          <VCardSubtitle>Last Week</VCardSubtitle>
+          <VCardTitle>Total Channel Partners</VCardTitle>
         </VCardItem>
 
         <VCardText>
           <div class="d-flex align-center justify-space-between gap-x-2">
-            <h4 class="text-h4 text-center">124</h4>
-            <div class="text-sm text-success">+12.6%</div>
+            <h4 class="text-h4 text-center">{{ dashboards.total_channel_partners }}</h4>
           </div>
         </VCardText>
       </VCard>
     </VCol>
 
-    <VCol cols="12" md="4" sm="6" lg="3">
+    <VCol cols="12" md="4" sm="6" lg="3" v-if="userRole === 'admin'">
       <VCard>
         <VCardItem class="pb-3">
-          <VCardTitle>Application Reveiw</VCardTitle>
-          <VCardSubtitle>Last Week</VCardSubtitle>
+          <VCardTitle>Total Editors</VCardTitle>
         </VCardItem>
 
         <VCardText>
           <div class="d-flex align-center justify-space-between gap-x-2">
-            <h4 class="text-h4 text-center">12</h4>
-            <div class="text-sm text-success">+12.6%</div>
-          </div>
-        </VCardText>
-      </VCard>
-    </VCol>
-    <VCol cols="12" md="4" sm="6" lg="3">
-      <VCard>
-        <VCardItem class="pb-3">
-          <VCardTitle>Application Submitted</VCardTitle>
-          <VCardSubtitle>Last Week</VCardSubtitle>
-        </VCardItem>
-
-        <VCardText>
-          <div class="d-flex align-center justify-space-between gap-x-2">
-            <h4 class="text-h4 text-center">12</h4>
-            <div class="text-sm text-success">+12.6%</div>
-          </div>
-        </VCardText>
-      </VCard>
-    </VCol>
-    <VCol cols="12" md="4" sm="6" lg="3">
-      <VCard>
-        <VCardItem class="pb-3">
-          <VCardTitle>Application Declined</VCardTitle>
-          <VCardSubtitle>Last Week</VCardSubtitle>
-        </VCardItem>
-
-        <VCardText>
-          <div class="d-flex align-center justify-space-between gap-x-2">
-            <h4 class="text-h4 text-center">12</h4>
-            <div class="text-sm text-success">+12.6%</div>
+            <h4 class="text-h4 text-center">{{ dashboards.total_editors }}</h4>
           </div>
         </VCardText>
       </VCard>
     </VCol>
 
-    <VCol cols="12" md="12">
-      <CrmEarningReportsYearlyOverview />
+    <VCol cols="12" md="4" sm="6" lg="3" v-if="userRole === 'admin'">
+      <VCard>
+        <VCardItem class="pb-3">
+          <VCardTitle>Total Record</VCardTitle>
+        </VCardItem>
+
+        <VCardText>
+          <div class="d-flex align-center justify-space-between gap-x-2">
+            <h4 class="text-h4 text-center">{{ dashboards.total_courses }}</h4>
+          </div>
+        </VCardText>
+      </VCard>
     </VCol>
 
+    <!-- Application Status Cards for All Roles -->
+    <VCol cols="12" md="4" sm="6" lg="3" v-for="(count, status) in dashboards.applications_by_status" :key="status">
+      <VCard>
+        <VCardItem class="pb-3">
+          <VCardTitle>{{ formatStatus(status) }}</VCardTitle>
+        </VCardItem>
+
+        <VCardText>
+          <div class="d-flex align-center justify-space-between gap-x-2">
+            <h4 class="text-h4 text-center">{{ count }}</h4>
+          </div>
+        </VCardText>
+      </VCard>
+    </VCol>
+
+    <!-- Application Overview Table for All Roles -->
     <VCol cols="12" md="12">
       <VCard title=" Application Processing Data">
-        <AppllicatationOverviewTable />
+        <ApplicationOverviewTable />
       </VCard>
     </VCol>
   </VRow>
 </template>
+
+

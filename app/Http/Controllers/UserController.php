@@ -57,6 +57,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         //
+
     }
 
     /**
@@ -65,6 +66,13 @@ class UserController extends Controller
     public function show(string $id)
     {
         //
+        try {
+            $user = User::findOrFail($id);
+            return $this->successJsonResponse('User data found', $user);
+        } catch(\Throwable $th) {
+            \Log::error($th);
+            return $this->exceptionJsonResponse('Failed to find user', $th);
+        }
     }
 
     /**

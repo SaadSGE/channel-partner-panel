@@ -1,12 +1,27 @@
-<script setup>
+<script lang="js" setup>
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
+import { computed, onMounted, ref, watch } from 'vue';
 import { VForm } from 'vuetify/components/VForm';
-const store = useRolePermissionStore();
-onMounted(async () => {
-  await store.getAllPermission()
-  permissions.value = store.permissions
 
+const store = useRolePermissionStore();
+const permissions = ref([]);
+const customPermissionKeys = ref([]); // Array to store keys of custom permissions
+
+onMounted(async () => {
+  await store.getAllPermission();
+  permissions.value = store.permissions;
+
+  // Extract custom permission keys
+  permissions.value.forEach(permission => {
+    customPermissionKeys.value = [
+      ...new Set([
+        ...customPermissionKeys.value,
+        ...Object.keys(permission.custom_permissions || {})
+      ])
+    ];
+  });
 });
+
 const props = defineProps({
   rolePermissions: {
     type: Object,
@@ -21,33 +36,40 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
-})
+});
 
 const emit = defineEmits([
   'update:isDialogVisible',
   'update:rolePermissions',
-])
+]);
 
-const permissions = ref([])
-
-const isSelectAll = ref(false)
-const role = ref('')
-const roleId = ref(null)
-const refPermissionForm = ref()
+const isSelectAll = ref(false);
+const role = ref('');
+const roleId = ref(null);
+const refPermissionForm = ref();
 
 const checkedCount = computed(() => {
-  let counter = 0
+  let counter = 0;
   permissions.value.forEach(permission => {
     Object.entries(permission).forEach(([key, value]) => {
-      if (key !== 'name' && value)
-        counter++
-    })
-  })
+      if (key !== 'name' && value) {
+        counter++;
+      }
+    });
 
-  return counter
-})
+    Object.values(permission.custom_permissions || {}).forEach(value => {
+      if (value) counter++;
+    });
+  });
+  return counter;
+});
 
-const isIndeterminate = computed(() => checkedCount.value > 0 && checkedCount.value < permissions.value.length * 3)
+const isIndeterminate = computed(() => {
+  return (
+    checkedCount.value > 0 &&
+    checkedCount.value < permissions.value.length * (4 + customPermissionKeys.value.length)
+  );
+});
 
 watch(isSelectAll, val => {
   permissions.value = permissions.value.map(permission => ({
@@ -55,42 +77,53 @@ watch(isSelectAll, val => {
     read: val,
     edit: val,
     create: val,
-    delete: val
-  }))
-})
+    delete: val,
+    custom_permissions: Object.fromEntries(
+      Object.entries(permission.custom_permissions || {}).map(([key]) => [key, val])
+    )
+  }));
+});
+
 watch(isIndeterminate, () => {
-  if (!isIndeterminate.value)
-    isSelectAll.value = false
-})
+  if (!isIndeterminate.value) {
+    isSelectAll.value = false;
+  }
+});
+
 watch(permissions, () => {
-  if (checkedCount.value === permissions.value.length * 3)
-    isSelectAll.value = true
-}, { deep: true })
+  if (checkedCount.value === permissions.value.length * (4 + customPermissionKeys.value.length)) {
+    isSelectAll.value = true;
+  }
+}, { deep: true });
+
 watch(props, () => {
   if (props.rolePermissions && props.rolePermissions.permissions.length) {
-    role.value = props.rolePermissions.name
-    roleId.value = props.rolePermissions.id
+    role.value = props.rolePermissions.name;
+    roleId.value = props.rolePermissions.id;
+
     permissions.value = permissions.value.map(permission => {
-      const rolePermission = props.rolePermissions?.permissions.find(item => item.name === permission.name)
+      const rolePermission = props.rolePermissions?.permissions.find(item => item.name === permission.name);
       if (rolePermission) {
         return {
           ...permission,
           ...rolePermission,
-        }
+          custom_permissions: {
+            ...permission.custom_permissions,
+            ...(rolePermission.custom_permissions || {})
+          }
+        };
       }
-
-      return permission
-    })
+      return permission;
+    });
   }
-})
+});
 
 const onSubmit = async () => {
-
   const rolePermissions = {
-    id:roleId.value,
+    id: roleId.value,
     name: role.value,
     permissions: permissions.value,
-  }
+  };
 
   try {
     await store.setRolePermission(rolePermissions);
@@ -100,18 +133,16 @@ const onSubmit = async () => {
     refPermissionForm.value?.reset();
   } catch (error) {
     console.error('Failed to save role permissions:', error);
-    // Handle the error appropriately in the UI
   }
-}
-
-
+};
 
 const onReset = () => {
-  emit('update:isDialogVisible', false)
-  isSelectAll.value = false
-  refPermissionForm.value?.reset()
-}
+  emit('update:isDialogVisible', false);
+  isSelectAll.value = false;
+  refPermissionForm.value?.reset();
+};
 </script>
+
 
 <template>
   <VDialog
@@ -119,12 +150,10 @@ const onReset = () => {
     :model-value="props.isDialogVisible"
     @update:model-value="onReset"
   >
-    <!-- 👉 Dialog close btn -->
     <DialogCloseBtn @click="onReset" />
 
     <VCard class="pa-sm-10 pa-2">
       <VCardText>
-        <!-- 👉 Title -->
         <h4 class="text-h4 text-center mb-2">
           {{ props.rolePermissions.name ? 'Edit' : 'Add New' }} Role
         </h4>
@@ -132,9 +161,7 @@ const onReset = () => {
           Set Role Permissions
         </p>
 
-        <!-- 👉 Form -->
         <VForm ref="refPermissionForm">
-          <!-- 👉 Role name -->
           <AppTextField
             v-model="role"
             label="Role Name"
@@ -145,37 +172,15 @@ const onReset = () => {
             Role Permissions
           </h5>
 
-          <!-- 👉 Role Permissions -->
-
           <VTable class="permission-table text-no-wrap mb-6">
-            <!-- 👉 Admin  -->
-            <tr>
-              <td>
-                <h6 class="text-h6">
-                  Administrator Access
-                </h6>
-              </td>
-              <td colspan="4">
-                <div class="d-flex justify-end">
-                  <VCheckbox
-                    v-model="isSelectAll"
-                    v-model:indeterminate="isIndeterminate"
-                    label="Select All"
-                  />
-                </div>
-              </td>
-            </tr>
-
-            <!-- 👉 Other permission loop -->
+            <!-- Group for Read, Create, Edit, Delete -->
             <template
               v-for="permission in permissions"
               :key="permission.name"
             >
               <tr>
                 <td>
-                  <h6 class="text-h6">
-                    {{ permission.name }}
-                  </h6>
+                  <h6 class="text-h6">{{ permission.name }}</h6>
                 </td>
                 <td>
                   <div class="d-flex justify-end">
@@ -213,7 +218,32 @@ const onReset = () => {
             </template>
           </VTable>
 
-          <!-- 👉 Actions button -->
+          <h5 class="text-h5 my-6">
+            Custom Permissions
+          </h5>
+
+          <VTable class="permission-table text-no-wrap mb-6">
+            <!-- Custom permissions group -->
+            <template
+              v-for="permission in permissions"
+              :key="permission.name"
+            >
+              <tr v-for="(enabled, customPermission) in permission.custom_permissions" :key="customPermission">
+                <td>
+                  <!-- Concatenate the permission name with the custom permission -->
+                  <h6 class="text-h6">{{ permission.name }} {{ customPermission }}</h6>
+                </td>
+                <td colspan="4">
+                  <div class="d-flex justify-end">
+                    <VCheckbox
+                      v-model="permission.custom_permissions[customPermission]"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </VTable>
+
           <div class="d-flex align-center justify-center gap-4">
             <VBtn @click="onSubmit">
               Submit
@@ -232,6 +262,8 @@ const onReset = () => {
     </VCard>
   </VDialog>
 </template>
+
+
 
 <style lang="scss">
 .permission-table {
@@ -253,3 +285,4 @@ const onReset = () => {
   }
 }
 </style>
+

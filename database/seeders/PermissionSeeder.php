@@ -30,7 +30,8 @@ class PermissionSeeder extends Seeder
         $permissions = [
             'application.create', 'application.edit', 'application.read', 'application.delete',
             'record.create', 'record.edit', 'record.read', 'record.delete',
-            'dashboard.read'
+            'dashboard.read','dashboard.create',
+            'application.status','application.comment','application.university_communication'
 
         ];
 
@@ -41,10 +42,10 @@ class PermissionSeeder extends Seeder
 
         $adminRole = Role::create(['name' => 'admin']);
         $adminRole->givePermissionTo(['application.create', 'application.edit', 'application.read', 'application.delete','record.create', 'record.edit', 'record.read', 'record.delete',
-        'dashboard.read']);
+        'dashboard.read','application.status','application.comment','application.university_communication']);
 
         $channelPartnerRole = Role::create(['name' => 'channel partner']);
-        $channelPartnerRole->givePermissionTo(['application.create', 'application.edit', 'application.read', 'application.delete','dashboard.read']);
+        $channelPartnerRole->givePermissionTo(['application.create', 'application.edit', 'application.read', 'application.delete','dashboard.read','application.status','application.comment','application.university_communication']);
 
         $dataEntryOperatorRole = Role::create(['name' => 'editor']);
         $dataEntryOperatorRole->givePermissionTo(['record.create', 'record.edit', 'record.read', 'record.delete','dashboard.read']);

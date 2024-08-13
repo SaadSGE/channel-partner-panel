@@ -15,13 +15,19 @@ export const useApplicationListStore = defineStore({
     universityCommunications: [],
   }),
   actions: {
-    async getApplicationList() {
+    async getApplicationList(id=null,page=1, searchQuery = '',role='') {
       try {
         const response = await $api('/application', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
+          params: {
+            page: page,
+            searchQuery: searchQuery,
+            role:role,
+            id:id
+          }
         });
         return response.data;
       } catch (error) {

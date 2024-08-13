@@ -15,7 +15,14 @@ class CourseDetailsController extends Controller
      */
     public function index()
     {
-
+        $id = (int) request()->query('id') ?: null;
+        $userId = auth('api')->user()->id;
+        $userRole = auth('api')->user()->role;
+        if($id == null) {
+            if($userRole == 'editor') {
+                $id = $userId;
+            }
+        }
         $searchQuery = strtoupper(strtolower(trim(request()->query('q'))));
         $perPage = (int)request()->query('perPage') ?: 10;
         $sortBy = (string)request()->query('sortBy');
@@ -25,6 +32,9 @@ class CourseDetailsController extends Controller
                 $query->where('course_id', 'LIKE', "%$searchQuery%");
 
             });
+        })
+        ->when($id, function ($query, $id) {
+            return $query->where('created_by', $id);
         })
         ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
             return

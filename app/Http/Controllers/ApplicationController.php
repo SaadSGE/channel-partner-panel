@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Services\FileUploadService;
 use App\Models\ApplicationCommentHistory;
 use App\Models\UniversityCommunication;
+
 class ApplicationController extends Controller
 {
     /**
@@ -25,39 +26,50 @@ class ApplicationController extends Controller
     {
         $searchQuery = strtoupper(strtolower(trim(request()->query('q'))));
         $perPage = (int)request()->query('perPage') ?: 10;
+        $id = (int) request()->query('id') ?: null;
         $sortBy = (string)request()->query('sortBy');
         $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
-        $queryResult = ApplicationList::with(['course','country','intake','university','courseDetails','student'])->when($searchQuery, function ($query, $searchQuery) {
-            return $query->where(function ($query) use ($searchQuery) {
-                $query->where('application_id', 'LIKE', "%$searchQuery%");
+        $userId = auth('api')->user()->id;
+        $userRole = auth('api')->user()->role;
+        if($id == null) {
+            if($userRole == 'channel partner') {
+                $id = $userId;
+            }
+        }
 
-            });
-        })
-        ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
-            return
-                $query->when($sortBy === 'id', function ($sq) use ($sortDesc) {
+        $queryResult = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student'])
+            ->when($id, function ($query, $id) {
+                return $query->where('created_by', $id);
+            })
+            ->when($searchQuery, function ($query, $searchQuery) {
+                return $query->where(function ($query) use ($searchQuery) {
+                    $query->where('application_id', 'LIKE', "%$searchQuery%");
+                });
+            })
+            ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
+                return $query->when($sortBy === 'id', function ($sq) use ($sortDesc) {
                     return $sq->when($sortDesc, function ($ssq) {
-                        return $ssq->orderBy('P.id', 'DESC');
+                        return $ssq->orderBy('id', 'DESC');
                     }, function ($ssq) {
-                        return $ssq->orderBy('P.id');
+                        return $ssq->orderBy('id');
                     });
                 });
+            }, function ($query) {
+                return $query->latest('created_at');
+            })
+            ->when($perPage, function ($query, $perPage) {
+                return $query->paginate($perPage);
+            }, function ($query) {
+                return $query->get();
+            })
+            ->toArray();
 
-
-        }, function ($query) {
-            return $query->latest('created_at');
-        })
-       ->when($perPage, function ($query, $perPage) {
-           return $query->paginate($perPage);
-       }, function ($query) {
-           return $query->get();
-       })
-        ->toArray();
         $products = $perPage ? $queryResult['data'] : $queryResult;
         $totalRows = $perPage ? $queryResult['total'] : count($queryResult);
-        return $this->successJsonResponse("Product Information found!", $products, $totalRows);
 
+        return $this->successJsonResponse("Product Information found!", $products, $totalRows);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -227,9 +239,9 @@ class ApplicationController extends Controller
     public function applicationStatuses(Request $request)
     {
         $applicationId = $request->id;
-        $applicationStatuses = ApplicationStatusHistory::where('application_id',$applicationId)->latest()->get();
+        $applicationStatuses = ApplicationStatusHistory::where('application_id', $applicationId)->latest()->get();
 
-        return $this->successJsonResponse('Status found successfully',$applicationStatuses);
+        return $this->successJsonResponse('Status found successfully', $applicationStatuses);
 
     }
 
@@ -241,7 +253,7 @@ class ApplicationController extends Controller
                 'name' => $name,
             ];
         })->values();
-        return $this->successJsonResponse('Status foound',$statuses);
+        return $this->successJsonResponse('Status foound', $statuses);
     }
 
     public function updateStatus(Request $request, $id)

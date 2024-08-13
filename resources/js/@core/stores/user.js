@@ -6,6 +6,7 @@ export const useUserStore = defineStore( {
     state: () => ({
         users:[],
         errors: [],
+        user:[]
       }),
   actions: {
     async fetchUsers(page=1, searchQuery = '',role='') {
@@ -31,6 +32,25 @@ export const useUserStore = defineStore( {
           throw error;
         }
       },
+      async fetchUser(id) {
+        try {
+          const response = await $api(`/users/${id}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          return response.data
+        } catch (error) {
+          console.error("Error getting user details:", error);
+          this.errors = error.response
+            ? error.response.data.errors
+            : ["An unexpected error occurred"];
+          throw error;
+        }
+      }
+
 
 
   },

@@ -6,7 +6,6 @@ definePage({
   },
 })
 import RoleCards from '@/views/apps/roles/RoleCards.vue';
-import UserList from '@/views/apps/roles/UserList.vue';
 </script>
 
 <template>
@@ -25,7 +24,7 @@ import UserList from '@/views/apps/roles/UserList.vue';
       <RoleCards />
     </VCol>
 
-    <VCol cols="12">
+    <!-- <VCol cols="12">
       <h4 class="text-h4 mb-1 mt-6">
         Total users with their roles
       </h4>
@@ -35,8 +34,8 @@ import UserList from '@/views/apps/roles/UserList.vue';
     </VCol>
 
     <VCol cols="12">
-      <!-- 👉 User List  -->
+
       <UserList />
-    </VCol>
+    </VCol> -->
   </VRow>
 </template>

@@ -4,7 +4,8 @@ import { defineStore } from 'pinia';
 export const useAuthStore = defineStore( {
     id: "auth",
     state: () => ({
-        errors: [],
+        user:[],
+        errors:[]
       }),
   actions: {
     async register(form) {

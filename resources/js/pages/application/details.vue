@@ -92,7 +92,6 @@ const refreshData = async () => {
   await store.getApplicationStatusses(applicationId);
   await store.getApplicationAllStatuses();
 
-
   applicationData.value = store.applicationData;
   documents.value = store.documents;
   studentData.value = store.students;
@@ -107,39 +106,42 @@ const refreshData = async () => {
 const handleStatusChange = async () => {
   try {
     let data = new FormData();
-    data.append('status', newStatus.value);
-    data.append('comment', newComment.value);
+    data.append("status", newStatus.value);
+    data.append("comment", newComment.value);
     if (statusFile.value) {
-      data.append('file', statusFile.value[0]);
+      data.append("file", statusFile.value[0]);
     }
 
     await store.updateStatus(applicationId, data);
     showModal.value = false;
     await refreshData(); // Ensure refreshData is called to update the UI
   } catch (error) {
-    console.error('Error updating status:', error);
+    console.error("Error updating status:", error);
   }
 };
 
 const handleAddComment = async () => {
   try {
     await store.addComment(applicationId, newComment.value);
-    newComment.value = ''; // Clear the comment input
+    newComment.value = ""; // Clear the comment input
     showCommentModal.value = false; // Close the comment modal
     await refreshData(); // Refresh data to reflect new comment
   } catch (error) {
-    console.error('Error adding comment:', error);
+    console.error("Error adding comment:", error);
   }
 };
 
 const handleAddUniversityComm = async () => {
   try {
-    await store.addUniversityCommunication(applicationId, newUniversityComm.value);
+    await store.addUniversityCommunication(
+      applicationId,
+      newUniversityComm.value
+    );
     newUniversityComm.value = { subject: "", message: "" }; // Clear the input
     showUniversityCommModal.value = false; // Close the university communication modal
     await refreshData(); // Refresh data to reflect new communication
   } catch (error) {
-    console.error('Error adding university communication:', error);
+    console.error("Error adding university communication:", error);
   }
 };
 </script>
@@ -194,12 +196,18 @@ const handleAddUniversityComm = async () => {
           <VCardText>
             <VForm @submit.prevent="handleAddComment">
               <VLabel class="mt-2">New Comment</VLabel>
-              <AppTextarea v-model="newComment" placeholder="Add a new comment" class="mt-2" />
+              <AppTextarea
+                v-model="newComment"
+                placeholder="Add a new comment"
+                class="mt-2"
+              />
             </VForm>
           </VCardText>
           <VCardActions>
             <VSpacer></VSpacer>
-            <VBtn color="primary" @click="handleAddComment">Submit Comment</VBtn>
+            <VBtn color="primary" @click="handleAddComment"
+              >Submit Comment</VBtn
+            >
             <VBtn @click="showCommentModal = false">Cancel</VBtn>
           </VCardActions>
         </VCard>
@@ -212,14 +220,24 @@ const handleAddUniversityComm = async () => {
           <VCardText>
             <VForm @submit.prevent="handleAddUniversityComm">
               <VLabel class="mt-2">Subject</VLabel>
-              <VTextField v-model="newUniversityComm.subject" placeholder="Subject" class="mt-2" />
+              <VTextField
+                v-model="newUniversityComm.subject"
+                placeholder="Subject"
+                class="mt-2"
+              />
               <VLabel class="mt-2">Message</VLabel>
-              <AppTextarea v-model="newUniversityComm.message" placeholder="Message" class="mt-2" />
+              <AppTextarea
+                v-model="newUniversityComm.message"
+                placeholder="Message"
+                class="mt-2"
+              />
             </VForm>
           </VCardText>
           <VCardActions>
             <VSpacer></VSpacer>
-            <VBtn color="primary" @click="handleAddUniversityComm">Submit Communication</VBtn>
+            <VBtn color="primary" @click="handleAddUniversityComm"
+              >Submit Communication</VBtn
+            >
             <VBtn @click="showUniversityCommModal = false">Cancel</VBtn>
           </VCardActions>
         </VCard>
@@ -288,7 +306,15 @@ const handleAddUniversityComm = async () => {
           <VWindowItem value="status">
             <VRow>
               <VCol cols="12" class="d-flex justify-end">
-                <VBtn v-if="currentTab === 'status'" @click="showModal = true" color="primary">Change Current Status</VBtn>
+                <VBtn
+                  v-if="
+                    currentTab === 'status' && $can('status', 'application')
+                  "
+                  @click="showModal = true"
+                  color="primary"
+                >
+                  Change Current Status
+                </VBtn>
               </VCol>
               <VCol cols="12">
                 <VTable>
@@ -296,7 +322,8 @@ const handleAddUniversityComm = async () => {
                     <tr>
                       <th>Date Added</th>
                       <th>Comment</th>
-                      <th>Status and Document</th> <!-- Combined column -->
+                      <th>Status and Document</th>
+                      <!-- Combined column -->
                     </tr>
                   </thead>
                   <tbody>
@@ -306,11 +333,18 @@ const handleAddUniversityComm = async () => {
                       <td>
                         <div>
                           <span v-html="status.status_text"></span>
-                          <span v-if="index === 0" class="current-status-label">(Current Status)</span>
+                          <span v-if="index === 0" class="current-status-label"
+                            >(Current Status)</span
+                          >
                           <!-- Display file name and download link below the status -->
                           <div v-if="status.document">
                             <div>{{ status.file_name }}</div>
-                            <a :href="status.document" target="_blank" class="download-link">Document</a>
+                            <a
+                              :href="status.document"
+                              target="_blank"
+                              class="download-link"
+                              >Document</a
+                            >
                           </div>
                         </div>
                       </td>
@@ -325,15 +359,24 @@ const handleAddUniversityComm = async () => {
           <VWindowItem value="comments">
             <VRow>
               <VCol cols="12" class="d-flex justify-end">
-                <VBtn @click="showCommentModal = true" color="primary">Add New Comment</VBtn>
+                <VBtn @click="showCommentModal = true" color="primary" v-if="$can('comment', 'application')"
+                  >Add New Comment</VBtn
+                >
               </VCol>
               <VCol cols="12">
                 <div class="comment-section">
-                  <div v-for="(comment, index) in comments" :key="index" class="comment">
+                  <div
+                    v-for="(comment, index) in comments"
+                    :key="index"
+                    class="comment"
+                  >
                     <div class="comment-header">
                       <span class="comment-date">{{ comment.created_at }}</span>
                     </div>
-                    <div class="comment-body" v-html="comment.comment_with_user"></div>
+                    <div
+                      class="comment-body"
+                      v-html="comment.comment_with_user"
+                    ></div>
                   </div>
                 </div>
               </VCol>
@@ -342,28 +385,33 @@ const handleAddUniversityComm = async () => {
 
           <!-- University Communication Tab -->
           <VWindowItem value="university-communication">
-          <VRow>
-            <VCol cols="12" class="d-flex justify-end">
-              <VBtn @click="showUniversityCommModal = true" color="primary">Add New Communication</VBtn>
-            </VCol>
-            <VCol cols="12">
-              <div class="comment-section">
-                <div v-for="(comm, index) in universityCommunications" :key="index" class="comment">
-                  <div class="comment-header">
-                    <span class="comment-date">{{ comm.created_at }}</span>
-                  </div>
-                  <div class="communication-subject">
-                    <strong>Subject:</strong> {{ comm.subject }}
-                  </div>
-                  <div class="comment-body">
-
-                    <div v-html="comm.message"></div>
+            <VRow>
+              <VCol cols="12" class="d-flex justify-end">
+                <VBtn @click="showUniversityCommModal = true" color="primary" v-if="$can('university_communication', 'application')"
+                  >Add New Communication</VBtn
+                >
+              </VCol>
+              <VCol cols="12">
+                <div class="comment-section">
+                  <div
+                    v-for="(comm, index) in universityCommunications"
+                    :key="index"
+                    class="comment"
+                  >
+                    <div class="comment-header">
+                      <span class="comment-date">{{ comm.created_at }}</span>
+                    </div>
+                    <div class="communication-subject">
+                      <strong>Subject:</strong> {{ comm.subject }}
+                    </div>
+                    <div class="comment-body">
+                      <div v-html="comm.message"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </VCol>
-          </VRow>
-        </VWindowItem>
+              </VCol>
+            </VRow>
+          </VWindowItem>
         </VWindow>
       </VCardText>
     </VCardText>
@@ -430,5 +478,4 @@ const handleAddUniversityComm = async () => {
   font-weight: bold;
   margin-left: 5px;
 }
-
 </style>

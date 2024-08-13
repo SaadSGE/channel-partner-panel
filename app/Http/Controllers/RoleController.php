@@ -5,68 +5,56 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use DB;
+
 class RoleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
-{
-    $roles = Role::with(['permissions', 'users'])->get();
+    {
+        $roles = Role::with(['permissions', 'users'])->get();
 
-    $transformedRoles = $roles->map(function ($role) {
+        $transformedRoles = $roles->map(function ($role) {
+            $permissionsMap = [];
 
-        $permissionsMap = [];
+            foreach ($role->permissions as $permission) {
+                list($base, $action) = explode('.', $permission->name);
 
-        foreach ($role->permissions as $permission) {
+                if (!isset($permissionsMap[$base])) {
+                    $permissionsMap[$base] = [
+                        'name' => $base,
+                        'read' => false,
+                        'edit' => false,
+                        'create' => false,
+                        'delete' => false,
+                        'custom_permissions' => [],
+                    ];
+                }
 
-            list($base, $action) = explode('.', $permission->name);
-
-
-            if (!isset($permissionsMap[$base])) {
-                $permissionsMap[$base] = [
-                    'name' => $base,
-                    'read' => false,
-                    'edit' => false,
-                    'create' => false,
-                    'delete' => false,
-                ];
+                if (in_array($action, ['read', 'edit', 'create', 'delete'])) {
+                    $permissionsMap[$base][$action] = true;
+                } else {
+                    $permissionsMap[$base]['custom_permissions'][$action] = true;
+                }
             }
 
+            return [
+                'id' => $role->id,
+                'role' => $role->name,
+                'details' => [
+                    'name' => $role->name,
+                    'permissions' => array_values($permissionsMap),
+                    'user_count' => $role->users->count(),
+                ]
+            ];
+        });
 
-            if ($action == 'read') {
-                $permissionsMap[$base]['read'] = true;
-            } elseif ($action == 'edit') {
-                $permissionsMap[$base]['edit'] = true;
-            } elseif ($action == 'create') {
-                $permissionsMap[$base]['create'] = true;
-            } elseif ($action == 'delete') {
-                $permissionsMap[$base]['delete'] = true;
-            }
-        }
-
-        return [
-            'id' => $role->id, // Include the role ID
-            'role' => $role->name,
-            'details' => [
-                'name' => $role->name,
-                'permissions' => array_values($permissionsMap),
-                'user_count' => $role->users->count(), // Include user count
-            ]
-        ];
-    });
-
-    return $this->successJsonResponse('Role found', $transformedRoles);
-}
-
-
+        return $this->successJsonResponse('Roles found', $transformedRoles);
+    }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-
         // Validate the request data
         $validated = $request->validate([
             'id' => 'nullable|integer|exists:roles,id',
@@ -78,6 +66,7 @@ class RoleController extends Controller
         DB::beginTransaction();
 
         try {
+            $role = null;
             if ($request->id) {
                 // Find the role by ID
                 $role = Role::find($request->id);
@@ -104,12 +93,27 @@ class RoleController extends Controller
                         $role->givePermissionTo("{$permission['name']}.{$action}");
                     }
                 }
+
+                // Handle custom permissions
+                if (isset($permission['custom_permissions'])) {
+                    foreach ($permission['custom_permissions'] as $customPermission => $enabled) {
+                        if ($enabled) {
+                            $role->givePermissionTo("{$permission['name']}.{$customPermission}");
+                        }
+                    }
+                }
+            }
+
+            // Logout all users associated with this role
+            $users = $role->users;
+            foreach ($users as $user) {
+                $user->tokens()->delete(); // Revoke all tokens for this user
             }
 
             // Commit the transaction
             DB::commit();
 
-            return response()->json(['message' => 'Role saved and permissions assigned successfully', 'role' => $role], 201);
+            return response()->json(['message' => 'Role saved and permissions assigned successfully, users logged out', 'role' => $role], 201);
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollback();
@@ -117,7 +121,6 @@ class RoleController extends Controller
             return response()->json(['errors' => ['An unexpected error occurred']], 500);
         }
     }
-
 
     /**
      * Display the specified resource.
