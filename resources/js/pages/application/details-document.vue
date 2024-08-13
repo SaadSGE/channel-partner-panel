@@ -71,7 +71,7 @@ const tempFileCount = ref(0);
 
 const update = () => {
 
- applicationStore.updateApplicationsFile(applicationId, filePaths);
+ applicationStore.updateApplicationsFile(applicationId, fileStore.filePaths);
  Swal.fire({
       icon: 'success',
       title: 'Success',

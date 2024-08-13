@@ -12,4 +12,14 @@ export const $api = ofetch.create({
       }
     }
   },
+  async onResponseError({ response }) {
+    if (response.status === 401) {
+      // Clear the user session and token
+      useCookie('accessToken').value = null
+      useCookie('userData').value = null
+
+      // Redirect to login page or any other action
+      window.location.href = '/login'
+    }
+  },
 })

@@ -82,14 +82,15 @@ onMounted(async () => {
   await commonFunctionStore.getCourses();
   await commonFunctionStore.getIntakes();
   await commonFunctionStore.getUniversities();
-  isLoading.value = false
-  await commonFunctionStore.getCourseDetails();
-
   countryIntakeUniversityCourse.value = commonFunctionStore.countryIntakeUniversityCourse;
   countries.value = commonFunctionStore.countries;
   courses.value = commonFunctionStore.courses;
   intakes.value = commonFunctionStore.intakes;
   universities.value = commonFunctionStore.universities;
+  isLoading.value = false
+  await commonFunctionStore.getCourseDetails();
+
+
 
 });
 
