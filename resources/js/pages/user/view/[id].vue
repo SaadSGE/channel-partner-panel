@@ -109,19 +109,72 @@ const headersRecord = [
   { title: 'English Requirement', key: 'english_requirement' },
   { title: 'Actions', key: 'actions', sortable: false },
 ];
-const resolveStatusColor = (status) => {
-  if (status === 0) return "primary";
-  if (status === 1) return "success";
-  if (status === 2) return "warning";
-  if (status === 3) return "info";
-};
+const resolveStatusColor = status => {
+  switch (status) {
+    case 0: // Application Processing
+      return 'primary';
+    case 1: // Application Submitted
+      return 'success';
+    case 2: // Pending Docs
+      return 'warning';
+    case 3: // Offer Issue Conditional
+      return 'info';
+    case 4: // Offer Issue Unconditional
+      return 'info';
+    case 5: // Need Payment
+      return 'warning';
+    case 6: // CAS Issued
+      return 'success';
+    case 7: // Additional Doc Needed
+      return 'warning';
+    case 8: // Refund Required
+      return 'danger';
+    case 9: // Application Rejected
+      return 'danger';
+    case 10: // Session Expired
+      return 'secondary';
+    case 11: // Doc Received
+      return 'success';
+    case 12: // Partial Payment
+      return 'warning';
+    default:
+      return 'secondary'; // Default or unknown status
+  }
+}
 
-const resolveStatusName = (status) => {
-  if (status === 0) return "Pending";
-  if (status === 1) return "Application Received";
-  if (status === 2) return "Application ok for processing";
-  if (status === 3) return "Case Closed";
-};
+
+const resolveStatusName = status => {
+  switch (status) {
+    case 0:
+      return 'Application Processing';
+    case 1:
+      return 'Application Submitted';
+    case 2:
+      return 'Pending Docs';
+    case 3:
+      return 'Offer Issue Conditional';
+    case 4:
+      return 'Offer Issue Unconditional';
+    case 5:
+      return 'Need Payment';
+    case 6:
+      return 'CAS Issued';
+    case 7:
+      return 'Additional Doc Needed';
+    case 8:
+      return 'Refund Required';
+    case 9:
+      return 'Application Rejected';
+    case 10:
+      return 'Session Expired';
+    case 11:
+      return 'Doc Received';
+    case 12:
+      return 'Partial Payment';
+    default:
+      return 'Unknown Status'; // Default or unknown status
+  }
+}
 const viewApplicationDetail = (applicationId) => {
   router.push({ name: "application-details", params: { id: applicationId } });
 };
