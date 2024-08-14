@@ -291,7 +291,7 @@ const updateOptions = (event) =>{
     </VDataTable>
   </VCard>
 
-  <VCard title="Course Details" class="mt-2">
+  <VCard title="Course Details" class="mt-2" v-if="userData.role === 'editor'">
       <VCardText>
         <div class="d-flex justify-space-between flex-wrap gap-6">
           <div>
