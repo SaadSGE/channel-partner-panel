@@ -232,7 +232,7 @@ const submit = async () => {
   };
 
   try {
-    await applicationStore.submitApplication(studentData, courseId, intakeId, universityId, countryId, courseDetailsId, filePaths);
+    await applicationStore.submitApplication(studentData, courseId, intakeId, universityId, countryId, courseDetailsId, fileStore.filePaths);
     Swal.fire({
       icon: 'success',
       title: 'Application Successful',
