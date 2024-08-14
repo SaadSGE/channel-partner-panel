@@ -53,17 +53,24 @@ const next = () => {
 };
 
 const server = {
-  process: (fieldName, file, metadata, load, error, progress, abort) => {
-    fileStore.uploadFile(fieldName, file)
-      .then(fileId => load(fileId)) // Load with fileId
-      .catch(err => error(err));
+  process: async (fieldName, file, metadata, load, error, progress, abort) => {
+    try {
+      const fileId = await fileStore.uploadFile(fieldName, file);
+      load(fileId); // Load with fileId when the upload is successful
+    } catch (err) {
+      error(err); // Handle errors during the upload
+    }
   },
-  revert: (uniqueFileId, load, error) => {
-    fileStore.removeFile(uniqueFileId)
-      .then(() => load())
-      .catch(err => error(err));
+  revert: async (uniqueFileId, load, error) => {
+    try {
+      await fileStore.removeFile(uniqueFileId);
+      load(); // Call load to indicate success
+    } catch (err) {
+      error(err); // Handle errors during the removal
+    }
   }
 };
+
 </script>
 
 <style scoped>

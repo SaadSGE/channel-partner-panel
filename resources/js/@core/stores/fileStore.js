@@ -14,15 +14,13 @@ export const useFileStore = defineStore('fileStore', {
     addFile(file) {
       this.files.push(file);
     },
-    updateFileProgress(fileId, progress)
-    {
+    updateFileProgress(fileId, progress) {
       const file = this.files.find(f => f.id === fileId);
       if (file) {
         file.progress = progress;
       }
     },
-    async removeFile(fileId)
-    {
+    async removeFile(fileId) {
       const fileIndex = this.files.findIndex(f => f.id === fileId);
       if (fileIndex !== -1) {
         const file = this.files[fileIndex];
@@ -30,22 +28,19 @@ export const useFileStore = defineStore('fileStore', {
         this.files.splice(fileIndex, 1);
       }
     },
-    updateFilePath(fileId, path)
-    {
+    updateFilePath(fileId, path) {
       const file = this.files.find(f => f.id === fileId);
       if (file) {
         file.path = path;
         this.filePaths.push(path);
       }
     },
-    resetFiles()
-    {
-      this.files = []
-      this.filePaths = []
-      this.errors = []
+    resetFiles() {
+      this.files = [];
+      this.filePaths = [];
+      this.errors = [];
     },
-    async uploadFile(fieldName, file)
-    {
+    async uploadFile(fieldName, file) {
       const fileId = generateUniqueId();
       const fileData = {
         id: fileId,
@@ -69,6 +64,7 @@ export const useFileStore = defineStore('fileStore', {
             }
           }
         });
+
         this.updateFilePath(fileId, response.data);
 
         return fileId;  // Return the fileId instead of the response data
