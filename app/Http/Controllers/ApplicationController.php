@@ -16,6 +16,8 @@ use App\Models\User;
 use App\Services\FileUploadService;
 use App\Models\ApplicationCommentHistory;
 use App\Models\UniversityCommunication;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\NewApplicationNotification;
 
 class ApplicationController extends Controller
 {
@@ -119,11 +121,9 @@ class ApplicationController extends Controller
                 'gender' => $validatedData['gender'],
                 'visa_refusal' => $validatedData['visa_refusal'],
             ]);
+
             $randomNumber = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
-
-
             $paddedStudentId = str_pad($student->id, 5, '0', STR_PAD_LEFT);
-
             $applicationId = $randomNumber . $paddedStudentId;
 
             $application = ApplicationList::create([
@@ -148,22 +148,22 @@ class ApplicationController extends Controller
                     StudentDocument::create([
                         'student_id' => $student->id,
                         'application_id' => $application->id,
-                        'path' => $newPath
+                        'path' => $newPath,
                     ]);
                 }
             }
 
+            // Send the new application notification
+            Notification::send(auth()->user(), new NewApplicationNotification($application));
 
             DB::commit();
             return $this->successJsonResponse('Application created successfully', $application, '', 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             \Log::error($th);
-            return $this->exceptionJsonResponse('Failed to create applcation', $th);
-
+            return $this->exceptionJsonResponse('Failed to create application', $th);
         }
     }
-
 
 
     /**

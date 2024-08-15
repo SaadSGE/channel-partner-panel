@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Log;
 use Spatie\Permission\Models\Role;
+use App\Notifications\NewUserRegistrationNotification;
+use Illuminate\Support\Facades\Notification;
 
 class AuthController extends Controller
 {
@@ -39,6 +41,14 @@ class AuthController extends Controller
         // Assign the role to the user
         $assignedRole = Role::where('name', $role)->first();
         $userDetail->assignRole($assignedRole);
+
+        $admin = User::where('role', 'admin')->first(); // Find the first admin user
+
+        // Notify the newly registered user (if applicable)
+        Notification::route('mail', $userDetail->email)->notify(new \App\Notifications\WelcomeNotification($userDetail));
+
+        // Notify the admin about the new registration
+        $admin->notify(new NewUserRegistrationNotification($userDetail));
 
         // Return a success response
         return $this->successJsonResponse('User Registration Successful', $userDetail);
