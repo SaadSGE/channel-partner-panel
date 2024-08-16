@@ -9,6 +9,7 @@ import { useApplicationListStore } from "@/@core/stores/applicationList";
 import { } from "@/@core/stores/commonFunction";
 import { useRecordStore } from "@/@core/stores/recordStore";
 import { useUserStore } from "@/@core/stores/user";
+import { containsString } from '@/@core/utils/helpers.js';
 import UserBioPanel from "@/pages/user/UserBioPanel.vue";
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -42,15 +43,22 @@ const applicationLists = ref();
 const store = useUserStore();
 const storeApplication = useApplicationListStore();
 const userData = ref([]);
-const searchQuery = ref('')
-const isLoading  = ref(false)
+const searchQuery = ref("");
+const isLoading = ref(false);
 onMounted(async () => {
   userData.value = await store.fetchUser(route.params.id);
-  applicationLists.value = await storeApplication.getApplicationList(route.params.id);
+  applicationLists.value = await storeApplication.getApplicationList(
+    route.params.id
+  );
   await getRecord();
+  //await fetchUsers();
 });
-const getRecord = async (page=1) => {
-  const fetchRecord = await recordStore.fetchRecord(page,searchQuery.value,route.params.id);
+const getRecord = async (page = 1) => {
+  const fetchRecord = await recordStore.fetchRecord(
+    page,
+    searchQuery.value,
+    route.params.id
+  );
   records.value = fetchRecord.data;
   total.value = fetchRecord.total;
 };
@@ -98,83 +106,90 @@ const headersApplication = [
   },
 ];
 const headersRecord = [
-  { title: 'Country', key: 'country.name' },
-  { title: 'Intake', key: 'intake.name' },
-  { title: 'University', key: 'university.name' },
-  { title: 'Course Type', key: 'course.type' },
-  { title: 'Course Name', key: 'course.name' },
-  { title: 'Tution Fee', key: 'tuition_fee' },
-  { title: 'Course Duration', key: 'course_duration' },
-  { title: 'Academic Requirement', key: 'academic_requirement' },
-  { title: 'English Requirement', key: 'english_requirement' },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: "Country", key: "country.name" },
+  { title: "Intake", key: "intake.name" },
+  { title: "University", key: "university.name" },
+  { title: "Course Type", key: "course.type" },
+  { title: "Course Name", key: "course.name" },
+  { title: "Tution Fee", key: "tuition_fee" },
+  { title: "Course Duration", key: "course_duration" },
+  { title: "Academic Requirement", key: "academic_requirement" },
+  { title: "English Requirement", key: "english_requirement" },
+  { title: "Actions", key: "actions", sortable: false },
 ];
-const resolveStatusColor = status => {
+
+const headersUser = [
+  { title: "Name", key: "full_name" },
+  { title: "Email", key: "email" },
+  { title: "Record Count", key: "record_count" },
+  { title: "Actions", key: "actions", sortable: false },
+];
+
+const resolveStatusColor = (status) => {
   switch (status) {
     case 0: // Application Processing
-      return 'primary';
+      return "primary";
     case 1: // Application Submitted
-      return 'success';
+      return "success";
     case 2: // Pending Docs
-      return 'warning';
+      return "warning";
     case 3: // Offer Issue Conditional
-      return 'info';
+      return "info";
     case 4: // Offer Issue Unconditional
-      return 'info';
+      return "info";
     case 5: // Need Payment
-      return 'warning';
+      return "warning";
     case 6: // CAS Issued
-      return 'success';
+      return "success";
     case 7: // Additional Doc Needed
-      return 'warning';
+      return "warning";
     case 8: // Refund Required
-      return 'danger';
+      return "danger";
     case 9: // Application Rejected
-      return 'danger';
+      return "danger";
     case 10: // Session Expired
-      return 'secondary';
+      return "secondary";
     case 11: // Doc Received
-      return 'success';
+      return "success";
     case 12: // Partial Payment
-      return 'warning';
+      return "warning";
     default:
-      return 'secondary'; // Default or unknown status
+      return "secondary"; // Default or unknown status
   }
-}
+};
 
-
-const resolveStatusName = status => {
+const resolveStatusName = (status) => {
   switch (status) {
     case 0:
-      return 'Application Processing';
+      return "Application Processing";
     case 1:
-      return 'Application Submitted';
+      return "Application Submitted";
     case 2:
-      return 'Pending Docs';
+      return "Pending Docs";
     case 3:
-      return 'Offer Issue Conditional';
+      return "Offer Issue Conditional";
     case 4:
-      return 'Offer Issue Unconditional';
+      return "Offer Issue Unconditional";
     case 5:
-      return 'Need Payment';
+      return "Need Payment";
     case 6:
-      return 'CAS Issued';
+      return "CAS Issued";
     case 7:
-      return 'Additional Doc Needed';
+      return "Additional Doc Needed";
     case 8:
-      return 'Refund Required';
+      return "Refund Required";
     case 9:
-      return 'Application Rejected';
+      return "Application Rejected";
     case 10:
-      return 'Session Expired';
+      return "Session Expired";
     case 11:
-      return 'Doc Received';
+      return "Doc Received";
     case 12:
-      return 'Partial Payment';
+      return "Partial Payment";
     default:
-      return 'Unknown Status'; // Default or unknown status
+      return "Unknown Status"; // Default or unknown status
   }
-}
+};
 const viewApplicationDetail = (applicationId) => {
   router.push({ name: "application-details", params: { id: applicationId } });
 };
@@ -186,9 +201,39 @@ const records = ref();
 const total = ref();
 const itemsPerPage = ref(10);
 const page = ref(1);
-const updateOptions = (event) =>{
-  getRecord(event.page)
-}
+const updateOptions = (event) => {
+  getRecord(event.page);
+};
+const users = ref([]);
+
+const totalUsers = ref(0);
+
+const sortBy = ref();
+const orderBy = ref();
+
+const fetchUsers = async () => {
+  isLoading.value = true;
+  try {
+    const response = await store.fetchUsers(
+      page.value,
+      searchQuery.value,
+      selectedRole.value,
+      route.params.id
+    );
+    users.value = response.data;
+    console.log(users.value);
+    totalUsers.value = response.total;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+const updateUserOptions = (options) => {
+  sortBy.value = options.sortBy[0]?.key;
+  orderBy.value = options.sortBy[0]?.order;
+  fetchUsers();
+};
 
 </script>
 
@@ -226,12 +271,9 @@ const updateOptions = (event) =>{
     </VCol>
   </VRow>
 
-  <VCard class="mt-5" v-if="userData.role === 'channel partner'">
-
+  <VCard class="mt-5" v-if="containsString(userData.role,'channel partner')">
     <VCardText>
-      <h5 class="text-h5">
-            User Application
-          </h5>
+      <h5 class="text-h5">User Application</h5>
       <VRow>
         <VCol cols="12" offset-md="8" md="4">
           <AppTextField
@@ -291,51 +333,132 @@ const updateOptions = (event) =>{
     </VDataTable>
   </VCard>
 
-  <VCard title="Course Details" class="mt-2" v-if="userData.role === 'editor'">
-      <VCardText>
-        <div class="d-flex justify-space-between flex-wrap gap-6">
-          <div>
-            <AppTextField
-              v-model="searchQuery"
-              style="max-inline-size: 200px; min-inline-size: 200px"
-              placeholder="Search Review"
-            />
-          </div>
-          <div class="d-flex flex-row gap-4 align-center flex-wrap">
-            <AppSelect
-              v-model="itemsPerPage"
-              :items="[10, 25, 50, 100]"
-              style="inline-size: 6.25rem"
-            />
-          </div>
-        </div>
-      </VCardText>
-      <VDataTableServer
-        v-model:items-per-page="itemsPerPage"
-        v-model:page="page"
-        :loading="isLoading"
-        :items-length="total"
-        :headers="headersRecord"
-        :items="records"
-        item-value="total"
-        class="text-no-wrap text-sm rounded-0"
-        @update:options="updateOptions"
-
-      >
-        <template #item.academic_requirement="{ item }">
-          <ShowMore :text="item.academic_requirement" :lines="3" />
-        </template>
-        <template #item.english_requirement="{ item }">
-          <ShowMore :text="item.english_requirement" :lines="3" />
-        </template>
-        <template #bottom>
-          <TablePagination
-            v-model:page="page"
-            :items-per-page="itemsPerPage"
-            :total-items="total"
+  <VCard title="Course Details" class="mt-2" v-if="containsString(userData.role,'editor')">
+    <VCardText>
+      <div class="d-flex justify-space-between flex-wrap gap-6">
+        <div>
+          <AppTextField
+            v-model="searchQuery"
+            style="max-inline-size: 200px; min-inline-size: 200px"
+            placeholder="Search Review"
           />
-        </template>
+        </div>
+        <div class="d-flex flex-row gap-4 align-center flex-wrap">
+          <AppSelect
+            v-model="itemsPerPage"
+            :items="[10, 25, 50, 100]"
+            style="inline-size: 6.25rem"
+          />
+        </div>
+      </div>
+    </VCardText>
+    <VDataTableServer
+      v-model:items-per-page="itemsPerPage"
+      v-model:page="page"
+      :loading="isLoading"
+      :items-length="total"
+      :headers="headersRecord"
+      :items="records"
+      item-value="total"
+      class="text-no-wrap text-sm rounded-0"
+      @update:options="updateOptions"
+    >
+      <template #item.academic_requirement="{ item }">
+        <ShowMore :text="item.academic_requirement" :lines="3" />
+      </template>
+      <template #item.english_requirement="{ item }">
+        <ShowMore :text="item.english_requirement" :lines="3" />
+      </template>
+      <template #bottom>
+        <TablePagination
+          v-model:page="page"
+          :items-per-page="itemsPerPage"
+          :total-items="total"
+        />
+      </template>
+    </VDataTableServer>
+  </VCard>
 
-      </VDataTableServer>
-    </VCard>
+  <!-- <VCard
+    class="mt-5"
+    v-if="containsString(userData.role,'application control officer')"
+  >
+    <VCardText>
+      <h5 class="text-h5">Channel Partner</h5>
+      <VRow>
+        <VCol cols="12" offset-md="8" md="4">
+          <AppTextField
+            v-model="search"
+            placeholder="Search ..."
+            append-inner-icon="tabler-search"
+            single-line
+            hide-details
+            dense
+            outlined
+          />
+        </VCol>
+      </VRow>
+    </VCardText>
+
+    <!-- 👉 Data Table  -->
+    <VDataTableServer
+      v-model:items-per-page="itemsPerPage"
+      v-model:page="page"
+      :items="users"
+      :items-length="totalUsers"
+      :headers="headersUser"
+      class="text-no-wrap"
+      show-select
+      @update:options="updateUserOptions"
+    >
+      <template #item.actions="{ item }">
+        <VBtn icon variant="text" color="medium-emphasis">
+          <VIcon icon="tabler-dots-vertical" />
+          <VMenu activator="parent">
+            <VList>
+              <VListItem
+                :to="{ name: 'user-view-id', params: { id: item.id } }"
+              >
+                <template #prepend>
+                  <VIcon icon="tabler-eye" />
+                </template>
+
+                <VListItemTitle>View</VListItemTitle>
+              </VListItem>
+
+              <VListItem @click="editUser(item)">
+                <template #prepend>
+                  <VIcon icon="tabler-pencil" />
+                </template>
+                <VListItemTitle>Edit</VListItemTitle>
+              </VListItem>
+
+              <VListItem @click="setParent(item)">
+                <template #prepend>
+                  <VIcon icon="tabler-pencil" />
+                </template>
+                <VListItemTitle>Set Parent</VListItemTitle>
+              </VListItem>
+
+              <VListItem @click="deleteUser(item.id)">
+                <template #prepend>
+                  <VIcon icon="tabler-trash" />
+                </template>
+                <VListItemTitle>Delete</VListItemTitle>
+              </VListItem>
+            </VList>
+          </VMenu>
+        </VBtn>
+      </template>
+
+      <!-- pagination -->
+      <template #bottom>
+        <TablePagination
+          v-model:page="page"
+          :items-per-page="itemsPerPage"
+          :total-items="totalUsers"
+        />
+      </template>
+    </VDataTableServer>
+  </VCard> -->
 </template>

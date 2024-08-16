@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use DB;
+use Log;
 
 class RoleController extends Controller
 {
@@ -117,6 +118,12 @@ class RoleController extends Controller
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollback();
+
+            // Log the error
+            Log::error('Error saving role and assigning permissions:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json(['errors' => ['An unexpected error occurred']], 500);
         }

@@ -29,15 +29,17 @@ class StatusChangedNotification extends Notification implements ShouldQueue
     {
         return (new MailMessage())
                     ->subject('Application Status Changed')
-                    ->view('emails.status_changed', ['application' => $this->application]);
+                    ->view('emails.status_change', ['application' => $this->application]);
     }
 
     public function toArray($notifiable)
     {
         return [
-            'application_id' => $this->application->id,
-            'new_status' => $this->application->status,
-            'message' => 'The status of an application has changed.',
+            'id' => $this->application->id,
+            'application_id' => $this->application->application_id,
+            'status' => $this->application->status,
+            'student_name' => $this->application->student->first_name . ' ' . $this->application->student->last_name,
+            'comment' => $this->application->comment,
         ];
     }
 }

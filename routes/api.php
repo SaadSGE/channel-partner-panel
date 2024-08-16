@@ -22,6 +22,8 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('application-country', ApplicationCountryController::class);
     Route::apiResource('course', CourseController::class);
     Route::apiResource('users', UserController::class);
+    Route::post('/users/{id}/set-parent', [UserController::class, 'setParent']);
+    Route::get('all-user', [UserController::class,'allUser']);
     Route::apiResource('intake', IntakeController::class);
     Route::apiResource('university', UniversityController::class);
     Route::apiResource('course-detail', CourseDetailsController::class);

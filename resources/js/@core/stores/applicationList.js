@@ -15,7 +15,7 @@ export const useApplicationListStore = defineStore({
     universityCommunications: [],
   }),
   actions: {
-    async getApplicationList(id=null,page=1, searchQuery = '',role='') {
+    async getApplicationList({ id = null, page = 1, itemsPerPage = 10, searchQuery = '', role = '', sortBy = '', orderBy = '' }) {
       try {
         const response = await $api('/application', {
           method: 'GET',
@@ -23,19 +23,23 @@ export const useApplicationListStore = defineStore({
             'Content-Type': 'application/json',
           },
           params: {
+            id: id,
             page: page,
+            perPage: itemsPerPage,
             searchQuery: searchQuery,
-            role:role,
-            id:id
+            role: role,
+            sortBy: sortBy,
+            orderBy: orderBy,
           }
         });
-        return response.data;
+        return response;
       } catch (error) {
         console.error('Error getting application list:', error);
         this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
         throw error;
       }
     },
+
     async getApplicationDetails(id) {
       try {
         const response = await $api(`/application/${id}`, {

@@ -18,6 +18,7 @@ use App\Models\ApplicationCommentHistory;
 use App\Models\UniversityCommunication;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\NewApplicationNotification;
+use App\Notifications\StatusChangedNotification;
 
 class ApplicationController extends Controller
 {
@@ -152,9 +153,11 @@ class ApplicationController extends Controller
                     ]);
                 }
             }
+            $usersToNotify = User::where('role', 'admin')
+            ->orWhere('id', auth('api')->user()->parent_id)
+            ->get();
 
-            // Send the new application notification
-            Notification::send(auth()->user(), new NewApplicationNotification($application));
+            Notification::send($usersToNotify, new NewApplicationNotification($application));
 
             DB::commit();
             return $this->successJsonResponse('Application created successfully', $application, '', 201);
@@ -294,6 +297,13 @@ class ApplicationController extends Controller
             ]);
 
             DB::commit();
+            $userToNotify = $application->user;
+
+
+            $adminUsers = User::where('role', 'admin')->get();
+
+            // Send the status change notification to the user and all admins
+            Notification::send($adminUsers->push($userToNotify), new StatusChangedNotification($application));
             return $this->successJsonResponse('Status updated successfully', $application, '', 200);
         } catch (\Throwable $th) {
             DB::rollBack();

@@ -1,16 +1,16 @@
 <script setup>
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
 import { useUserStore } from "@/@core/stores/user.js";
-import AddNewUserDrawer from '@/pages/user/add/AddNewUserDrawer.vue';
-import EditNewUserDrawer from '@/pages/user/add/EditNewUserDrawer.vue';
-import Swal from 'sweetalert2';
-import { onMounted, ref, watch } from 'vue';
+import AddNewUserDrawer from "@/pages/user/add/AddNewUserDrawer.vue";
+import EditNewUserDrawer from "@/pages/user/add/EditNewUserDrawer.vue";
+import Swal from "sweetalert2";
+import { onMounted, ref, watch } from "vue";
 
 // Define page meta
 definePage({
   meta: {
-    action: 'read',
-    subject: 'dashboard',
+    action: "read",
+    subject: "dashboard",
   },
 });
 
@@ -24,129 +24,154 @@ const itemsPerPage = ref(10);
 const page = ref(1);
 const sortBy = ref();
 const orderBy = ref();
-const searchQuery = ref('');
+const searchQuery = ref("");
 const selectedRole = ref();
+const selectedParent = ref(null); // State for the selected parent
 const selectedPlan = ref();
 const selectedStatus = ref();
 const isLoading = ref(false);
 const roles = ref([]);
 const isEditUserDrawerVisible = ref(false);
 const selectedUser = ref(null);
+const isParentDialogVisible = ref(false);
+const parentId = ref(null);
+const userToSetParent = ref(null);
+
 // Methods
+const setParent = (user) => {
+  userToSetParent.value = user;
+  parentId.value = user.parent_id || "";
+  isParentDialogVisible.value = true;
+};
+
+const handleParentSet = async () => {
+  if (!parentId.value) {
+    // Handle validation if needed
+    return;
+  }
+
+  const result = await userStore.setParent(
+    userToSetParent.value.id,
+    parentId.value
+  );
+
+  if (result.success) {
+    fetchUsers();
+    Swal.fire("Success!", result.message, "success");
+    isParentDialogVisible.value = false;
+  } else {
+    Swal.fire("Error!", result.message, "error");
+  }
+};
 
 const handleUserUpdate = (updatedUser) => {
-  // Logic to update the user in your user list
-  const index = users.value.findIndex(user => user.id === updatedUser.id);
+  const index = users.value.findIndex((user) => user.id === updatedUser.id);
   if (index !== -1) {
     users.value.splice(index, 1, updatedUser);
   }
 };
+
 const editUser = (user) => {
   openEditDrawer(user);
 };
+
 const openEditDrawer = (user) => {
   selectedUser.value = user;
   isEditUserDrawerVisible.value = true;
 };
 
-
 const fetchUsers = async () => {
   isLoading.value = true;
   try {
-    const response = await userStore.fetchUsers(page.value, searchQuery.value, selectedRole.value);
+    const response = await userStore.fetchUsers(
+      page.value,
+      searchQuery.value,
+      selectedRole.value,
+      selectedParent.value
+    );
     users.value = response.data;
     totalUsers.value = response.total;
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error("Error fetching users:", error);
   } finally {
     isLoading.value = false;
   }
 };
 
-const addUser = async userData => {
+const addUser = async (userData) => {
   try {
-    await $api('/apps/users', {
-      method: 'POST',
-      body: userData,
-    });
     await fetchUsers();
-    Swal.fire('Success!', 'User added successfully!', 'success');
+    Swal.fire("Success!", "User added successfully!", "success");
   } catch (error) {
-    console.error('Error adding user:', error);
-    Swal.fire('Error!', 'Failed to add user.', 'error');
+    console.error("Error adding user:", error);
+    Swal.fire("Error!", "Failed to add user.", "error");
   }
 };
 
-const deleteUser = async id => {
+const deleteUser = async (id) => {
   const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'Do you want to delete this user?',
-    icon: 'warning',
+    title: "Are you sure?",
+    text: "Do you want to delete this user?",
+    icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete it!',
-    cancelButtonText: 'Cancel',
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel",
   });
 
   if (result.isConfirmed) {
-    try {
-      await $api(`/apps/users/${id}`, { method: 'DELETE' });
-      await fetchUsers();
-      Swal.fire('Deleted!', 'The user has been deleted.', 'success');
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      Swal.fire('Error!', 'There was an error deleting the user.', 'error');
+    const response = await userStore.deleteUser(id);
+
+    if (response.success) {
+      Swal.fire("Deleted!", response.message, "success");
+    } else {
+      Swal.fire("Error!", response.message, "error");
     }
   }
 };
 
-const updateOptions = options => {
+const updateOptions = (options) => {
   sortBy.value = options.sortBy[0]?.key;
   orderBy.value = options.sortBy[0]?.order;
   fetchUsers();
 };
 
 const headers = [
-  { title: 'Name', key: 'full_name' },
-  { title: 'Email', key: 'email' },
-  { title: 'Mobile Number', key: 'mobile_number' },
-  { title: 'Whatsapp Number', key: 'whatsapp_number' },
-  { title: 'Role', key: 'role' },
-  { title: 'Record Count', key: 'record_count' },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: "Name", key: "full_name" },
+  { title: "Email", key: "email" },
+  { title: "Mobile Number", key: "mobile_number" },
+  { title: "Whatsapp Number", key: "whatsapp_number" },
+  { title: "Role", key: "role" },
+  { title: "Parent", key: "parent.full_name" },
+  { title: "Record Count", key: "record_count" },
+  { title: "Actions", key: "actions", sortable: false },
 ];
 
 onMounted(async () => {
   await roleStore.getAllRoles();
   roles.value = roleStore.roles;
-  fetchUsers();
+  await userStore.fetchParentUsers(); // Fetch parent users on mount from the Pinia store
+  fetchUsers(); // Fetch the main user list
 });
 
-watch([searchQuery, selectedRole], () => {
+watch([searchQuery, selectedRole, selectedParent], () => {
   fetchUsers();
 });
 </script>
+
 <template>
-   <EditNewUserDrawer
+  <EditNewUserDrawer
     :isDrawerOpen="isEditUserDrawerVisible"
     :editedUser="selectedUser"
     @update:isDrawerOpen="isEditUserDrawerVisible = $event"
     @userUpdated="handleUserUpdate"
   />
   <section>
-    <!-- 👉 Widgets -->
     <div class="d-flex mb-6">
       <VRow>
-        <template
-          v-for="(data, id) in widgetData"
-          :key="id"
-        >
-          <VCol
-            cols="12"
-            md="3"
-            sm="6"
-          >
+        <template v-for="(data, id) in widgetData" :key="id">
+          <VCol cols="12" md="3" sm="6">
             <VCard>
               <VCardText>
                 <div class="d-flex justify-space-between">
@@ -175,10 +200,7 @@ watch([searchQuery, selectedRole], () => {
                     rounded
                     size="42"
                   >
-                    <VIcon
-                      :icon="data.icon"
-                      size="26"
-                    />
+                    <VIcon :icon="data.icon" size="26" />
                   </VAvatar>
                 </div>
               </VCardText>
@@ -188,6 +210,30 @@ watch([searchQuery, selectedRole], () => {
       </VRow>
     </div>
 
+    <VDialog v-model="isParentDialogVisible" max-width="500px">
+      <VCard>
+        <VCardTitle>Set Parent</VCardTitle>
+        <VCardText>
+          <VForm @submit.prevent="handleParentSet">
+            <AppAutocomplete
+              v-model="parentId"
+              :items="userStore.parentUsers"
+              :item-title="(item) => item.full_name"
+              :item-value="(item) => item.id"
+              label="Parent"
+              placeholder="Select Parent"
+              :rules="[requiredValidator]"
+            />
+          </VForm>
+        </VCardText>
+        <VCardActions>
+          <VSpacer></VSpacer>
+          <VBtn color="primary" @click="handleParentSet">Submit</VBtn>
+          <VBtn @click="isParentDialogVisible = false">Cancel</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
     <VCard class="mb-6">
       <VCardItem class="pb-4">
         <VCardTitle>Filters</VCardTitle>
@@ -196,10 +242,7 @@ watch([searchQuery, selectedRole], () => {
       <VCardText>
         <VRow>
           <!-- 👉 Select Role -->
-          <VCol
-            cols="12"
-            sm="4"
-          >
+          <VCol cols="12" sm="4">
             <AppSelect
               v-model="selectedRole"
               placeholder="Select Role"
@@ -210,21 +253,18 @@ watch([searchQuery, selectedRole], () => {
               :item-value="(item) => item.role"
             />
           </VCol>
-          <!-- 👉 Select Plan -->
 
-          <!-- 👉 Select Status -->
-          <!-- <VCol
-            cols="12"
-            sm="4"
-          >
-            <AppSelect
-              v-model="selectedStatus"
-              placeholder="Select Status"
-              :items="status"
+          <VCol cols="12" sm="4">
+            <AppAutocomplete
+              v-model="selectedParent"
+              placeholder="Select Parent"
+              :items="userStore.parentUsers"
               clearable
               clear-icon="tabler-x"
+              :item-title="(item) => item.full_name"
+              :item-value="(item) => item.id"
             />
-          </VCol> -->
+          </VCol>
         </VRow>
       </VCardText>
 
@@ -238,10 +278,10 @@ watch([searchQuery, selectedRole], () => {
               { value: 10, title: '10' },
               { value: 25, title: '25' },
               { value: 50, title: '50' },
-              { value: 100, title: '100' },
+              { value: 100, title: 100 },
               { value: -1, title: 'All' },
             ]"
-            style="inline-size: 6.25rem;"
+            style="inline-size: 6.25rem"
             @update:model-value="itemsPerPage = parseInt($event, 10)"
           />
         </div>
@@ -249,15 +289,11 @@ watch([searchQuery, selectedRole], () => {
 
         <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
           <!-- 👉 Search  -->
-          <div style="inline-size: 15.625rem;">
-            <AppTextField
-              v-model="searchQuery"
-              placeholder="Search User"
-            />
+          <div style="inline-size: 15.625rem">
+            <AppTextField v-model="searchQuery" placeholder="Search User" />
           </div>
 
           <!-- 👉 Export button -->
-
 
           <!-- 👉 Add user button -->
           <VBtn
@@ -282,19 +318,14 @@ watch([searchQuery, selectedRole], () => {
         show-select
         @update:options="updateOptions"
       >
-
-
         <template #item.actions="{ item }">
-
-          <VBtn
-            icon
-            variant="text"
-            color="medium-emphasis"
-          >
+          <VBtn icon variant="text" color="medium-emphasis">
             <VIcon icon="tabler-dots-vertical" />
             <VMenu activator="parent">
               <VList>
-                <VListItem :to="{ name: 'user-view-id', params: { id: item.id } }">
+                <VListItem
+                  :to="{ name: 'user-view-id', params: { id: item.id } }"
+                >
                   <template #prepend>
                     <VIcon icon="tabler-eye" />
                   </template>
@@ -307,6 +338,13 @@ watch([searchQuery, selectedRole], () => {
                     <VIcon icon="tabler-pencil" />
                   </template>
                   <VListItemTitle>Edit</VListItemTitle>
+                </VListItem>
+
+                <VListItem @click="setParent(item)">
+                  <template #prepend>
+                    <VIcon icon="tabler-pencil" />
+                  </template>
+                  <VListItemTitle>Set Parent</VListItemTitle>
                 </VListItem>
 
                 <VListItem @click="deleteUser(item.id)">

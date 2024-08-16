@@ -7,134 +7,49 @@ definePage({
 })
 import { useApplicationListStore } from '@/@core/stores/applicationList';
 import Swal from 'sweetalert2';
-import { useRouter } from "vue-router";
+import { onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+
+// Store and Router
 const store = useApplicationListStore();
-const applicationLists = ref();
 const router = useRouter();
 
-onMounted(async () => {
-  isLoading.value = true
-  applicationLists.value = await store.getApplicationList();
-  isLoading.value = false
-});
-const search = ref('')
+// Reactive State
+const applicationLists = ref([]);
+const totalApplications = ref(0);
+const itemsPerPage = ref(10);
+const page = ref(1);
+const sortBy = ref();
+const orderBy = ref();
+const search = ref('');
+const isLoading = ref(false);
 
-// headers
-const headers = [
-  {
-    title: 'APPLICATION ID',
-    key: 'application_id',
-  },
-  {
-    title: 'Student Name',
-    key: 'student.name',
-  },
-
-{
-    title: 'University/Course Details',
-    key: 'university.name',
-  },
-  {
-    title: 'Status',
-    key: 'status',
-  },
-
-  {
-    title: 'Date Added',
-    key: 'created_at',
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    sortable:false
-  },
-
-]
-
-
-
-
-const resolveStatusColor = status => {
-  switch (status) {
-    case 0: // Application Processing
-      return 'primary';
-    case 1: // Application Submitted
-      return 'success';
-    case 2: // Pending Docs
-      return 'warning';
-    case 3: // Offer Issue Conditional
-      return 'info';
-    case 4: // Offer Issue Unconditional
-      return 'info';
-    case 5: // Need Payment
-      return 'warning';
-    case 6: // CAS Issued
-      return 'success';
-    case 7: // Additional Doc Needed
-      return 'warning';
-    case 8: // Refund Required
-      return 'danger';
-    case 9: // Application Rejected
-      return 'danger';
-    case 10: // Session Expired
-      return 'secondary';
-    case 11: // Doc Received
-      return 'success';
-    case 12: // Partial Payment
-      return 'warning';
-    default:
-      return 'secondary'; // Default or unknown status
+// Methods
+const fetchApplications = async () => {
+  isLoading.value = true;
+  try {
+    const response = await store.getApplicationList({
+      id:null,
+      page: page.value,
+      itemsPerPage: itemsPerPage.value,
+      sortBy: sortBy.value,
+      orderBy: orderBy.value,
+      search: search.value,
+    });
+    applicationLists.value = response.data;
+    totalApplications.value = response.total;
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+  } finally {
+    isLoading.value = false;
   }
-}
+};
 
-
-const resolveStatusName = status => {
-  switch (status) {
-    case 0:
-      return 'Application Processing';
-    case 1:
-      return 'Application Submitted';
-    case 2:
-      return 'Pending Docs';
-    case 3:
-      return 'Offer Issue Conditional';
-    case 4:
-      return 'Offer Issue Unconditional';
-    case 5:
-      return 'Need Payment';
-    case 6:
-      return 'CAS Issued';
-    case 7:
-      return 'Additional Doc Needed';
-    case 8:
-      return 'Refund Required';
-    case 9:
-      return 'Application Rejected';
-    case 10:
-      return 'Session Expired';
-    case 11:
-      return 'Doc Received';
-    case 12:
-      return 'Partial Payment';
-    default:
-      return 'Unknown Status'; // Default or unknown status
-  }
-}
-
-
-const categoryIconFilter = categoryName => {
-  const index = categoryIcons.findIndex(category => category.name === categoryName)
-  if (index !== -1)
-    return [{
-      icon: categoryIcons[index].icon,
-      color: categoryIcons[index].color,
-    }]
-
-  return [{
-    icon: 'tabler-help-circle',
-    color: 'primary',
-  }]
-}
+const updateOptions = (options) => {
+  sortBy.value = options.sortBy[0]?.key;
+  orderBy.value = options.sortBy[0]?.order;
+  fetchApplications();
+};
 
 const viewApplicationDetail = (applicationId) => {
   router.push({ name: 'application-details', params: { id: applicationId } });
@@ -149,92 +64,152 @@ const deleteItem = async (itemId) => {
     confirmButtonColor: '#3085d6',
     cancelButtonColor: '#d33',
     confirmButtonText: 'Yes, delete it!',
-    cancelButtonText: 'Cancel'
+    cancelButtonText: 'Cancel',
   });
 
   if (result.isConfirmed) {
     try {
       await store.deleteItem(itemId);
-      applicationLists.value = await store.getApplicationList();
+      fetchApplications();
       Swal.fire('Deleted!', 'The item has been deleted.', 'success');
     } catch (error) {
       Swal.fire('Error!', 'There was an error deleting the item.', 'error');
     }
   }
-}
+};
 
-const isLoading = ref(false)
+// Watchers
+watch([search], () => {
+  fetchApplications();
+});
+
+// Mounted Hook
+onMounted(() => {
+  fetchApplications();
+});
+
+// Header Definitions
+const headers = [
+  { title: 'APPLICATION ID', key: 'application_id' },
+  { title: 'Student Name', key: 'student.name' },
+  { title: 'Student Email', key: 'student.email' },
+  { title: 'University/Course Details', key: 'university.name' },
+  { title: 'Status', key: 'status' },
+  { title: 'Date Added', key: 'created_at' },
+  { title: 'Action', key: 'action', sortable: false },
+];
+
+// Status Color Resolvers
+const resolveStatusColor = (status) => {
+  const statusColors = {
+    0: 'primary', 1: 'success', 2: 'warning', 3: 'info',
+    4: 'info', 5: 'warning', 6: 'success', 7: 'warning',
+    8: 'danger', 9: 'danger', 10: 'secondary', 11: 'success',
+    12: 'warning'
+  };
+  return statusColors[status] || 'secondary';
+};
+
+const resolveStatusName = (status) => {
+  const statusNames = {
+    0: 'Application Processing', 1: 'Application Submitted',
+    2: 'Pending Docs', 3: 'Offer Issue Conditional',
+    4: 'Offer Issue Unconditional', 5: 'Need Payment',
+    6: 'CAS Issued', 7: 'Additional Doc Needed',
+    8: 'Refund Required', 9: 'Application Rejected',
+    10: 'Session Expired', 11: 'Doc Received', 12: 'Partial Payment',
+  };
+  return statusNames[status] || 'Unknown Status';
+};
+
 </script>
 
 <template>
   <div>
-    <AppCardActions title="New Application" :loading="isLoading"   no-actions>
-
-
-    <VCardText>
-      <VRow>
-        <VCol
-          cols="12"
-          offset-md="8"
-          md="4"
-        >
-          <AppTextField
-            v-model="search"
-            placeholder="Search ..."
-            append-inner-icon="tabler-search"
-            single-line
-            hide-details
-            dense
-            outlined
+    <AppCardActions title="New Application" :loading="isLoading" no-actions>
+      <VCardText class="d-flex flex-wrap gap-4">
+        <div class="me-3 d-flex gap-3">
+          <AppSelect
+            :model-value="itemsPerPage"
+            :items="[
+              { value: 10, title: '10' },
+              { value: 25, title: '25' },
+              { value: 50, title: '50' },
+              { value: 100, title: 100 },
+              { value: -1, title: 'All' },
+            ]"
+            style="inline-size: 6.25rem"
+            @update:model-value="itemsPerPage = parseInt($event, 10)"
           />
-        </VCol>
-      </VRow>
-    </VCardText>
+        </div>
+        <VSpacer />
 
-    <!-- 👉 Data Table  -->
-    <VDataTable
-      :headers="headers"
-      :items="applicationLists || []"
-      :search="search"
-      :items-per-page="5"
-      class="text-no-wrap color-black"
-    >
-    <template #item.student.name="{ item }">
-        <p>{{ item.student.first_name}} {{ item.student.last_name}}</p>
-      </template>
-    <template #item.university.name="{ item }">
-      <div class="d-flex flex-column ms-3">
-            <span class="d-block font-weight-medium text-truncate text-high-emphasis">{{ item.university.name }}</span>
+        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+          <!-- 👉 Search  -->
+          <div style="inline-size: 15.625rem">
+            <AppTextField v-model="searchQuery" placeholder="Search Application" />
+          </div>
+
+
+
+        </div>
+      </VCardText>
+      <!-- 👉 Data Table  -->
+      <VDataTableServer
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="applicationLists"
+        :items-length="totalApplications"
+        :headers="headers"
+        class="text-no-wrap color-black"
+        @update:options="updateOptions"
+      >
+        <template #item.student.name="{ item }">
+          <p>{{ item.student.first_name }} {{ item.student.last_name }}</p>
+        </template>
+        <template #item.university.name="{ item }">
+          <div class="d-flex flex-column ms-3">
+            <span class="d-block font-weight-medium text-truncate text-high-emphasis">
+              {{ item.university.name }}
+            </span>
             <span class="text-md">{{ item.course.name }}</span>
             <span class="text-md">{{ item.intake.name }}</span>
           </div>
-      </template>
-      <template #item.status="{ item }">
-        <VChip
-          :color="resolveStatusColor(item.status)"
-          :class="`text-${resolveStatusColor(item.status)}`"
-          size="small"
-          class="font-weight-medium"
-        >
-          {{ resolveStatusName(item.status) }}
-        </VChip>
-      </template>
-      <template #item.action="{ item }">
-        <div class="d-flex flex-column ms-3">
-          <IconBtn @click="viewApplicationDetail(item.id)">
-          <VIcon icon="tabler-eye" />
-        </IconBtn>
-        <IconBtn @click="deleteItem(item.id)">
-          <VIcon icon="tabler-trash" />
-        </IconBtn>
-        </div>
+        </template>
+        <template #item.status="{ item }">
+          <VChip
+            :color="resolveStatusColor(item.status)"
+            :class="`text-${resolveStatusColor(item.status)}`"
+            size="small"
+            class="font-weight-medium"
+          >
+            {{ resolveStatusName(item.status) }}
+          </VChip>
+        </template>
+        <template #item.action="{ item }">
+          <div class="d-flex flex-column ms-3">
+            <IconBtn @click="viewApplicationDetail(item.id)">
+              <VIcon icon="tabler-eye" />
+            </IconBtn>
+            <IconBtn @click="deleteItem(item.id)">
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
+          </div>
+        </template>
 
-      </template>
-
-    </VDataTable>
+        <!-- pagination -->
+        <template #bottom>
+          <TablePagination
+            v-model:page="page"
+            :items-per-page="itemsPerPage"
+            :total-items="totalApplications"
+          />
+        </template>
+      </VDataTableServer>
     </AppCardActions>
   </div>
 </template>
+
 <style scoped>
 
 </style>

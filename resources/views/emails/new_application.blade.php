@@ -286,7 +286,7 @@
                                 <p style="font-size: 14px; line-height: 160%;"><span style="font-size: 22px; line-height: 35.2px;">Hello Admin</span></p>
                                 <p style="font-size: 14px; line-height: 160%;"><span style="font-size: 18px; line-height: 28.8px;">A new application has created on the platform. Here are the details:</span></p>
                                 <p style="font-size: 14px; line-height: 160%;"><span style="font-size: 18px; line-height: 28.8px;"><span style="color: #000000; line-height: 22.4px;"><span style="line-height: 22.4px; color: #3020ef;"><span style="line-height: 22.4px;"><span style="line-height: 22.4px;">Channel Partner </span></span>Name</span>:</span>
-                                {{ $application->user->name }}</span>
+                                {{ $application->user->full_name }}</span>
                                 </p>
                                 <p style="line-height: 160%;"><span style="font-size: 18px; line-height: 28.8px;"><span style="color: #3020ef; line-height: 22.4px;">Channel Partner Email:</span> {{ $application->user->email }}</span>
                                 </p>

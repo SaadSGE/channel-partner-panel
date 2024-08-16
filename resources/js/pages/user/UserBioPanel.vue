@@ -115,6 +115,7 @@ const resolveUserRoleVariant = (role) => {
                 <h6 class="text-h6">
                   Role:
                   <div class="d-inline-block text-capitalize text-body-1">
+
                     {{ props.userData.role }}
                   </div>
                 </h6>
