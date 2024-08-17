@@ -87,7 +87,7 @@ export default [
       title: 'User',
       icon: { icon: 'tabler-apps' },
       to: 'user',
-      action: 'view',
+      action: 'read',
       subject: 'user',
     },
 

@@ -14,25 +14,46 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        // Validate the request data
+        $validatedData = $request->validate([
+            'firstName' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+           'password' => 'required|string|min:8|same:confirmPassword',
+             'confirmPassword' => 'required|string|min:8',
+            'mobileNumber' => 'nullable|string',
+            'whatsappNumber' => 'nullable|string',
+            'companyName' => 'nullable|string|max:255',
+            'website' => 'nullable|url|max:255',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'postCode' => 'nullable|string',
+            'country' => 'nullable|string|max:255',
+            'role' => 'required|string|max:50',
+            'recruitCountries' => 'nullable|array',
+            'recruitCountries.*' => 'string|max:255',
+            'createForm' => 'nullable'
+        ]);
+
         // Determine the role based on the form type
-        $role = $request->createForm === 'admin' ? $request->role : 'channel partner';
+        $role = $validatedData['createForm'] === 'admin' ? $validatedData['role'] : 'channel partner';
 
         // Create a new User instance with nullable fields using null coalescing
         $userDetail = new User([
-            'first_name' => $request->firstName ?? null,
-            'last_name' => $request->lastName ?? null,
-            'email' => $request->email ?? null,
-            'mobile_number' => $request->mobileNumber ?? null,
-            'whatsapp_number' => $request->whatsappNumber ?? null,
-            'company_name' => $request->companyName ?? null,
-            'website' => $request->website ?? null,
-            'address' => $request->address ?? null,
-            'city' => $request->city ?? null,
-            'post_code' => $request->postCode ?? null,
-            'country' => $request->country ?? null,
+            'first_name' => $validatedData['firstName'] ?? null,
+            'last_name' => $validatedData['lastName'] ?? null,
+            'email' => $validatedData['email'] ?? null,
+            'mobile_number' => $validatedData['mobileNumber'] ?? null,
+            'whatsapp_number' => $validatedData['whatsappNumber'] ?? null,
+            'company_name' => $validatedData['companyName'] ?? null,
+            'website' => $validatedData['website'] ?? null,
+            'address' => $validatedData['address'] ?? null,
+            'city' => $validatedData['city'] ?? null,
+            'post_code' => $validatedData['postCode'] ?? null,
+            'country' => $validatedData['country'] ?? null,
             'role' => $role,
-            'recruit_countries' => $request->recruiteCountries ? json_encode($request->recruiteCountries) : null,
-            'password' => bcrypt($request->password ?? ''),
+            'recruit_countries' => isset($validatedData['recruitCountries']) ? json_encode($validatedData['recruitCountries']) : null,
+            'password' => bcrypt($validatedData['password'] ?? ''),
         ]);
 
         // Save the user details
@@ -53,6 +74,7 @@ class AuthController extends Controller
         // Return a success response
         return $this->successJsonResponse('User Registration Successful', $userDetail);
     }
+
 
     /**
      * Handle a login request to the application.

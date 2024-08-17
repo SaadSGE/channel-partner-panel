@@ -1,9 +1,8 @@
-
 <script setup>
 import { useAuthStore } from '@/@core/stores/auth';
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
 import Swal from 'sweetalert2';
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 import { useRouter } from "vue-router";
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 
@@ -13,12 +12,12 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
-})
+});
 
 const emit = defineEmits([
   'update:isDrawerOpen',
   'userData',
-])
+]);
 
 // Store and Router
 const roleStore = useRolePermissionStore();
@@ -30,7 +29,7 @@ const isFormValid = ref(false);
 const refForm = ref();
 const roles = ref([]);
 
-// Form Data
+// Main Form Data
 const form = ref({
   firstName: '',
   lastName: '',
@@ -46,11 +45,14 @@ const form = ref({
   postCode: '',
   country: '',
   role: '',
-  plan: '',
   status: '',
-  recruitCountries: [],
   avatar: '',
-  createForm: 'admin'
+  createForm: 'admin',
+});
+
+// Separate Reactive Variable for Recruit Countries
+const recruitForm = ref({
+  recruitCountries: [],
 });
 
 // On Component Mount
@@ -66,7 +68,7 @@ const closeNavigationDrawer = () => {
     refForm.value?.reset();
     refForm.value?.resetValidation();
   });
-}
+};
 
 // Lowercase Function for Role Check
 const lowerCase = (name) => {
@@ -78,24 +80,29 @@ const onSubmit = async () => {
   refForm.value?.validate().then(async ({ valid }) => {
     if (valid) {
       try {
-        await authStore.register(form.value);
+        // Combine form data and recruitForm data before submission
+        const submitData = {
+          ...form.value,
+          ...recruitForm.value,
+        };
+
+        await authStore.register(submitData);
         Swal.fire({
           icon: 'success',
           title: 'Registration Successful',
           text: 'You have been registered successfully!',
-          confirmButtonText: 'OK'
+          confirmButtonText: 'OK',
         });
 
         // Emit userData and reset form
-        emit('userData', form.value);
+        emit('userData', submitData);
         emit('update:isDrawerOpen', false);
 
         nextTick(() => {
           refForm.value?.reset();
           refForm.value?.resetValidation();
+          recruitForm.value.recruitCountries = []; // Reset recruitCountries separately
         });
-
-
 
       } catch (error) {
         console.error('Error in registration:', error);
@@ -103,20 +110,18 @@ const onSubmit = async () => {
           icon: 'error',
           title: 'Registration Failed',
           text: error.response?.data.message || 'An unexpected error occurred',
-          confirmButtonText: 'OK'
+          confirmButtonText: 'OK',
         });
       }
     }
   });
-}
+};
 
 // Handle Drawer Model Value Update
 const handleDrawerModelValueUpdate = val => {
   emit('update:isDrawerOpen', val);
-}
-
+};
 </script>
-
 <template>
   <VNavigationDrawer
     temporary
@@ -290,15 +295,14 @@ const handleDrawerModelValueUpdate = val => {
                 <!-- 👉 Country Recruit For (multi-checkbox) -->
                 <VCol cols="12">
                   <label>Country Recruit For</label>
-                  <VCheckboxGroup v-model="form.recruitCountries">
-                    <VCheckbox value="Nigeria" label="Nigeria" />
-                    <VCheckbox value="India" label="India" />
-                    <VCheckbox value="Bangladesh" label="Bangladesh" />
-                    <VCheckbox value="Nepal" label="Nepal" />
-                    <VCheckbox value="Bhutan" label="Bhutan" />
-                    <VCheckbox value="Ghana" label="Ghana" />
-                    <VCheckbox value="Sri Lanka" label="Sri Lanka" />
-                  </VCheckboxGroup>
+
+                  <VCheckbox value="Nigeria" label="Nigeria" v-model="recruitForm.recruitCountries" />
+                  <VCheckbox value="India" label="India" v-model="recruitForm.recruitCountries"/>
+                  <VCheckbox value="Bangladesh" label="Bangladesh" v-model="recruitForm.recruitCountries"/>
+                  <VCheckbox value="Nepal" label="Nepal" v-model="recruitForm.recruitCountries"/>
+                  <VCheckbox value="Bhutan" label="Bhutan" v-model="recruitForm.recruitCountries"/>
+                  <VCheckbox value="Ghana" label="Ghana" v-model="recruitForm.recruitCountries"/>
+                  <VCheckbox value="Sri Lanka" label="Sri Lanka" v-model="recruitForm.recruitCountries" />
                 </VCol>
               </template>
 
@@ -318,4 +322,3 @@ const handleDrawerModelValueUpdate = val => {
     </PerfectScrollbar>
   </VNavigationDrawer>
 </template>
-

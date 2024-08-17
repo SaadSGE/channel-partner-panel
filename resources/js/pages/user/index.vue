@@ -65,6 +65,7 @@ const handleParentSet = async () => {
 };
 
 const handleUserUpdate = (updatedUser) => {
+  console.log(updatedUser)
   const index = users.value.findIndex((user) => user.id === updatedUser.id);
   if (index !== -1) {
     users.value.splice(index, 1, updatedUser);
@@ -140,8 +141,6 @@ const updateOptions = (options) => {
 const headers = [
   { title: "Name", key: "full_name" },
   { title: "Email", key: "email" },
-  { title: "Mobile Number", key: "mobile_number" },
-  { title: "Whatsapp Number", key: "whatsapp_number" },
   { title: "Role", key: "role" },
   { title: "Parent", key: "parent.full_name" },
   { title: "Record Count", key: "record_count" },
@@ -168,47 +167,6 @@ watch([searchQuery, selectedRole, selectedParent], () => {
     @userUpdated="handleUserUpdate"
   />
   <section>
-    <div class="d-flex mb-6">
-      <VRow>
-        <template v-for="(data, id) in widgetData" :key="id">
-          <VCol cols="12" md="3" sm="6">
-            <VCard>
-              <VCardText>
-                <div class="d-flex justify-space-between">
-                  <div class="d-flex flex-column gap-y-1">
-                    <div class="text-body-1 text-high-emphasis">
-                      {{ data.title }}
-                    </div>
-                    <div class="d-flex gap-x-2 align-center">
-                      <h4 class="text-h4">
-                        {{ data.value }}
-                      </h4>
-                      <div
-                        class="text-base"
-                        :class="data.change > 0 ? 'text-success' : 'text-error'"
-                      >
-                        ({{ prefixWithPlus(data.change) }}%)
-                      </div>
-                    </div>
-                    <div class="text-sm">
-                      {{ data.desc }}
-                    </div>
-                  </div>
-                  <VAvatar
-                    :color="data.iconColor"
-                    variant="tonal"
-                    rounded
-                    size="42"
-                  >
-                    <VIcon :icon="data.icon" size="26" />
-                  </VAvatar>
-                </div>
-              </VCardText>
-            </VCard>
-          </VCol>
-        </template>
-      </VRow>
-    </div>
 
     <VDialog v-model="isParentDialogVisible" max-width="500px">
       <VCard>

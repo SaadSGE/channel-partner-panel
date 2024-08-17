@@ -79,12 +79,61 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     */
+ * Update the specified resource in storage.
+ */
     public function update(Request $request, string $id)
     {
-        //
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'mobile_number' => 'nullable|string',
+            'whatsapp_number' => 'nullable|string',
+            'company_name' => 'nullable|string',
+            'website' => 'nullable|url|max:255',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'post_code' => 'nullable|string',
+            'country' => 'nullable|string|max:255',
+            'role' => 'required|string|max:50',
+            'recruit_countries' => 'nullable|array',
+
+
+        ]);
+
+        try {
+            // Find the user by ID
+            $user = User::findOrFail($id);
+
+            // Update user details
+            $user->first_name = $validatedData['first_name'];
+            $user->last_name = $validatedData['last_name'];
+            $user->email = $validatedData['email'];
+            $user->mobile_number = $validatedData['mobile_number'] ?? null;
+            $user->whatsapp_number = $validatedData['whatsapp_number'] ?? null;
+            $user->company_name = $validatedData['company_name'] ?? null;
+            $user->website = $validatedData['website'] ?? null;
+            $user->address = $validatedData['address'] ?? null;
+            $user->city = $validatedData['city'] ?? null;
+            $user->post_code = $validatedData['post_code'] ?? null;
+            $user->country = $validatedData['country'] ?? null;
+            $user->role = $validatedData['role'];
+
+            $user->recruit_countries = isset($validatedData['recruit_countries']) ? json_encode($validatedData['recruit_countries']) : null;
+
+
+            $user->save();
+
+            // Return success response
+            return $this->successJsonResponse('User updated successfully', $user);
+
+        } catch (\Throwable $th) {
+            \Log::error($th);
+            return $this->exceptionJsonResponse('Failed to update user', $th);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
