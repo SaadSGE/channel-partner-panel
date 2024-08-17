@@ -1,1 +1,0 @@
-const r=t=>t==null||t===""?!0:!!(Array.isArray(t)&&t.length===0),n=t=>t==null,s=t=>Array.isArray(t)&&t.length===0,o=t=>{const e=new Date;return t.getDate()===e.getDate()&&t.getMonth()===e.getMonth()&&t.getFullYear()===e.getFullYear()},a=(t,e)=>!t||!e?!1:t.toLowerCase().includes(e.toLowerCase());export{n as a,s as b,r as c,a as d,o as i};
