@@ -19,7 +19,9 @@ class UserController extends Controller
         $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
         $roleFilter = request()->query('role', null); // Get the role filter query parameter
         $parentId = request()->query('parentId', null); // Get the parentId filter query parameter
-
+        if(auth('api')->user()->role != 'admin') {
+            $parentId = auth('api')->user()->id;
+        }
         // Query the users
         $queryResult = User::with(['parent:id,parent_id,first_name,last_name,role'])->where('role', '!=', 'admin') // Exclude admin users
             ->when($searchQuery, function ($query, $searchQuery) {

@@ -1,4 +1,7 @@
 <script setup>
+import { useRolePermissionStore } from "@/@core/stores/rolePermission";
+import { computed, onMounted, ref } from 'vue';
+const store = useRolePermissionStore();
 definePage({
   meta: {
     action: 'read',
@@ -10,16 +13,8 @@ const headers = [
     title: 'Name',
     key: 'name',
   },
-  {
-    title: 'Assigned To',
-    key: 'assignedTo',
-    sortable: false,
-  },
-  {
-    title: 'Created Date',
-    key: 'createdDate',
-    sortable: false,
-  },
+
+
   {
     title: 'Actions',
     key: 'actions',
@@ -67,18 +62,15 @@ const colors = {
   },
 }
 
-const { data: permissionsData } = await useApi(createUrl('/apps/permissions', {
-  query: {
-    q: search,
-    itemsPerPage,
-    page,
-    sortBy,
-    orderBy,
-  },
-}))
 
-const permissions = computed(() => permissionsData.value.permissions)
-const totalPermissions = computed(() => permissionsData.value.totalPermissions)
+const permissionData = ref([]);
+const permissions = ref([]);
+onMounted(async () => {
+  await store.getAllPermission();
+  permissions.value = store.permissions;
+
+});
+const totalPermissions = computed(() => permissionData.value.total)
 
 const editPermission = name => {
   isPermissionDialogVisible.value = true

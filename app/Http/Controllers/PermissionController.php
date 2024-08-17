@@ -117,4 +117,10 @@ class PermissionController extends Controller
     {
         //
     }
+
+    public function allPermission()
+    {
+        $permissions = Permission::get();
+        return $this->successJsonResponse('Permission data found', $permissions);
+    }
 }

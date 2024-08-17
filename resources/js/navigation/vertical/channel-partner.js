@@ -87,8 +87,8 @@ export default [
       title: 'User',
       icon: { icon: 'tabler-apps' },
       to: 'user',
-      action: 'create',
-      subject: 'dashboard',
+      action: 'view',
+      subject: 'user',
     },
 
 

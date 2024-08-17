@@ -30,24 +30,27 @@ class PermissionSeeder extends Seeder
         $permissions = [
             'application.create', 'application.edit', 'application.read', 'application.delete',
             'record.create', 'record.edit', 'record.read', 'record.delete',
-            'dashboard.read','dashboard.create',
-            'application.status','application.comment','application.university_communication'
+            'dashboard.read','dashboard.create', 'dashboard.filter',
+            'application.status','application.comment','application.university_communication',
+            'user.create', 'user.edit', 'user.read', 'user.delete',
+            'user.filter'
+
 
         ];
 
         // Create permissions
         foreach ($permissions as $permissionName) {
-            Permission::create(['name' => $permissionName]);
+            Permission::create(['name' => $permissionName,'guard_name' => 'api']);
         }
 
-        $adminRole = Role::create(['name' => 'admin']);
+        $adminRole = Role::create(['name' => 'admin','guard_name' => 'api']);
         $adminRole->givePermissionTo(['application.create', 'application.edit', 'application.read', 'application.delete','record.create', 'record.edit', 'record.read', 'record.delete',
         'dashboard.read','dashboard.create','application.status','application.comment','application.university_communication']);
 
-        $channelPartnerRole = Role::create(['name' => 'channel partner']);
+        $channelPartnerRole = Role::create(['name' => 'channel partner','guard_name' => 'api']);
         $channelPartnerRole->givePermissionTo(['application.create', 'application.edit', 'application.read', 'application.delete','dashboard.read','application.status','application.comment','application.university_communication']);
 
-        $dataEntryOperatorRole = Role::create(['name' => 'editor']);
+        $dataEntryOperatorRole = Role::create(['name' => 'editor','guard_name' => 'api']);
         $dataEntryOperatorRole->givePermissionTo(['record.create', 'record.edit', 'record.read', 'record.delete','dashboard.read']);
 
         $users = User::all();

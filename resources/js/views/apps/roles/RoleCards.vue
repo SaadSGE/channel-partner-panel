@@ -1,5 +1,6 @@
 <script setup>
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
+
 import girlUsingMobile from '@images/pages/girl-using-mobile.png';
 
 const roles = ref([])
@@ -8,11 +9,14 @@ const isRoleDialogVisible = ref(false)
 const roleDetail = ref()
 const isAddRoleDialogVisible = ref(false)
 onMounted(async () => {
-  await store.getAllRoles()
-  roles.value = store.roles;
 
+  await fetchRole()
 
 });
+const fetchRole = async()=>{
+  await store.getAllRoles()
+  roles.value = store.roles;
+}
 const editPermission = (value,id) => {
 
   isRoleDialogVisible.value = true
@@ -107,12 +111,13 @@ const editPermission = (value,id) => {
           </VCol>
         </VRow>
       </VCard>
-      <AddEditRoleDialog v-model:is-dialog-visible="isAddRoleDialogVisible" />
+      <AddEditRoleDialog v-model:is-dialog-visible="isAddRoleDialogVisible"  @roleSubmitted="fetchRole"/>
     </VCol>
   </VRow>
 
   <AddEditRoleDialog
     v-model:is-dialog-visible="isRoleDialogVisible"
     v-model:role-permissions="roleDetail"
+    @roleSubmitted="fetchRole"
   />
 </template>

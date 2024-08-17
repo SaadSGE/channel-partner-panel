@@ -353,6 +353,7 @@
     "watchTriggerable": true,
     "watchWithFilter": true,
     "whenever": true,
-    "containsString": true
+    "containsString": true,
+    "formatKey": true
   }
 }

@@ -30,6 +30,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('roles', RoleController::class);
     Route::post('/roles/{roleName}/permissions', [RoleController::class, 'store']);
     Route::apiResource('permissions', PermissionController::class);
+    Route::get('all-permissions', [PermissionController::class,'allPermission']);
     Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAll']);
     Route::apiResource('application', ApplicationController::class);
     Route::post('student-document-upload', [StudentFileController::class,'upload']);

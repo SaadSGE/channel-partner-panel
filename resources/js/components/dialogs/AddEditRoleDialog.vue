@@ -1,8 +1,8 @@
 <script lang="js" setup>
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
+import { formatKey } from "@/@core/utils/helpers.js";
 import { computed, onMounted, ref, watch } from 'vue';
 import { VForm } from 'vuetify/components/VForm';
-
 const store = useRolePermissionStore();
 const permissions = ref([]);
 const customPermissionKeys = ref([]); // Array to store keys of custom permissions
@@ -129,6 +129,7 @@ const onSubmit = async () => {
     await store.setRolePermission(rolePermissions);
     emit('update:rolePermissions', rolePermissions);
     emit('update:isDialogVisible', false);
+    emit('roleSubmitted');
     isSelectAll.value = false;
     refPermissionForm.value?.reset();
   } catch (error) {
@@ -180,7 +181,7 @@ const onReset = () => {
             >
               <tr>
                 <td>
-                  <h6 class="text-h6">{{ permission.name }}</h6>
+                  <h6 class="text-h6">{{ formatKey(permission.name) }}</h6>
                 </td>
                 <td>
                   <div class="d-flex justify-end">
@@ -231,7 +232,7 @@ const onReset = () => {
               <tr v-for="(enabled, customPermission) in permission.custom_permissions" :key="customPermission">
                 <td>
                   <!-- Concatenate the permission name with the custom permission -->
-                  <h6 class="text-h6">{{ permission.name }} {{ customPermission }}</h6>
+                  <h6 class="text-h6">{{ formatKey(permission.name) }} {{ formatKey(customPermission) }}</h6>
                 </td>
                 <td colspan="4">
                   <div class="d-flex justify-end">
