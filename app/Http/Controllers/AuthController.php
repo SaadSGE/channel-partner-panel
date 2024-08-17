@@ -29,14 +29,14 @@ class AuthController extends Controller
             'city' => 'nullable|string|max:255',
             'postCode' => 'nullable|string',
             'country' => 'nullable|string|max:255',
-            'role' => 'required|string|max:50',
+            'role' => 'nullable|string|max:50',
             'recruitCountries' => 'nullable|array',
             'recruitCountries.*' => 'string|max:255',
             'createForm' => 'nullable'
         ]);
 
         // Determine the role based on the form type
-        $role = $validatedData['createForm'] === 'admin' ? $validatedData['role'] : 'channel partner';
+        $role = $request->createForm === 'admin' ? $validatedData['role'] : 'channel partner';
 
         // Create a new User instance with nullable fields using null coalescing
         $userDetail = new User([

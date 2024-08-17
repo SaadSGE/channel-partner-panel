@@ -53,7 +53,7 @@ const form = ref({
   postCode: "",
   country: "",
   password: "",
-  recruiteCountries: [],
+  recruitCountries: [],
   privacyPolicies: false,
 });
 const isPasswordVisible = ref(false);
@@ -85,7 +85,7 @@ const registerUser = async () => {
       postCode: "",
       country: "",
       password: "",
-      recruiteCountries: [],
+      recruitCountries: [],
       privacyPolicies: false,
       confirmPassword :""
     };
@@ -262,16 +262,16 @@ const registerUser = async () => {
 
   <h3 class="mt-8">Country you recruit for *</h3>
   <VRow>
-    <VCol cols="12" md="12" sm="12">
-      <VCheckboxGroup v-model="form.recruiteCountries" class="demo-space-x">
-        <VCheckbox value="Nigeria" label="Nigeria" />
-        <VCheckbox value="India" label="India" />
-        <VCheckbox value="Bangladesh" label="Bangladesh" />
-        <VCheckbox value="Nepal" label="Nepal" />
-        <VCheckbox value="Bhutan" label="Bhutan" />
-        <VCheckbox value="Ghana" label="Ghana" />
-        <VCheckbox value="Sri Lanka" label="Sri Lanka" />
-      </VCheckboxGroup>
+    <VCol cols="12" md="12" sm="12" class="demo-space-x">
+
+        <VCheckbox value="Nigeria" label="Nigeria"  v-model="form.recruitCountries"/>
+        <VCheckbox value="India" label="India" v-model="form.recruitCountries"/>
+        <VCheckbox value="Bangladesh" label="Bangladesh" v-model="form.recruitCountries" />
+        <VCheckbox value="Nepal" label="Nepal" v-model="form.recruitCountries"/>
+        <VCheckbox value="Bhutan" label="Bhutan" v-model="form.recruitCountries"/>
+        <VCheckbox value="Ghana" label="Ghana" v-model="form.recruitCountries"/>
+        <VCheckbox value="Sri Lanka" label="Sri Lanka" v-model="form.recruitCountries"/>
+
     </VCol>
   </VRow>
 
