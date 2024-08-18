@@ -234,6 +234,7 @@ const updateOptions = (event) =>{
 }
 
 onMounted(async () => {
+  isLoading.value = true
   if (commonFunctionStore.countries.length === 0) await commonFunctionStore.getCountries();
   if (commonFunctionStore.courses.length === 0) await commonFunctionStore.getCourses();
   if (commonFunctionStore.intakes.length === 0) await commonFunctionStore.getIntakes();
@@ -245,12 +246,13 @@ onMounted(async () => {
   intakes.value = commonFunctionStore.intakes;
   universities.value = commonFunctionStore.universities;
   await getRecord();
+  isLoading.value = false
 });
 </script>
 
 <template>
   <div v-if="showAppllicationForm">
-    <VCard title="Add Record" v-if="showAddForm">
+    <AppCardActions title="Add Record" v-if="showAddForm" :loading="isLoading" no-actions>
       <template #append>
         <!-- 👉 Before actions slot -->
         <div>
@@ -380,9 +382,9 @@ onMounted(async () => {
           </VCol>
         </VRow>
       </VForm>
-    </VCard>
+    </AppCardActions>
 
-    <VCard class="mt-2" v-if="showEditForm">
+    <AppCardActions class="mt-2" v-if="showEditForm" :loading="isLoading" no-actions>
       <VCardTitle class="d-flex justify-space-between align-center mt-2 mb-2">
         <span>Edit Record</span>
         <IconBtn @click="closeEditForm">
@@ -491,9 +493,9 @@ onMounted(async () => {
           </VCol>
         </VRow>
       </VForm>
-    </VCard>
+    </AppCardActions>
 
-    <VCard title="Course Details" class="mt-2">
+    <AppCardActions title="Course Details" class="mt-2" :loading="isLoading" no-actions>
       <VCardText>
         <div class="d-flex justify-space-between flex-wrap gap-6">
           <div>
@@ -547,7 +549,7 @@ onMounted(async () => {
           </div>
         </template>
       </VDataTableServer>
-    </VCard>
+    </AppCardActions>
   </div>
 </template>
 <style lang="scss">
