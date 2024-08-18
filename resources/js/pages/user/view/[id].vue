@@ -10,6 +10,7 @@ import { } from "@/@core/stores/commonFunction";
 import { useRecordStore } from "@/@core/stores/recordStore";
 import { useUserStore } from "@/@core/stores/user";
 import { containsString } from '@/@core/utils/helpers.js';
+import ApplicationList from "@/pages/application/index.vue";
 import UserBioPanel from "@/pages/user/UserBioPanel.vue";
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -47,9 +48,7 @@ const searchQuery = ref("");
 const isLoading = ref(false);
 onMounted(async () => {
   userData.value = await store.fetchUser(route.params.id);
-  applicationLists.value = await storeApplication.getApplicationList(
-    route.params.id
-  );
+
   await getRecord();
   //await fetchUsers();
 });
@@ -272,65 +271,7 @@ const updateUserOptions = (options) => {
   </VRow>
 
   <VCard class="mt-5" v-if="containsString(userData.role,'channel partner')">
-    <VCardText>
-      <h5 class="text-h5">User Application</h5>
-      <VRow>
-        <VCol cols="12" offset-md="8" md="4">
-          <AppTextField
-            v-model="search"
-            placeholder="Search ..."
-            append-inner-icon="tabler-search"
-            single-line
-            hide-details
-            dense
-            outlined
-          />
-        </VCol>
-      </VRow>
-    </VCardText>
-
-    <!-- 👉 Data Table  -->
-    <VDataTable
-      :headers="headersApplication"
-      :items="applicationLists || []"
-      :search="search"
-      :items-per-page="5"
-      class="text-no-wrap color-black"
-    >
-      <template #item.student.name="{ item }">
-        <p>{{ item.student.first_name }} {{ item.student.last_name }}</p>
-      </template>
-      <template #item.university.name="{ item }">
-        <div class="d-flex flex-column ms-3">
-          <span
-            class="d-block font-weight-medium text-truncate text-high-emphasis"
-            >{{ item.university.name }}</span
-          >
-          <span class="text-md">{{ item.course.name }}</span>
-          <span class="text-md">{{ item.intake.name }}</span>
-        </div>
-      </template>
-      <template #item.status="{ item }">
-        <VChip
-          :color="resolveStatusColor(item.status)"
-          :class="`text-${resolveStatusColor(item.status)}`"
-          size="small"
-          class="font-weight-medium"
-        >
-          {{ resolveStatusName(item.status) }}
-        </VChip>
-      </template>
-      <template #item.action="{ item }">
-        <div class="d-flex flex-column ms-3">
-          <IconBtn @click="viewApplicationDetail(item.id)">
-            <VIcon icon="tabler-eye" />
-          </IconBtn>
-          <IconBtn @click="deleteItem(item.id)">
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+    <ApplicationList :userId="route.params.id"/>
   </VCard>
 
   <VCard title="Course Details" class="mt-2" v-if="containsString(userData.role,'editor')">

@@ -23,13 +23,18 @@ const sortBy = ref();
 const orderBy = ref();
 const search = ref('');
 const isLoading = ref(false);
-
+const props = defineProps({
+  userId: {
+    type: String,
+    default: null,
+  }
+});
 // Methods
 const fetchApplications = async () => {
   isLoading.value = true;
   try {
     const response = await store.getApplicationList({
-      id:null,
+      id:props.userId,
       page: page.value,
       itemsPerPage: itemsPerPage.value,
       sortBy: sortBy.value,
@@ -191,7 +196,7 @@ const resolveStatusName = (status) => {
             <IconBtn @click="viewApplicationDetail(item.id)">
               <VIcon icon="tabler-eye" />
             </IconBtn>
-            <IconBtn @click="deleteItem(item.id)">
+            <IconBtn @click="deleteItem(item.id)" v-if="$can('delete','application')">
               <VIcon icon="tabler-trash" />
             </IconBtn>
           </div>
