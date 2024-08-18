@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use DB;
 use Log;
+use App\Models\User;
 
 class RoleController extends Controller
 {
@@ -68,13 +69,18 @@ class RoleController extends Controller
 
         try {
             $role = null;
+            $oldRoleName = null;
+
             if ($request->id) {
                 // Find the role by ID
                 $role = Role::find($request->id);
 
                 if (!$role) {
-                    return response()->json(['errors' => ['Role not found']], 404);
+                    return $this->errorJsonResponse('Role not found', [], 404);
                 }
+
+                // Store the old role name for updating users later
+                $oldRoleName = $role->name;
 
                 // Update the role name if changed
                 $role->name = $validated['name'];
@@ -105,6 +111,12 @@ class RoleController extends Controller
                 }
             }
 
+            // Update the role name in users table if the role name was changed
+            if ($oldRoleName && $oldRoleName !== $validated['name']) {
+                User::where('role', $oldRoleName)
+                    ->update(['role' => $validated['name']]);
+            }
+
             // Logout all users associated with this role
             $users = $role->users;
             foreach ($users as $user) {
@@ -114,20 +126,21 @@ class RoleController extends Controller
             // Commit the transaction
             DB::commit();
 
-            return response()->json(['message' => 'Role saved and permissions assigned successfully, users logged out', 'role' => $role], 201);
+            return $this->successJsonResponse('Role saved and permissions assigned successfully, users logged out', $role, '', 201);
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollback();
 
             // Log the error
-            Log::error('Error saving role and assigning permissions:', [
+            \Log::error('Error saving role and assigning permissions:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json(['errors' => ['An unexpected error occurred']], 500);
+            return $this->exceptionJsonResponse($e);
         }
     }
+
 
     /**
      * Display the specified resource.

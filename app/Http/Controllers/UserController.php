@@ -96,10 +96,8 @@ class UserController extends Controller
             'city' => 'nullable|string|max:255',
             'post_code' => 'nullable|string',
             'country' => 'nullable|string|max:255',
-            'role' => 'required|string|max:50',
+            'role' => 'required|string',
             'recruit_countries' => 'nullable|array',
-
-
         ]);
 
         try {
@@ -118,11 +116,17 @@ class UserController extends Controller
             $user->city = $validatedData['city'] ?? null;
             $user->post_code = $validatedData['post_code'] ?? null;
             $user->country = $validatedData['country'] ?? null;
-            $user->role = $validatedData['role'];
 
+            // Update recruit_countries
             $user->recruit_countries = isset($validatedData['recruit_countries']) ? json_encode($validatedData['recruit_countries']) : null;
 
+            // Update the role
+            $user->role = $validatedData['role'];
 
+            // Sync the role (remove old role and assign the new one)
+            $user->syncRoles([$validatedData['role']]);
+
+            // Save the updated user details
             $user->save();
 
             // Return success response
@@ -133,6 +137,7 @@ class UserController extends Controller
             return $this->exceptionJsonResponse('Failed to update user', $th);
         }
     }
+
 
 
     /**

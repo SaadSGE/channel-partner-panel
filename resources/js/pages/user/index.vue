@@ -10,7 +10,7 @@ import { onMounted, ref, watch } from "vue";
 definePage({
   meta: {
     action: "read",
-    subject: "dashboard",
+    subject: "user",
   },
 });
 
@@ -193,11 +193,11 @@ watch([searchQuery, selectedRole, selectedParent], () => {
     </VDialog>
 
     <VCard class="mb-6">
-      <VCardItem class="pb-4">
+      <VCardItem class="pb-4" v-if="$can('filter','user')">
         <VCardTitle>Filters</VCardTitle>
       </VCardItem>
 
-      <VCardText>
+      <VCardText v-if="$can('filter','user')">
         <VRow>
           <!-- 👉 Select Role -->
           <VCol cols="12" sm="4">
@@ -257,6 +257,7 @@ watch([searchQuery, selectedRole, selectedParent], () => {
           <VBtn
             prepend-icon="tabler-plus"
             @click="isAddNewUserDrawerVisible = true"
+            v-if="$can('create','user')"
           >
             Add New User
           </VBtn>
@@ -291,21 +292,21 @@ watch([searchQuery, selectedRole, selectedParent], () => {
                   <VListItemTitle>View</VListItemTitle>
                 </VListItem>
 
-                <VListItem @click="editUser(item)">
+                <VListItem @click="editUser(item)"   v-if="$can('edit','user')">
                   <template #prepend>
                     <VIcon icon="tabler-pencil" />
                   </template>
                   <VListItemTitle>Edit</VListItemTitle>
                 </VListItem>
 
-                <VListItem @click="setParent(item)">
+                <VListItem @click="setParent(item)"   v-if="$can('edit','user')">
                   <template #prepend>
                     <VIcon icon="tabler-pencil" />
                   </template>
                   <VListItemTitle>Set Parent</VListItemTitle>
                 </VListItem>
 
-                <VListItem @click="deleteUser(item.id)">
+                <VListItem @click="deleteUser(item.id)"  v-if="$can('delete','user')">
                   <template #prepend>
                     <VIcon icon="tabler-trash" />
                   </template>
