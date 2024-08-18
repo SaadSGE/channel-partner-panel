@@ -15,7 +15,8 @@ export const useApplicationListStore = defineStore({
     universityCommunications: [],
   }),
   actions: {
-    async getApplicationList({ id = null, page = 1, itemsPerPage = 10, searchQuery = '', role = '', sortBy = '', orderBy = '' }) {
+    async getApplicationList( id = null, page = 1, itemsPerPage = 10, searchQuery = '', role = '', sortBy = '', orderBy = '' ) {
+
       try {
         const response = await $api('/application', {
           method: 'GET',
@@ -26,10 +27,10 @@ export const useApplicationListStore = defineStore({
             id: id,
             page: page,
             perPage: itemsPerPage,
-            searchQuery: searchQuery,
-            role: role,
-            sortBy: sortBy,
-            orderBy: orderBy,
+            searchQuery,
+            role,
+            sortBy,
+            orderBy
           }
         });
         return response;

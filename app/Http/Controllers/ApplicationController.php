@@ -29,7 +29,7 @@ class ApplicationController extends Controller
      */
     public function index()
     {
-        $searchQuery = strtoupper(strtolower(trim(request()->query('q'))));
+        $searchQuery = strtoupper(strtolower(trim(request()->query('searchQuery'))));
         $perPage = (int)request()->query('perPage') ?: 10;
         $id = (int) request()->query('id') ?: null;
         $sortBy = (string)request()->query('sortBy');
@@ -42,7 +42,7 @@ class ApplicationController extends Controller
             }
         }
 
-        $queryResult = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student'])
+        $queryResult = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student','user'])
             ->when($id, function ($query, $id) {
                 return $query->where('created_by', $id);
             })

@@ -31,16 +31,17 @@ const props = defineProps({
 });
 // Methods
 const fetchApplications = async () => {
+
   isLoading.value = true;
   try {
-    const response = await store.getApplicationList({
-      id:props.userId,
-      page: page.value,
-      itemsPerPage: itemsPerPage.value,
-      sortBy: sortBy.value,
-      orderBy: orderBy.value,
-      search: search.value,
-    });
+    const response = await store.getApplicationList(
+      props.userId,
+      page.value,
+      itemsPerPage.value,
+      search.value,
+      sortBy.value,
+      orderBy.value,
+    );
     applicationLists.value = response.data;
     totalApplications.value = response.total;
   } catch (error) {
@@ -98,6 +99,7 @@ const headers = [
   { title: 'APPLICATION ID', key: 'application_id' },
   { title: 'Student Name', key: 'student.name' },
   { title: 'Student Email', key: 'student.email' },
+  { title: 'Channel Partner', key: 'user.email' },
   { title: 'University/Course Details', key: 'university.name' },
   { title: 'Status', key: 'status' },
   { title: 'Date Added', key: 'created_at' },
@@ -152,7 +154,7 @@ const resolveStatusName = (status) => {
         <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
           <!-- 👉 Search  -->
           <div style="inline-size: 15.625rem">
-            <AppTextField v-model="searchQuery" placeholder="Search Application" />
+            <AppTextField v-model="search" placeholder="Search Application" />
           </div>
 
 
