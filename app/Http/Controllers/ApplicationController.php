@@ -21,6 +21,7 @@ use App\Notifications\NewApplicationNotification;
 use App\Notifications\StatusChangedNotification;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use App\Jobs\GenerateStudentDocumentsZip;
 
 class ApplicationController extends Controller
 {
@@ -30,25 +31,39 @@ class ApplicationController extends Controller
     public function index()
     {
         $searchQuery = strtoupper(strtolower(trim(request()->query('searchQuery'))));
-        $perPage = (int)request()->query('perPage') ?: 10;
+        $perPage = (int) request()->query('perPage') ?: 10;
         $id = (int) request()->query('id') ?: null;
-        $sortBy = (string)request()->query('sortBy');
+        $sortBy = (string) request()->query('sortBy');
         $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
         $userId = auth('api')->user()->id;
         $userRole = auth('api')->user()->role;
-        if($id == null) {
-            if($userRole == 'channel partner') {
-                $id = $userId;
-            }
+
+        // Set id to user ID if user is a channel partner and no ID is provided
+        if ($id == null && $userRole == 'channel partner') {
+            $id = $userId;
         }
 
-        $queryResult = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student','user'])
+        $queryResult = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user'])
             ->when($id, function ($query, $id) {
                 return $query->where('created_by', $id);
             })
             ->when($searchQuery, function ($query, $searchQuery) {
                 return $query->where(function ($query) use ($searchQuery) {
-                    $query->where('application_id', 'LIKE', "%$searchQuery%");
+                    // Search across multiple fields
+                    $query->where('application_id', 'LIKE', "%$searchQuery%")
+                        ->orWhereHas('student', function ($q) use ($searchQuery) {
+                            $q->where('first_name', 'LIKE', "%$searchQuery%")
+                                ->orWhere('last_name', 'LIKE', "%$searchQuery%")
+                                ->orWhere('email', 'LIKE', "%$searchQuery%");
+                        })
+                        ->orWhereHas('user', function ($q) use ($searchQuery) {
+                            $q->where('first_name', 'LIKE', "%$searchQuery%")
+                                ->orWhere('last_name', 'LIKE', "%$searchQuery%")
+                                ->orWhere('email', 'LIKE', "%$searchQuery%");
+                        })
+                        ->orWhereHas('university', function ($q) use ($searchQuery) {
+                            $q->where('name', 'LIKE', "%$searchQuery%");
+                        });
                 });
             })
             ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
@@ -74,7 +89,6 @@ class ApplicationController extends Controller
 
         return $this->successJsonResponse("Product Information found!", $products, $totalRows);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -156,12 +170,12 @@ class ApplicationController extends Controller
                     ]);
                 }
             }
-
+            GenerateStudentDocumentsZip::dispatch($student);
             $usersToNotify = User::where('role', 'admin')
                 ->orWhere('id', auth('api')->user()->parent_id)
                 ->get();
 
-            Notification::send($usersToNotify, new NewApplicationNotification($application));
+            //Notification::send($usersToNotify, new NewApplicationNotification($application));
 
             DB::commit();
 

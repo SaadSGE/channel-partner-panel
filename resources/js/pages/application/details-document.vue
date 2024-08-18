@@ -1,9 +1,11 @@
 <template>
   <VCard class="mx-auto">
     <VCardTitle>Please upload only color scan copy files</VCardTitle>
+
     <div class="d-flex justify-end mt-2" v-if="tempFileCount > 0">
       <VBtn color="primary" @click="update()">Update New Document</VBtn>
     </div>
+
     <VCardText>
       <file-pond
         ref="pond"
@@ -14,6 +16,15 @@
         :server="server"
         label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>"
       />
+
+      <!-- Wrap the Download All button inside a div aligned to the right -->
+      <div class="d-flex justify-end mt-2 mb-2">
+        <VBtn color="primary" @click="downloadAllFiles">
+          <VIcon size="24" icon="tabler-download" />
+          Download All
+        </VBtn>
+      </div>
+
       <VCard v-for="(document, index) in currentDocuments" :key="index" class="mb-2">
         <VCardText class="d-flex justify-space-between align-center">
           <div>
@@ -22,7 +33,7 @@
             <VIcon size="26" color="red" icon="tabler-file-type-doc" v-if="document.file_type == 'document'" />
             <a :href="document.path" target="_blank">{{ document.file_name }}</a>
           </div>
-          <VBtn icon :href="document.path" target="_blank" download>
+          <VBtn icon @click="downloadFile(document.path)">
             <VIcon size="24" icon="tabler-download" />
           </VBtn>
         </VCardText>
@@ -30,6 +41,7 @@
     </VCardText>
   </VCard>
 </template>
+
 
 <script lang="ts" setup>
 import { useFileStore } from "@/@core/stores/fileStore";
@@ -53,13 +65,49 @@ const FilePond = vueFilePond(
   FilePondPluginPdfPreview
 );
 
+const downloadAllFiles = () => {
+  if (props.zipLink) {
+    const link = document.createElement('a');
+    link.href = props.zipLink;
+    link.target = '_blank';
+    link.download = 'documents.zip';  // Optional: Set the file name for the downloaded ZIP
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: 'Download Failed',
+      text: 'No ZIP file available for download.',
+    });
+  }
+};
+
+const downloadFile = (fileUrl: string) => {
+  const link = document.createElement('a');
+      link.href = fileUrl;
+      link.target = '_blank';
+      link.download = 'test';
+
+      // Simulate a click on the element <a>
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+};
+
+
 // Define props
 const props = defineProps({
   existingDocuments: {
     type: Array,
     default: () => [],
   },
+  zipLink: {
+    type: String,
+    default: ''
+  }
 });
+
 
 const emit = defineEmits(["update:uploadDocumentShow", "update:studentFormShow"]);
 const errorMessage = ref<string | null>(null);

@@ -14,6 +14,7 @@ use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FileController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -47,7 +48,8 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('dashboard', [DashboardController::class,'index']);
 });
-
+Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');
+Route::get('/download/{fileName}', [FileController::class, 'download'])->name('file.download');
 
 Route::post('register', [AuthController::class,'register']);
 Route::post('login', [AuthController::class,'login']);

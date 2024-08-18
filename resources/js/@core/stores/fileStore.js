@@ -11,6 +11,41 @@ export const useFileStore = defineStore('fileStore', {
     errors: []
   }),
   actions: {
+    async downloadAllFiles(documents = null) {
+      console.log(documents)
+      try {
+        // If no documents are passed, use the store's files
+        const filesToDownload = documents.map(file => ({
+          path: file.path,
+          file_name: file.filename,
+        }));
+
+        const formData = new FormData();
+        formData.append('documents', JSON.stringify(filesToDownload));
+
+        const response = await $api('/download-all', {
+          method: 'POST',
+          body: formData,
+          // You can add a progress handler if needed
+          onUploadProgress: (event) => {
+            if (event.lengthComputable) {
+              const progressValue = Math.round((event.loaded / event.total) * 100);
+              console.log(`Progress: ${progressValue}%`);  // Optional: Handle progress UI updates
+            }
+          }
+        });
+
+        const zipUrl = response.data.zipUrl;
+        const link = document.createElement('a');
+        link.href = zipUrl;
+        link.download = 'documents.zip';
+        link.click();
+
+      } catch (error) {
+        console.error('Error downloading all files:', error);
+        this.errors.push(error.response ? error.response.data.errors : ['An unexpected error occurred']);
+      }
+    },
     addFile(file) {
       this.files.push(file);
     },

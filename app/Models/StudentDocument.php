@@ -11,6 +11,7 @@ class StudentDocument extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $appends = ['original_path'];
 
     // public function getPathAttribute($value)
     // {
@@ -36,6 +37,10 @@ class StudentDocument extends Model
             'file_type' => $fileType
         ];
 
+    }
+    public function getOriginalPathAttribute()
+    {
+        return $this->path['path'];
     }
     private function determineFileType($filePath)
     {

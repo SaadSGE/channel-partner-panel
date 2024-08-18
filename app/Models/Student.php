@@ -19,5 +19,10 @@ class Student extends Model
     {
         return trim("{$this->first_name} {$this->last_name}");
     }
+    public function getDocumentZipLinkAttribute($value)
+    {
+        return env('DO_URL').$value;
+
+    }
 
 }

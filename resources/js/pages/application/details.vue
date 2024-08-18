@@ -299,7 +299,7 @@ const handleAddUniversityComm = async () => {
 
           <!-- Upload/Download Tab -->
           <VWindowItem value="upload-download">
-            <Document :existing-documents="documents" />
+            <Document :existing-documents="documents" :zip-link="studentData.document_zip_link" />
           </VWindowItem>
 
           <!-- Status Tab -->
