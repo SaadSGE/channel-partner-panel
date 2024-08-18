@@ -45,13 +45,16 @@ export const useApplicationStore = defineStore( {
             'Content-Type': 'application/json',
           },
         });
+
+        // Clear previous errors and set success message
+        this.errors = {};
         this.successMessage = 'Application submitted successfully';
         return response.data;
+
       } catch (error) {
-        console.error('Error submitting application:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        throw error;
+        handleErrorResponse(error)
       }
-    },
+    }
+
   },
 });

@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia';
-
-// Assuming $api is a globally available function for making API calls
-// If not, you should import it or define it in this file
+import { handleErrorResponse } from '../utils/helpers';
 
 export const useAuthStore = defineStore({
   id: "auth",
@@ -11,7 +9,6 @@ export const useAuthStore = defineStore({
   }),
   actions: {
     async register(form) {
-      console.log(form)
       try {
         const response = await $api('/register', {
           method: 'POST',
@@ -20,11 +17,12 @@ export const useAuthStore = defineStore({
           },
           body: JSON.stringify(form),
         });
+
+        this.errors = {};
         return response.data;
+
       } catch (error) {
-        console.error('Error registering:', error);
-        this.errors = error.response?.data.errors || ['An unexpected error occurred'];
-        throw error;
+        handleErrorResponse(error)
       }
     },
 

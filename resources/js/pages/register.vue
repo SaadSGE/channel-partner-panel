@@ -60,6 +60,7 @@ const isPasswordVisible = ref(false);
 
 const authStore = useAuthStore();
 
+
 const registerUser = async () => {
   try {
     const response = await authStore.register(form.value);
@@ -87,7 +88,7 @@ const registerUser = async () => {
       password: "",
       recruitCountries: [],
       privacyPolicies: false,
-      confirmPassword :""
+      confirmPassword: ""
     };
 
     // Redirect to the login page
@@ -95,14 +96,17 @@ const registerUser = async () => {
 
   } catch (error) {
     console.error('Error in registration:', error);
+
+
     Swal.fire({
       icon: 'error',
       title: 'Registration Failed',
-      text: error.response?.data.message || 'An unexpected error occurred',
+      text: error,
       confirmButtonText: 'OK'
     });
   }
 };
+
 </script>
 
 <template>

@@ -19,6 +19,8 @@ use App\Models\UniversityCommunication;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\NewApplicationNotification;
 use App\Notifications\StatusChangedNotification;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class ApplicationController extends Controller
 {
@@ -79,32 +81,33 @@ class ApplicationController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'course_id' => 'required|exists:courses,id',
-            'country_id' => 'required|exists:application_countries,id',
-            'intake_id' => 'required|exists:intakes,id',
-            'university_id' => 'required|exists:universities,id',
-            'course_details_id' => 'required|exists:course_details,id',
-            'student_passport_no' => 'required|string|max:255|unique:students,passport_no',
-            'date_of_birth' => 'required|date',
-            'student_first_name' => 'required|string|max:255',
-            'student_last_name' => 'required|string|max:255',
-            'student_whatsapp_number' => 'nullable|string|max:255',
-            'counsellor_number' => 'nullable|string|max:255',
-            'student_email' => 'nullable|string',
-            'counsellor_email' => 'nullable|string',
-            'student_address' => 'nullable|string',
-            'student_city' => 'nullable|string|max:255',
-            'student_country' => 'nullable|string|max:255',
-            'student_region_state' => 'nullable|string|max:255',
-            'gender' => 'required|in:male,female',
-            'visa_refusal' => 'required|in:yes,no',
-            'document_paths' => 'nullable|array',
-        ]);
-
-        DB::beginTransaction();
-
         try {
+            // Use $request->validate() for automatic validation handling
+            $validatedData = $request->validate([
+                'course_id' => 'required|exists:courses,id',
+                'country_id' => 'required|exists:application_countries,id',
+                'intake_id' => 'required|exists:intakes,id',
+                'university_id' => 'required|exists:universities,id',
+                'course_details_id' => 'required|exists:course_details,id',
+                'student_passport_no' => 'required|string|max:255|unique:students,passport_no',
+                'date_of_birth' => 'required|date',
+                'student_first_name' => 'required|string|max:255',
+                'student_last_name' => 'required|string|max:255',
+                'student_whatsapp_number' => 'nullable|string|max:255',
+                'counsellor_number' => 'nullable|string|max:255',
+                'student_email' => 'nullable|string',
+                'counsellor_email' => 'nullable|string|email',
+                'student_address' => 'nullable|string',
+                'student_city' => 'nullable|string|max:255',
+                'student_country' => 'nullable|string|max:255',
+                'student_region_state' => 'nullable|string|max:255',
+                'gender' => 'required|in:male,female',
+                'visa_refusal' => 'required|in:yes,no',
+                'document_paths' => 'nullable|array',
+            ]);
+
+            DB::beginTransaction();
+
             $userId = auth('api')->user()->id;
             $student = Student::create([
                 'student_id' => Str::random(10),
@@ -153,20 +156,25 @@ class ApplicationController extends Controller
                     ]);
                 }
             }
+
             $usersToNotify = User::where('role', 'admin')
-            ->orWhere('id', auth('api')->user()->parent_id)
-            ->get();
+                ->orWhere('id', auth('api')->user()->parent_id)
+                ->get();
 
             Notification::send($usersToNotify, new NewApplicationNotification($application));
 
             DB::commit();
+
             return $this->successJsonResponse('Application created successfully', $application, '', 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->handleValidationErrors($e);
         } catch (\Throwable $th) {
             DB::rollBack();
             \Log::error($th);
             return $this->exceptionJsonResponse('Failed to create application', $th);
         }
     }
+
 
 
     /**

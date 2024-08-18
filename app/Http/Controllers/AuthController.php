@@ -14,67 +14,73 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        // Validate the request data
-        $validatedData = $request->validate([
-            'firstName' => 'required|string|max:255',
-            'lastName' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-           'password' => 'required|string|min:8|same:confirmPassword',
-             'confirmPassword' => 'required|string|min:8',
-            'mobileNumber' => 'nullable|string',
-            'whatsappNumber' => 'nullable|string',
-            'companyName' => 'nullable|string|max:255',
-            'website' => 'nullable|url|max:255',
-            'address' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'postCode' => 'nullable|string',
-            'country' => 'nullable|string|max:255',
-            'role' => 'nullable|string|max:50',
-            'recruitCountries' => 'nullable|array',
-            'recruitCountries.*' => 'string|max:255',
-            'createForm' => 'nullable'
-        ]);
+        try {
+            // Validate the request data
+            $validatedData = $request->validate([
+                'firstName' => 'required|string|max:255',
+                'lastName' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:8|same:confirmPassword',
+                'confirmPassword' => 'required|string|min:8',
+                'mobileNumber' => 'nullable|string',
+                'whatsappNumber' => 'nullable|string',
+                'companyName' => 'nullable|string|max:255',
+                'website' => 'nullable|url|max:255',
+                'address' => 'nullable|string|max:255',
+                'city' => 'nullable|string|max:255',
+                'postCode' => 'nullable|string',
+                'country' => 'nullable|string|max:255',
+                'role' => 'nullable|string|max:50',
+                'recruitCountries' => 'nullable|array',
+                'recruitCountries.*' => 'string|max:255',
+                'createForm' => 'nullable'
+            ]);
 
-        // Determine the role based on the form type
-        $role = $request->createForm === 'admin' ? $validatedData['role'] : 'channel partner';
+            // Determine the role based on the form type
+            $role = $request->createForm === 'admin' ? $validatedData['role'] : 'channel partner';
 
-        // Create a new User instance with nullable fields using null coalescing
-        $userDetail = new User([
-            'first_name' => $validatedData['firstName'] ?? null,
-            'last_name' => $validatedData['lastName'] ?? null,
-            'email' => $validatedData['email'] ?? null,
-            'mobile_number' => $validatedData['mobileNumber'] ?? null,
-            'whatsapp_number' => $validatedData['whatsappNumber'] ?? null,
-            'company_name' => $validatedData['companyName'] ?? null,
-            'website' => $validatedData['website'] ?? null,
-            'address' => $validatedData['address'] ?? null,
-            'city' => $validatedData['city'] ?? null,
-            'post_code' => $validatedData['postCode'] ?? null,
-            'country' => $validatedData['country'] ?? null,
-            'role' => $role,
-            'recruit_countries' => isset($validatedData['recruitCountries']) ? json_encode($validatedData['recruitCountries']) : null,
-            'password' => bcrypt($validatedData['password'] ?? ''),
-        ]);
+            // Create a new User instance with nullable fields using null coalescing
+            $userDetail = new User([
+                'first_name' => $validatedData['firstName'] ?? null,
+                'last_name' => $validatedData['lastName'] ?? null,
+                'email' => $validatedData['email'] ?? null,
+                'mobile_number' => $validatedData['mobileNumber'] ?? null,
+                'whatsapp_number' => $validatedData['whatsappNumber'] ?? null,
+                'company_name' => $validatedData['companyName'] ?? null,
+                'website' => $validatedData['website'] ?? null,
+                'address' => $validatedData['address'] ?? null,
+                'city' => $validatedData['city'] ?? null,
+                'post_code' => $validatedData['postCode'] ?? null,
+                'country' => $validatedData['country'] ?? null,
+                'role' => $role,
+                'recruit_countries' => isset($validatedData['recruitCountries']) ? json_encode($validatedData['recruitCountries']) : null,
+                'password' => bcrypt($validatedData['password'] ?? ''),
+            ]);
 
-        // Save the user details
-        $userDetail->save();
+            // Save the user details
+            $userDetail->save();
 
-        // Assign the role to the user
-        $assignedRole = Role::where('name', $role)->first();
-        $userDetail->assignRole($assignedRole);
 
-        $admin = User::where('role', 'admin')->first(); // Find the first admin user
+            $assignedRole = Role::where('name', $role)->first();
+            $userDetail->assignRole($assignedRole);
 
-        // Notify the newly registered user (if applicable)
-        Notification::route('mail', $userDetail->email)->notify(new \App\Notifications\WelcomeNotification($userDetail));
+            $admin = User::where('role', 'admin')->first();
 
-        // Notify the admin about the new registration
-        $admin->notify(new NewUserRegistrationNotification($userDetail));
 
-        // Return a success response
-        return $this->successJsonResponse('User Registration Successful', $userDetail);
+            Notification::route('mail', $userDetail->email)->notify(new \App\Notifications\WelcomeNotification($userDetail));
+
+
+            $admin->notify(new NewUserRegistrationNotification($userDetail));
+
+
+            return $this->successJsonResponse('User Registration Successful', $userDetail);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->handleValidationErrors($e);
+        } catch (\Throwable $th) {
+
+            return $this->exceptionJsonResponse($th);
+        }
     }
-
 
     /**
      * Handle a login request to the application.

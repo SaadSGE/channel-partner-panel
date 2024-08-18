@@ -354,6 +354,7 @@
     "watchWithFilter": true,
     "whenever": true,
     "containsString": true,
-    "formatKey": true
+    "formatKey": true,
+    "handleErrorResponse": true
   }
 }

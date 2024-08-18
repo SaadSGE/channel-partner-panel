@@ -40,4 +40,32 @@ export const formatKey = (key) => {
   return key
     .replace(/_/g, " ") // Replace underscores with spaces
     .replace(/\b\w/g, (l) => l.toUpperCase()); // Capitalize the first letter of each word
+}
+// 👉 Handle error response
+export const handleErrorResponse = (error) => {
+  let firstErrorMessage = 'An unexpected error occurred';
+
+  if (error.response && error.response._data) {
+    const { status, message, data } = error.response._data;
+
+    // Check if the response indicates a validation error
+    if (!status && message === 'Validation Error') {
+      // If `data` is an array, extract the first error message
+      if (Array.isArray(data) && data.length > 0) {
+        firstErrorMessage = data[0];
+      }
+    } else {
+      // If it's a different kind of error, use the provided message or a generic one
+      firstErrorMessage = message || 'An unexpected error occurred';
+    }
+  }
+
+  // Log the error response data for debugging
+  if (error.response) {
+    console.error('Error response data:', error.response._data);
+  }
+
+  // Re-throw the first error message as a new Error
+  throw new Error(firstErrorMessage);
 };
+

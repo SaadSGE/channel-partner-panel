@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
+use Log;
 
 abstract class Controller
 {
@@ -65,6 +67,20 @@ abstract class Controller
             ],
             'total' => 0,
         ], $statusCode);
+    }
+
+    protected function handleValidationErrors(ValidationException $exception): JsonResponse
+    {
+        Log::info($exception);
+
+        $flattenedErrors = collect($exception->errors())->flatten()->all();
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Validation Error',
+            'data' => $flattenedErrors,
+            'total' => 0,
+        ], 422);
     }
 
 }
