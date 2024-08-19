@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Exception;
 
 class CourseDetailsController extends Controller
 {
@@ -215,18 +216,30 @@ class CourseDetailsController extends Controller
         // Define a cache key
         $cacheKey = 'course_details_all2';
 
-        // Check if the data is already cached. If not, execute the query and cache the result.
-        $courseDetails = Cache::rememberForever($cacheKey, function () {
-            Log::info('Fetching course details from the database.');
-            return CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
-        });
+        try {
+            // Check if the data is already cached. If not, execute the query and cache the result.
+            $courseDetails = Cache::rememberForever($cacheKey, function () {
+                Log::info('Fetching course details from the database.');
+                return CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
+            });
 
-        if (Cache::has($cacheKey)) {
-            Log::info('Course details retrieved from cache.');
+            if (Cache::has($cacheKey)) {
+                Log::info('Course details retrieved from cache.');
+            }
+
+            // Return the cached or fresh data
+            return $this->successJsonResponse('Course details found', $courseDetails);
+
+        } catch (Exception $e) {
+            // Log the error message
+            Log::error('Error in courseDetailsAll2: ' . $e->getMessage());
+
+            // Optionally, log the full stack trace if you need more details
+            Log::error($e->getTraceAsString());
+
+            // Return a generic error response
+            return $this->errorJsonResponse('An error occurred while retrieving course details.', 500);
         }
-
-        // Return the cached or fresh data
-        return $this->successJsonResponse('Course details found', $courseDetails);
     }
 
     public function countryIntakeUniversityCourse()
