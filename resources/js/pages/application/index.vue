@@ -168,14 +168,14 @@ const isContentCollapsed = ref(true);
 
 <template>
   <div>
-    <VCard class="mb-4" title="Filter">
+    <!-- <VCard class="mb-4" title="Filter">
 
 
 
   <VCardText >
 
     <VRow >
-      <!-- Select Status -->
+
       <VCol cols="12" sm="4">
         <AppSelect
           v-model="selectedStatus"
@@ -188,7 +188,7 @@ const isContentCollapsed = ref(true);
         />
       </VCol>
 
-      <!-- Select University -->
+
       <VCol cols="12" sm="4">
         <AppSelect
           v-model="selectedUniversity"
@@ -201,7 +201,7 @@ const isContentCollapsed = ref(true);
         />
       </VCol>
 
-      <!-- Select Channel Partner -->
+
       <VCol cols="12" sm="4">
         <AppSelect
           v-model="selectedChannelPartner"
@@ -215,7 +215,7 @@ const isContentCollapsed = ref(true);
       </VCol>
     </VRow>
   </VCardText>
-</VCard>
+</VCard> -->
     <AppCardActions title="New Application" :loading="isLoading" no-actions>
 
       <!-- Search and Pagination -->
