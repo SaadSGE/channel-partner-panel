@@ -54,7 +54,7 @@ export const useApplicationListStore = defineStore({
         this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
         throw error;
       }
-    }
+    },
 
 
     async getApplicationDetails(id) {
