@@ -19,11 +19,12 @@
 
       <!-- Wrap the Download All button inside a div aligned to the right -->
       <div class="d-flex justify-end mt-2 mb-2">
-        <VBtn color="primary" @click="downloadAllFiles">
-          <VIcon size="24" icon="tabler-download" />
-          Download All
-        </VBtn>
-      </div>
+  <VBtn :href="props.zipLink" color="primary" target="_blank">
+    <VIcon size="24" icon="tabler-download" />
+    Download All
+  </VBtn>
+</div>
+
 
       <VCard v-for="(document, index) in currentDocuments" :key="index" class="mb-2">
         <VCardText class="d-flex justify-space-between align-center">
@@ -65,15 +66,27 @@ const FilePond = vueFilePond(
   FilePondPluginPdfPreview
 );
 
-const downloadAllFiles = () => {
+const downloadAllFiles = async () => {
   if (props.zipLink) {
-    const link = document.createElement('a');
-    link.href = props.zipLink;
-    link.target = '_blank';
-    link.download = 'documents.zip';  // Optional: Set the file name for the downloaded ZIP
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const response = await fetch(props.zipLink, { mode: 'cors' });
+      const blob = await response.blob();
+
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.target = '_blank';
+      link.download = 'documents.zip';  // Optional: Set the file name for the downloaded ZIP
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading the file:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Download Failed',
+        text: 'There was an error downloading the file.',
+      });
+    }
   } else {
     Swal.fire({
       icon: 'error',
