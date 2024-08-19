@@ -91,8 +91,12 @@ watch([search], () => {
 
 // Mounted Hook
 onMounted(() => {
+
   fetchApplications();
+
 });
+// Clean up event listeners on component unmount
+
 
 // Header Definitions
 const headers = [
@@ -218,5 +222,112 @@ const resolveStatusName = (status) => {
 </template>
 
 <style scoped>
+/* Table Container */
+.v-table {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  overflow-y: auto; /* Enable vertical scrolling if content overflows */
+  white-space: nowrap; /* Prevent text from wrapping */
+  scroll-behavior: smooth; /* Smooth scrolling effect */
+  max-height: 33rem /* Adjust to match window height, minus any desired offset */
+}
+
+/* Table Header and Cells */
+.v-data-table__thead th,
+.v-data-table__tbody td {
+  max-width: 30rem; /* Control maximum width */
+  padding: 0.75rem 1rem; /* Add padding for better spacing */
+  text-align: left; /* Ensure left alignment for readability */
+  vertical-align: middle; /* Align content vertically in the middle */
+  overflow: hidden; /* Hide overflow to maintain layout */
+  white-space: nowrap; /* Prevent text from wrapping */
+  text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+}
+
+/* Chip Styling for Status Column */
+.v-chip {
+  padding: 0.25rem 0.5rem; /* Adjust padding for better spacing */
+  border-radius: 12px; /* Rounded corners for a modern look */
+  font-weight: 500; /* Bold font for better readability */
+  display: inline-flex; /* Ensure proper alignment */
+  align-items: center; /* Center-align items within the chip */
+}
+
+/* Action Buttons */
+.v-btn {
+  padding: 0.5rem; /* Adjust padding for smaller buttons */
+  margin: 0.25rem 0; /* Add margin for spacing between buttons */
+  border-radius: 50%; /* Round buttons for a clean look */
+  display: inline-flex; /* Inline-flex for consistent button sizing */
+  justify-content: center; /* Center content within the button */
+  align-items: center; /* Align items to the center */
+}
+
+.v-btn--icon {
+  width: 2rem; /* Set a fixed width */
+  height: 2rem; /* Set a fixed height */
+}
+
+/* Pagination Styling */
+.v-pagination__list {
+  display: flex; /* Display pagination items in a row */
+  justify-content: center; /* Center pagination controls */
+  gap: 0.5rem; /* Add space between pagination buttons */
+}
+
+.v-pagination__item {
+  padding: 0.5rem; /* Adjust padding for a better click area */
+  border-radius: 8px; /* Rounded corners for a cohesive design */
+  background-color: #f0f0f0; /* Light background for non-active items */
+}
+
+.v-pagination__item--is-active {
+  background-color: #0055a5; /* Highlight active page */
+  color: #fff; /* White text for contrast */
+}
+
+/* Miscellaneous */
+.v-divider {
+  margin: 1rem 0; /* Add margin to separate content */
+  border-top: 1px solid #ddd; /* Light border color */
+}
+
+.text-disabled {
+  color: #888; /* Grey color for disabled text */
+}
+
+.d-flex {
+  display: flex; /* Flexbox for layouts */
+}
+
+.flex-column {
+  flex-direction: column; /* Column layout */
+}
+
+.align-center {
+  align-items: center; /* Center align items */
+}
+
+.justify-center {
+  justify-content: center; /* Center align content horizontally */
+}
+
+.ms-3 {
+  margin-left: 1rem; /* Add margin for spacing */
+}
+
+.gap-3 {
+  gap: 1rem; /* Uniform gap between items */
+}
+
+.text-no-wrap {
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+
+
+.font-weight-medium {
+  font-weight: 500; /* Medium font weight */
+}
 
 </style>
+
