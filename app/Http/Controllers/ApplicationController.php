@@ -175,7 +175,7 @@ class ApplicationController extends Controller
                 ->orWhere('id', auth('api')->user()->parent_id)
                 ->get();
 
-            //Notification::send($usersToNotify, new NewApplicationNotification($application));
+            Notification::send($usersToNotify, new NewApplicationNotification($application));
 
             DB::commit();
 
@@ -258,6 +258,10 @@ class ApplicationController extends Controller
                 ]);
             }
         }
+
+        GenerateStudentDocumentsZip::dispatch($student);
+        return $this->successJsonResponse('Student File Upload Successfully', $student);
+
 
     }
 
