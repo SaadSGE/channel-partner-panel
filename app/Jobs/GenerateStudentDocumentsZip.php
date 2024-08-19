@@ -39,17 +39,8 @@ class GenerateStudentDocumentsZip implements ShouldQueue
      */
     public function handle()
     {
-        // Clear the previous document_zip_link if it exists
-        if ($this->student->document_zip_link) {
-            // Optionally delete the previous ZIP file from DigitalOcean Spaces
-            Storage::disk('do_spaces')->delete($this->student->document_zip_link);
-
-            // Remove the link from the database
-            $this->student->document_zip_link = null;
-            $this->student->save();
-        }
-
         $documents = StudentDocument::where('student_id', $this->student->id)->get();
+
         $zipFileName = 'documents_' . $this->student->email . '_' . time() . '.zip';
         $zipPath = storage_path('app/' . $zipFileName);
         $zipDirectory = 'channelPartnerPanel/studentDocument/' . $this->student->email;
