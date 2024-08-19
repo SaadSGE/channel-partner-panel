@@ -34,7 +34,7 @@
             <a :href="document.path" target="_blank">{{ document.file_name }}</a>
           </div>
           <VBtn icon @click="downloadFile(document.path)">
-            <VIcon size="24" icon="tabler-download" />
+            <VIcon size="24" icon="tabler-eye" />
           </VBtn>
         </VCardText>
       </VCard>
