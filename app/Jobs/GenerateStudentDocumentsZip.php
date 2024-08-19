@@ -58,6 +58,7 @@ class GenerateStudentDocumentsZip implements ShouldQueue
 
             foreach ($documents as $document) {
                 $fileUrl = $document->original_path;
+                \Log::info($fileUrl);
                 $fileName = basename($fileUrl);
 
                 $response = $client->get($fileUrl);
