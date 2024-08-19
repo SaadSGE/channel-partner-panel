@@ -4,12 +4,28 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class CourseDetails extends Model
 {
     use HasFactory;
 
     protected $guarded = [];
+
+    protected static function booted()
+    {
+        static::created(function () {
+            Cache::forget('course_details_all2');
+        });
+
+        static::updated(function () {
+            Cache::forget('course_details_all2');
+        });
+
+        static::deleted(function () {
+            Cache::forget('course_details_all2');
+        });
+    }
 
     public function course()
     {

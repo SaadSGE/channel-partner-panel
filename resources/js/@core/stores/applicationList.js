@@ -1,5 +1,7 @@
 // src/stores/applicationStore.js
-import { defineStore } from 'pinia';
+import {
+  defineStore
+} from 'pinia';
 
 export const useApplicationListStore = defineStore({
   id: "application-list",
@@ -9,14 +11,24 @@ export const useApplicationListStore = defineStore({
     applicationData: '',
     documents: [], // Ensure documents is an array
     students: [],
-    statuses:[],
-    allStatuses:[],
+    statuses: [],
+    allStatuses: [],
     comments: [],
     universityCommunications: [],
   }),
   actions: {
-    async getApplicationList( id = null, page = 1, itemsPerPage = 10, searchQuery = '', role = '', sortBy = '', orderBy = '' ) {
-
+    async getApplicationList(
+      id = null,
+      page = 1,
+      itemsPerPage = 10,
+      searchQuery = '',
+      role = '',
+      sortBy = '',
+      orderBy = '',
+      status = null,
+      university = null,
+      channelPartner = null
+    ) {
       try {
         const response = await $api('/application', {
           method: 'GET',
@@ -30,7 +42,10 @@ export const useApplicationListStore = defineStore({
             searchQuery,
             role,
             sortBy,
-            orderBy
+            orderBy,
+            status,
+            university,
+            channelPartner
           }
         });
         return response;
@@ -39,7 +54,8 @@ export const useApplicationListStore = defineStore({
         this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
         throw error;
       }
-    },
+    }
+
 
     async getApplicationDetails(id) {
       try {
@@ -77,8 +93,7 @@ export const useApplicationListStore = defineStore({
       }
     },
 
-    async getApplicationStatusses(id)
-    {
+    async getApplicationStatusses(id) {
       try {
         const response = await $api(`/application-statuses/${id}`, {
           method: 'GET',
@@ -86,7 +101,7 @@ export const useApplicationListStore = defineStore({
             'Content-Type': 'application/json',
           },
         });
-        this.statuses =  response.data;
+        this.statuses = response.data;
       } catch (error) {
         console.error('Error getting application list:', error);
         this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -101,7 +116,7 @@ export const useApplicationListStore = defineStore({
             'Content-Type': 'application/json',
           },
         });
-        this.allStatuses =  response.data;
+        this.allStatuses = response.data;
       } catch (error) {
         console.error('Error getting application list:', error);
         this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -127,7 +142,9 @@ export const useApplicationListStore = defineStore({
       try {
         const response = await $api(`/application/${id}/comment`, {
           method: 'POST',
-          body: JSON.stringify({ comment }),
+          body: JSON.stringify({
+            comment
+          }),
         });
         return response.data;
       } catch (error) {
@@ -151,11 +168,17 @@ export const useApplicationListStore = defineStore({
         throw error;
       }
     },
-    async addUniversityCommunication(id, { subject, message }) {
+    async addUniversityCommunication(id, {
+      subject,
+      message
+    }) {
       try {
         const response = await $api(`/application/${id}/university-communication`, {
           method: 'POST',
-          body: JSON.stringify({ subject, message }),
+          body: JSON.stringify({
+            subject,
+            message
+          }),
         });
         return response.data;
       } catch (error) {

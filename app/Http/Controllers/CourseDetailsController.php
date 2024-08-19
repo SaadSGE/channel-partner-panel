@@ -7,6 +7,7 @@ use App\Models\Course;
 use Illuminate\Http\Request;
 use Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class CourseDetailsController extends Controller
 {
@@ -104,7 +105,7 @@ class CourseDetailsController extends Controller
             // Commit the transaction
             DB::commit();
 
-
+            Cache::forget('course_details_all2');
             // Log the newly created course detail
             Log::info('CourseDetail created: ', $courseDetail->toArray());
 
@@ -207,6 +208,24 @@ class CourseDetailsController extends Controller
     public function courseDetailsAll()
     {
         $courseDetails = CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
+        return $this->successJsonResponse('Course details found', $courseDetails);
+    }
+    public function courseDetailsAll2()
+    {
+        // Define a cache key
+        $cacheKey = 'course_details_all2';
+
+        // Check if the data is already cached. If not, execute the query and cache the result.
+        $courseDetails = Cache::rememberForever($cacheKey, function () {
+            Log::info('Fetching course details from the database.');
+            return CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
+        });
+
+        if (Cache::has($cacheKey)) {
+            Log::info('Course details retrieved from cache.');
+        }
+
+        // Return the cached or fresh data
         return $this->successJsonResponse('Course details found', $courseDetails);
     }
 

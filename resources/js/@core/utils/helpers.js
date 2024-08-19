@@ -33,7 +33,19 @@ export const containsString = (fullString, stringToContain) => {
   return fullString.toLowerCase().includes(stringToContain.toLowerCase())
 }
 
+export const getUserRole = () => {
+  const userData = useCookie('userData').value;
 
+  if (!userData) return null;
+
+  try {
+
+    return userData.main_role || null; // Return the role, or null if not found
+  } catch (error) {
+    console.error('Error parsing userData cookie:', error);
+    return null;
+  }
+};
 
 
 export const formatKey = (key) => {

@@ -55,6 +55,7 @@ declare global {
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getUserRole: typeof import('./resources/js/@core/utils/helpers.js')['getUserRole']
   const h: typeof import('vue')['h']
   const handleErrorResponse: typeof import('./resources/js/@core/utils/helpers.js')['handleErrorResponse']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
@@ -412,6 +413,7 @@ declare module 'vue' {
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getUserRole: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getUserRole']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly handleErrorResponse: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['handleErrorResponse']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
@@ -762,6 +764,7 @@ declare module '@vue/runtime-core' {
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getUserRole: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getUserRole']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly handleErrorResponse: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['handleErrorResponse']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>

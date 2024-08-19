@@ -43,7 +43,7 @@ class ApplicationController extends Controller
             $id = $userId;
         }
 
-        $queryResult = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user'])
+        $queryResult = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user.parent:id,first_name,last_name,email'])
             ->when($id, function ($query, $id) {
                 return $query->where('created_by', $id);
             })

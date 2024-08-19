@@ -355,6 +355,7 @@
     "whenever": true,
     "containsString": true,
     "formatKey": true,
-    "handleErrorResponse": true
+    "handleErrorResponse": true,
+    "getUserRole": true
   }
 }

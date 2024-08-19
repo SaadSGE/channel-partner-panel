@@ -4,8 +4,10 @@ definePage({
     action: 'read',
     subject: 'application',
   },
-})
+});
+
 import { useApplicationListStore } from '@/@core/stores/applicationList';
+import { getUserRole } from '@/@core/utils/helpers';
 import Swal from 'sweetalert2';
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -13,6 +15,7 @@ import { useRouter } from 'vue-router';
 // Store and Router
 const store = useApplicationListStore();
 const router = useRouter();
+const isAdmin = ref(getUserRole() === 'admin');
 
 // Reactive State
 const applicationLists = ref([]);
@@ -22,16 +25,37 @@ const page = ref(1);
 const sortBy = ref();
 const orderBy = ref();
 const search = ref('');
+const selectedStatus = ref();
+const selectedUniversity = ref(null);
+const selectedChannelPartner = ref(null);
 const isLoading = ref(false);
+const universities = ref([]);  // Fetch this list from API or store if needed
+const channelPartners = ref([]);  // Fetch this list from API or store if needed
+const statuses = ref([
+  { value: 0, name: 'Application Processing' },
+  { value: 1, name: 'Application Submitted' },
+  { value: 2, name: 'Pending Docs' },
+  { value: 3, name: 'Offer Issue Conditional' },
+  { value: 4, name: 'Offer Issue Unconditional' },
+  { value: 5, name: 'Need Payment' },
+  { value: 6, name: 'CAS Issued' },
+  { value: 7, name: 'Additional Doc Needed' },
+  { value: 8, name: 'Refund Required' },
+  { value: 9, name: 'Application Rejected' },
+  { value: 10, name: 'Session Expired' },
+  { value: 11, name: 'Doc Received' },
+  { value: 12, name: 'Partial Payment' },
+]);
+
 const props = defineProps({
   userId: {
     type: String,
     default: null,
   }
 });
+
 // Methods
 const fetchApplications = async () => {
-
   isLoading.value = true;
   try {
     const response = await store.getApplicationList(
@@ -41,6 +65,9 @@ const fetchApplications = async () => {
       search.value,
       sortBy.value,
       orderBy.value,
+      selectedStatus.value,
+      selectedUniversity.value,
+      selectedChannelPartner.value,
     );
     applicationLists.value = response.data;
     totalApplications.value = response.total;
@@ -85,30 +112,31 @@ const deleteItem = async (itemId) => {
 };
 
 // Watchers
-watch([search], () => {
+watch([search, selectedStatus, selectedUniversity, selectedChannelPartner], () => {
   fetchApplications();
 });
 
 // Mounted Hook
 onMounted(() => {
-
   fetchApplications();
-
+  // You can also load the filter options here (like universities and channel partners)
 });
-// Clean up event listeners on component unmount
-
 
 // Header Definitions
-const headers = [
+const headers = ref([
   { title: 'APPLICATION ID', key: 'application_id' },
   { title: 'Student Name', key: 'student.name' },
   { title: 'Student Email', key: 'student.email' },
+
+  ...(isAdmin.value
+    ? [{ title: 'Application Officer', key: 'user.parent.email' }]
+    : []),
   { title: 'Channel Partner', key: 'user.email' },
   { title: 'University/Course Details', key: 'university.name' },
   { title: 'Status', key: 'status' },
   { title: 'Date Added', key: 'created_at' },
   { title: 'Action', key: 'action', sortable: false },
-];
+]);
 
 // Status Color Resolvers
 const resolveStatusColor = (status) => {
@@ -132,12 +160,65 @@ const resolveStatusName = (status) => {
   };
   return statusNames[status] || 'Unknown Status';
 };
-
+const triggerCollapse = () => {
+  isContentCollapsed.value = !isContentCollapsed.value;
+};
+const isContentCollapsed = ref(true);
 </script>
 
 <template>
   <div>
+    <VCard class="mb-4" title="Filter">
+
+
+
+  <VCardText >
+
+    <VRow >
+      <!-- Select Status -->
+      <VCol cols="12" sm="4">
+        <AppSelect
+          v-model="selectedStatus"
+          placeholder="Select Status"
+          :items="statuses"
+          clearable
+          clear-icon="tabler-x"
+          :item-title="(item) => item.name"
+          :item-value="(item) => item.value"
+        />
+      </VCol>
+
+      <!-- Select University -->
+      <VCol cols="12" sm="4">
+        <AppSelect
+          v-model="selectedUniversity"
+          placeholder="Select University"
+          :items="universities"
+          clearable
+          clear-icon="tabler-x"
+          :item-title="(item) => item.name"
+          :item-value="(item) => item.id"
+        />
+      </VCol>
+
+      <!-- Select Channel Partner -->
+      <VCol cols="12" sm="4">
+        <AppSelect
+          v-model="selectedChannelPartner"
+          placeholder="Select Channel Partner"
+          :items="channelPartners"
+          clearable
+          clear-icon="tabler-x"
+          :item-title="(item) => item.email"
+          :item-value="(item) => item.id"
+        />
+      </VCol>
+    </VRow>
+  </VCardText>
+</VCard>
     <AppCardActions title="New Application" :loading="isLoading" no-actions>
+
+      <!-- Search and Pagination -->
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-3 d-flex gap-3">
           <AppSelect
@@ -160,12 +241,10 @@ const resolveStatusName = (status) => {
           <div style="inline-size: 15.625rem">
             <AppTextField v-model="search" placeholder="Search Application" />
           </div>
-
-
-
         </div>
       </VCardText>
-      <!-- 👉 Data Table  -->
+
+      <!-- Data Table -->
       <VDataTableServer
         v-model:items-per-page="itemsPerPage"
         v-model:page="page"
@@ -220,6 +299,7 @@ const resolveStatusName = (status) => {
     </AppCardActions>
   </div>
 </template>
+
 
 <style scoped>
 /* Table Container */
