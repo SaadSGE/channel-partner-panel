@@ -161,7 +161,7 @@ class ApplicationController extends Controller
             if (!empty($validatedData['document_paths'])) {
                 foreach ($validatedData['document_paths'] as $path) {
                     $filename = basename($path['path']);
-                    $newPath = 'channelPartnerPanel/studentDocument/' . $student->id . '/' . $student->email . '_' . $filename;
+                    $newPath = 'channelPartnerPanel/studentDocument/' . $student->email. '/' . $student->email . '_' . $filename;
                     Storage::disk('do_spaces')->move($path['path'], $newPath);
                     StudentDocument::create([
                         'student_id' => $student->id,
@@ -249,7 +249,7 @@ class ApplicationController extends Controller
         if (!empty($request->document_paths)) {
             foreach ($request->document_paths as $path) {
                 $filename = basename($path['path']);
-                $newPath = 'channelPartnerPanel/studentDocument/' . $studentId . '/' . $student->email . '_' . $filename;
+                $newPath = 'channelPartnerPanel/studentDocument/' .  $student->email. '/' . $student->email . '_' . $filename;
                 Storage::disk('do_spaces')->move($path['path'], $newPath);
                 StudentDocument::create([
                     'student_id' => $student->id,
@@ -304,7 +304,7 @@ class ApplicationController extends Controller
             // Handle file upload with FileUploadService
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
-                $filePath = 'channelPartnerPanel/studentDocument/' . $application->student_id;
+                $filePath = 'channelPartnerPanel/studentStatusDocument/' . $application->student_id;
                 $fileUploadService = new FileUploadService();
                 $path = $fileUploadService->upload($filePath, $file);
 

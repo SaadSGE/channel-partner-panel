@@ -43,7 +43,7 @@ class GenerateStudentDocumentsZip implements ShouldQueue
         \Log::info($documents);
         $zipFileName = 'documents_' . $this->student->email . '_' . time() . '.zip';
         $zipPath = storage_path('app/' . $zipFileName);
-        $zipDirectory = 'channelPartnerPanel/studentDocument/' . $this->student->id;
+        $zipDirectory = 'channelPartnerPanel/studentDocument/' . $this->student->email;
         $zip = new ZipArchive();
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             $client = new Client();
