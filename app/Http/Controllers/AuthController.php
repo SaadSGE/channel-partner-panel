@@ -27,7 +27,7 @@ class AuthController extends Controller
                 'mobileNumber' => 'nullable|string',
                 'whatsappNumber' => 'nullable|string',
                 'companyName' => 'nullable|string|max:255',
-                'website' => 'nullable|url|max:255',
+                'website' => 'nullable',
                 'address' => 'nullable|string|max:255',
                 'city' => 'nullable|string|max:255',
                 'postCode' => 'nullable|string',
