@@ -12,10 +12,7 @@ export const useAuthStore = defineStore({
       try {
         const response = await $api('/register', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(form),
+          body: form
         });
 
         this.errors = {};
@@ -45,44 +42,56 @@ export const useAuthStore = defineStore({
     // Implementation of the updateUser function
     async updateUser(form) {
       try {
-        // Rearranging and ensuring the form fields match the validation rules
-        const userData = {
-          first_name: form.firstName,
-          last_name: form.lastName,
-          email: form.email,
-          mobile_number: form.mobileNumber,
-          whatsapp_number: form.whatsappNumber,
-          company_name: form.companyName,
-          website: form.website,
-          address: form.address,
-          city: form.city,
-          post_code: form.postCode,
-          country: form.country,
-          role: form.role,
-          status: form.status,
-          recruit_countries: form.recruitCountries,
+        // Create FormData object
+        const formData = new FormData();
 
-        };
+        // Append basic user data to FormData
+        formData.append('first_name', form.firstName);
+        formData.append('last_name', form.lastName);
+        formData.append('email', form.email);
+        formData.append('mobile_number', form.mobileNumber);
+        formData.append('whatsapp_number', form.whatsappNumber);
+        formData.append('company_name', form.companyName);
+        formData.append('website', form.website);
+        formData.append('address', form.address);
+        formData.append('city', form.city);
+        formData.append('post_code', form.postCode);
+        formData.append('country', form.country);
+        formData.append('role', form.role);
+        formData.append('status', form.status);
+        formData.append('_method','PUT');
 
+        // Handle recruit countries
+        if (Array.isArray(form.recruitCountries)) {
+          form.recruitCountries.forEach((country, index) => {
+            formData.append(`recruit_countries[${index}]`, country);
+          });
+        }
 
+        // Append files to FormData if present
+        if (form.agreement) {
+          formData.append('agreement', form.agreement[0]);
+        }
+
+        if (form.commission_structure) {
+          formData.append('commission_structure', form.commission_structure[0]);
+        }
+
+        // Send the PUT request with FormData
         const response = await $api(`/users/${form.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
+          method: 'POST',
+          body: formData, // Send FormData directly
         });
 
-        // Update the user in the store if needed
-        // this.user = response.data;
-
         return response.data;
+
       } catch (error) {
         console.error('Error updating user:', error);
         this.errors = error.response?.data.errors || ['An unexpected error occurred'];
         throw error;
       }
     }
+
 
   },
 });

@@ -1,7 +1,6 @@
 <script lang="js" setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useDashboardStore } from "@/@core/stores/dashboard";
-import ApplicationOverviewTable from "@/views/dashboards/crm/ApplicationOverviewTable.vue";
 
 import { onMounted, ref } from 'vue';
 
@@ -95,11 +94,11 @@ const formatStatus = (status) => {
     </VCol>
 
     <!-- Application Overview Table for All Roles -->
-    <VCol cols="12" md="12">
+    <!-- <VCol cols="12" md="12">
       <VCard title=" Application Processing Data">
         <ApplicationOverviewTable />
       </VCard>
-    </VCol>
+    </VCol> -->
   </VRow>
 </template>
 

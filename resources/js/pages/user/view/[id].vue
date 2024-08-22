@@ -48,9 +48,21 @@ const searchQuery = ref("");
 const isLoading = ref(false);
 onMounted(async () => {
   userData.value = await store.fetchUser(route.params.id);
+  currentDocuments.value = userData.value.documents || [];
   await getRecord();
   //await fetchUsers();
 });
+const downloadFile = (fileUrl) => {
+  const link = document.createElement('a');
+      link.href = fileUrl;
+      link.target = '_blank';
+      link.download = 'test';
+
+      // Simulate a click on the element <a>
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+};
 const getRecord = async (page = 1) => {
   const fetchRecord = await recordStore.fetchRecord(
     page,
@@ -124,7 +136,7 @@ const headersUser = [
 ];
 
 
-
+const currentDocuments = ref([]);
 
 
 const intake = ref("");
@@ -207,6 +219,25 @@ const updateUserOptions = (options) => {
 
   <VCard class="mt-5" v-if="containsString(userData.role,'channel partner')">
     <ApplicationList :userId="route.params.id"/>
+    <VCardTitle>Documents</VCardTitle>
+    <VCardText>
+      <VCard
+        v-for="(document, index) in currentDocuments"
+        :key="index"
+        class="mb-2"
+      >
+        <VCardText class="d-flex justify-space-between align-center">
+          <div>
+
+            <VIcon size="26" color="red" icon="tabler-file-type-doc" />
+            <a :href="document.document_path" target="_blank">{{ formatKey(document.document_type) }}</a>
+          </div>
+          <VBtn icon @click="downloadFile(document.document_path)">
+            <VIcon size="24" icon="tabler-eye" />
+          </VBtn>
+        </VCardText>
+      </VCard>
+    </VCardText>
   </VCard>
 
   <VCard title="Course Details" class="mt-2" v-if="containsString(userData.role,'editor')">

@@ -44,6 +44,8 @@ const form = ref({
   plan: '',
   status: '',
   recruitCountries: [],
+  agreement: null, // Placeholder for agreement file
+  commission_structure: null, //
 });
 
 // Initialize roles and form
@@ -102,22 +104,19 @@ const onSubmit = async () => {
   refForm.value?.validate().then(async ({ valid }) => {
     if (valid) {
       try {
+        // Pass the entire form to the store's updateUser method
         const user = await authStore.updateUser(form.value);
+
         Swal.fire({
           icon: 'success',
           title: 'User Updated Successfully',
           text: 'The user details have been updated!',
-          confirmButtonText: 'OK'
+          confirmButtonText: 'OK',
         });
 
         // Emit updated user data and close drawer
         emit('userUpdated', user);
         emit('update:isDrawerOpen', false);
-
-        // nextTick(() => {
-        //   refForm.value?.reset();
-        //   refForm.value?.resetValidation();
-        // });
 
       } catch (error) {
         console.error('Error updating user:', error);
@@ -125,12 +124,14 @@ const onSubmit = async () => {
           icon: 'error',
           title: 'Update Failed',
           text: error.response?.data.message || 'An unexpected error occurred',
-          confirmButtonText: 'OK'
+          confirmButtonText: 'OK',
         });
       }
     }
   });
 };
+
+
 
 // Handle Drawer Model Value Update
 const handleDrawerModelValueUpdate = val => {
@@ -228,6 +229,22 @@ const lowerCase = (name) => {
 
               <!-- Conditional Fields for Channel Partner Role -->
               <template v-if="lowerCase(form.role) === 'channel partner'">
+                <VCol cols="12">
+                  <VFileInput
+                    v-model="form.agreement"
+                    label="Upload Agreement"
+
+                  />
+                </VCol>
+
+                <!-- 👉 Commission Structure File -->
+                <VCol cols="12">
+                  <VFileInput
+                    v-model="form.commission_structure"
+                    label="Upload Commission Structure"
+
+                  />
+                </VCol>
                 <!-- 👉 Company Name -->
                 <VCol cols="12">
                   <AppTextField

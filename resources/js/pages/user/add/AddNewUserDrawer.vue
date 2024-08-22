@@ -48,6 +48,9 @@ const form = ref({
   status: '',
   avatar: '',
   createForm: 'admin',
+  agreement:null,
+  commission_structure:null,
+
 });
 
 // Separate Reactive Variable for Recruit Countries
@@ -81,10 +84,30 @@ const onSubmit = async () => {
     if (valid) {
       try {
         // Combine form data and recruitForm data before submission
-        const submitData = {
-          ...form.value,
-          ...recruitForm.value,
-        };
+        const submitData = new FormData();
+
+        // Append form data to FormData object
+        for (const key in form.value) {
+          if (form.value[key]) {
+            submitData.append(key, form.value[key]);
+          }
+        }
+
+        // Append recruitForm data
+        for (const country of recruitForm.value.recruitCountries) {
+          submitData.append('recruitCountries[]', country);
+        }
+
+        // Check for files and append to FormData with document_type
+        if (form.value.agreement) {
+          submitData.append('document_type', 'agreement');
+          submitData.append('agreement', form.value.agreement[0]);
+        }
+
+        if (form.value.commission_structure) {
+          submitData.append('document_type', 'commission_structure');
+          submitData.append('commission_structure', form.value.commission_structure[0]);
+        }
 
         await authStore.register(submitData);
         Swal.fire({
@@ -122,6 +145,7 @@ const handleDrawerModelValueUpdate = val => {
   emit('update:isDrawerOpen', val);
 };
 </script>
+
 <template>
   <VNavigationDrawer
     temporary
@@ -218,7 +242,7 @@ const handleDrawerModelValueUpdate = val => {
               </VCol>
 
               <!-- 👉 Role -->
-              <VCol cols="12">
+            <VCol cols="12">
                 <AppSelect
                   v-model="form.role"
                   label="Select Role"
@@ -232,6 +256,27 @@ const handleDrawerModelValueUpdate = val => {
 
               <!-- Conditional Fields for Channel Partner Role -->
               <template v-if="lowerCase(form.role) === 'channel partner'">
+                <VCol cols="12">
+                  <VFileInput
+                    chips
+                    v-model="form.agreement"
+                    label="Upload Agreement"
+
+
+                  />
+                </VCol>
+
+                <!-- 👉 Commission Structure (optional file) -->
+                <VCol cols="12">
+                  <VFileInput
+                    chips
+                    v-model="form.commission_structure"
+                    label="Upload Commission Structure"
+
+
+                  />
+                </VCol>
+
                 <!-- 👉 Company Name -->
                 <VCol cols="12">
                   <AppTextField

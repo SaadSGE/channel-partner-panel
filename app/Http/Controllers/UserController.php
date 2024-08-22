@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\FileUploadService;
 
 class UserController extends Controller
 {
@@ -23,7 +24,7 @@ class UserController extends Controller
             $parentId = auth('api')->user()->id;
         }
         // Query the users
-        $queryResult = User::with(['parent:id,parent_id,first_name,last_name,role'])->where('role', '!=', 'admin') // Exclude admin users
+        $queryResult = User::with(['parent:id,parent_id,first_name,last_name,role','documents'])->where('role', '!=', 'admin') // Exclude admin users
             ->when($searchQuery, function ($query, $searchQuery) {
                 return $query->where(function ($query) use ($searchQuery) {
                     $query->where('first_name', 'LIKE', "%$searchQuery%")
@@ -70,7 +71,7 @@ class UserController extends Controller
     {
         //
         try {
-            $user = User::findOrFail($id);
+            $user = User::with('documents')->findOrFail($id);
             return $this->successJsonResponse('User data found', $user);
         } catch(\Throwable $th) {
             \Log::error($th);
@@ -81,8 +82,9 @@ class UserController extends Controller
     /**
  * Update the specified resource in storage.
  */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id, FileUploadService $fileUploadService)
     {
+        \Log::info('Request Data:', $request->all());
         // Validate the incoming request data
         $validatedData = $request->validate([
             'first_name' => 'required|string|max:255',
@@ -98,13 +100,15 @@ class UserController extends Controller
             'country' => 'nullable|string|max:255',
             'role' => 'required|string',
             'recruit_countries' => 'nullable|array',
+            'agreement' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048', // Added validation for file
+            'commission_structure' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048', // Added validation for file
         ]);
 
         try {
             // Find the user by ID
             $user = User::findOrFail($id);
 
-            // Update user details
+            // Update basic user details
             $user->first_name = $validatedData['first_name'];
             $user->last_name = $validatedData['last_name'];
             $user->email = $validatedData['email'];
@@ -116,12 +120,39 @@ class UserController extends Controller
             $user->city = $validatedData['city'] ?? null;
             $user->post_code = $validatedData['post_code'] ?? null;
             $user->country = $validatedData['country'] ?? null;
+            $user->role = $validatedData['role'];
 
             // Update recruit_countries
             $user->recruit_countries = isset($validatedData['recruit_countries']) ? json_encode($validatedData['recruit_countries']) : null;
 
-            // Update the role
-            $user->role = $validatedData['role'];
+            // Handle file uploads
+            if ($request->hasFile('agreement')) {
+                // Upload the agreement document
+                $agreementPath = $fileUploadService->upload(
+                    'channelPartnerPanel/channelPartnerDocument/' . $user->email . '/agreements',
+                    $request->file('agreement')
+                );
+
+                // Update or create the document record in the documents table
+                $user->documents()->updateOrCreate(
+                    ['document_type' => 'agreement'],
+                    ['document_path' => $agreementPath]
+                );
+            }
+
+            if ($request->hasFile('commission_structure')) {
+                // Upload the commission structure document
+                $commissionStructurePath = $fileUploadService->upload(
+                    'channelPartnerPanel/channelPartnerDocument/' . $user->email . '/commission_structures',
+                    $request->file('commission_structure')
+                );
+
+                // Update or create the document record in the documents table
+                $user->documents()->updateOrCreate(
+                    ['document_type' => 'commission_structure'],
+                    ['document_path' => $commissionStructurePath]
+                );
+            }
 
             // Sync the role (remove old role and assign the new one)
             $user->syncRoles([$validatedData['role']]);
@@ -137,6 +168,7 @@ class UserController extends Controller
             return $this->exceptionJsonResponse('Failed to update user', $th);
         }
     }
+
 
 
 
