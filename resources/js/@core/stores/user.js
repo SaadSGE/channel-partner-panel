@@ -1,12 +1,13 @@
 // src/stores/applicationStore.ts
 import { defineStore } from 'pinia';
-
+import { handleErrorResponse } from '../utils/helpers';
 export const useUserStore = defineStore( {
     id: "user",
     state: () => ({
         users:[],
         errors: [],
-        user:[]
+        user:[],
+        profile:[]
       }),
   actions: {
     async fetchUsers(page=1, searchQuery = '',role='',parentId='') {
@@ -106,6 +107,79 @@ export const useUserStore = defineStore( {
           throw error;
         }
       },
+      async getUserProfile() {
+        try {
+          const response = await $api('/user/profile', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          this.profile = response.data; // Store the user's profile in the state
+          return response.data; // Return the profile data
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          this.errors = error.response
+            ? error.response.data.errors
+            : ['An unexpected error occurred'];
+          throw error; // Rethrow the error for handling in the component
+        }
+      },
+      async updateUserProfile(profileData) {
+
+        const payload = {
+            first_name: profileData.firstName,
+            last_name: profileData.lastName,
+            mobile_number: profileData.mobileNumber,
+            whatsapp_number: profileData.whatsappNumber,
+            company_name: profileData.companyName,
+            website: profileData.website,
+            address: profileData.address,
+            city: profileData.city,
+            post_code: profileData.postCode,
+            country: profileData.country
+        };
+
+        try {
+            const response = await $api('/user/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+
+            this.profile = response.data;
+
+            return response.data;
+        } catch (error) {
+            console.error('Error updating user profile:', error);
+            this.errors = error.response
+                ? error.response.data.errors
+                : ['An unexpected error occurred'];
+            throw error;
+        }
+    },
+    async changePassword(passwordData) {
+      try {
+        const response = await $api('/user/change-password', {
+          method: 'POST',  // Use POST or PUT depending on your API design
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(passwordData),
+        });
+
+        return response.data; // Return the response data
+      } catch (error) {
+        console.log(error)
+        handleErrorResponse(error)
+      }
+    }
+
+
 
 
 

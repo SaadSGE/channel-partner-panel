@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\FileUploadService;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -205,5 +206,109 @@ class UserController extends Controller
     {
         $users = User::get(['id','first_name','last_name','role']);
         return $this->successJsonResponse('User Data Found', $users);
+    }
+    public function getProfile()
+    {
+        try {
+            // Get the currently authenticated user
+            $user = auth('api')->user();
+
+            if (!$user) {
+                return $this->errorJsonResponse('User not authenticated', null, 401);
+            }
+
+            // Load any related data if needed, e.g., 'documents'
+            $user->load('documents');
+
+            // Return the user's profile data
+            return $this->successJsonResponse('User profile found', $user);
+
+        } catch (\Throwable $th) {
+            \Log::error($th);
+            return $this->exceptionJsonResponse('Failed to fetch user profile', $th);
+        }
+    }
+    public function updateProfile(Request $request)
+    {
+        \Log::info($request->all());
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'mobile_number' => 'nullable|string|max:15',
+            'whatsapp_number' => 'nullable|string|max:15',
+            'company_name' => 'nullable|string|max:255',
+            'website' => 'nullable|url',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'post_code' => 'nullable|string|max:10',
+            'country' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            // Get the currently authenticated user
+            $user = auth('api')->user();
+
+            // Update user profile details
+            $user->first_name = $validatedData['first_name'];
+            $user->last_name = $validatedData['last_name'];
+
+            $user->mobile_number = $validatedData['mobile_number'] ?? $user->mobile_number;
+            $user->whatsapp_number = $validatedData['whatsapp_number'] ?? $user->whatsapp_number;
+            $user->company_name = $validatedData['company_name'] ?? $user->company_name;
+            $user->website = $validatedData['website'] ?? $user->website;
+            $user->address = $validatedData['address'] ?? $user->address;
+            $user->city = $validatedData['city'] ?? $user->city;
+            $user->post_code = $validatedData['post_code'] ?? $user->post_code;
+            $user->country = $validatedData['country'] ?? $user->country;
+
+            // Save the updated user profile
+            $user->save();
+
+            // Return the updated user profile with success response
+            return $this->successJsonResponse('Profile updated successfully', $user);
+
+        } catch (\Throwable $th) {
+            // Log the error
+            \Log::error($th);
+
+            // Return an exception response
+            return $this->exceptionJsonResponse('Failed to update profile', $th);
+        }
+    }
+    public function changePassword(Request $request)
+    {
+        try {
+
+            $validatedData = $request->validate([
+                'current_password' => 'required|string|min:8',
+                'new_password' => 'required|string|min:8',
+            ]);
+
+
+            // Get the currently authenticated user
+            $user = auth('api')->user();
+
+            // Check if the provided current password matches the user's actual current password
+            if (!Hash::check($validatedData['current_password'], $user->password)) {
+                return $this->errorJsonResponse('Current password is incorrect');
+            }
+
+            // Update the user's password
+            $user->password = Hash::make($validatedData['new_password']);
+            $user->save();
+
+            // Return a success response
+            return $this->successJsonResponse('Password changed successfully');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->handleValidationErrors($e);
+        } catch (\Throwable $th) {
+            // Log the error
+            \Log::error($th);
+
+            // Return an exception response
+            return $this->exceptionJsonResponse('Failed to change password', $th);
+        }
     }
 }

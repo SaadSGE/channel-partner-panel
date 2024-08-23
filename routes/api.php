@@ -45,8 +45,11 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/application/{id}/comment', [ApplicationController::class, 'addComment']);
     Route::get('/application/{id}/university-communications', [ApplicationController::class, 'getUniversityCommunications']);
     Route::post('/application/{id}/university-communication', [ApplicationController::class, 'addUniversityCommunication']);
-
+    Route::get('/user/profile', [UserController::class,'getProfile']);
+    Route::put('/user/profile', [UserController::class, 'updateProfile']);
+    Route::post('/user/change-password', [UserController::class, 'changePassword']);
     Route::get('dashboard', [DashboardController::class,'index']);
+
 });
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');
 Route::get('/download/{fileName}', [FileController::class, 'download'])->name('file.download');

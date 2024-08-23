@@ -157,6 +157,7 @@ declare module 'vue-router/auto/routes' {
     'pages-typography': RouteRecordInfo<'pages-typography', '/pages/typography', Record<never, never>, Record<never, never>>,
     'pages-user-profile-tab': RouteRecordInfo<'pages-user-profile-tab', '/pages/user-profile/:tab', { tab: ParamValue<true> }, { tab: ParamValue<false> }>,
     'permissions': RouteRecordInfo<'permissions', '/permissions', Record<never, never>, Record<never, never>>,
+    'profile': RouteRecordInfo<'profile', '/profile', Record<never, never>, Record<never, never>>,
     'record': RouteRecordInfo<'record', '/record', Record<never, never>, Record<never, never>>,
     'record-add': RouteRecordInfo<'record-add', '/record/add', Record<never, never>, Record<never, never>>,
     'record-intake': RouteRecordInfo<'record-intake', '/record/intake', Record<never, never>, Record<never, never>>,
