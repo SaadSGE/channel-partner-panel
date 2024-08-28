@@ -91,7 +91,14 @@ export default [
       subject: 'user',
     },
 
+    {
+      title: 'Email',
+      icon: { icon: 'tabler-apps' },
+      to: 'email',
+      action: 'read',
+      subject: 'email',
 
+    },
 
 
 

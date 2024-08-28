@@ -8,6 +8,7 @@ definePage({
   meta: {
     action: 'read',
     subject: 'dashboard',
+
   },
 });
 

@@ -4,12 +4,32 @@ import { handleErrorResponse } from '../utils/helpers';
 export const useUserStore = defineStore( {
     id: "user",
     state: () => ({
+        allUsers:[],
         users:[],
         errors: [],
         user:[],
         profile:[]
       }),
   actions: {
+    async fetcAllhUser() {
+      try {
+        const response = await $api('fetch-all-user', {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        this.allUsers =  response.data
+        console.log(this.allUsers)
+      } catch (error) {
+        console.error("Error getting user details:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+        throw error;
+      }
+    },
     async fetchUsers(page=1, searchQuery = '',role='',parentId='') {
         try {
           const response = await $api("/users", {

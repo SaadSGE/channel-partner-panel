@@ -311,4 +311,10 @@ class UserController extends Controller
             return $this->exceptionJsonResponse('Failed to change password', $th);
         }
     }
+
+    public function fetchAllUser()
+    {
+        $users = User::filterByRole()->get(['id','first_name','last_name','email']);
+        return $this->successJsonResponse('User list found', $users);
+    }
 }

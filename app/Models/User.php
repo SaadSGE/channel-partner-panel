@@ -17,7 +17,7 @@ class User extends Authenticatable
     use HasRoles;
 
     protected $guarded = [];
-    protected $appends = ['full_name', 'record_count', 'dashboard'];
+    protected $appends = ['full_name', 'record_count', 'dashboard','name_with_email'];
 
     protected $hidden = [
         'password',
@@ -48,6 +48,12 @@ class User extends Authenticatable
     {
         return trim("{$this->first_name} {$this->last_name}");
     }
+
+    public function getNameWithEmailAttribute(): string
+    {
+        return trim("{$this->first_name} {$this->last_name} ({$this->email})");
+    }
+
 
     public function applications()
     {
@@ -152,5 +158,19 @@ class User extends Authenticatable
     public function documents(): HasMany
     {
         return $this->hasMany(ChannelPartnerDocument::class);
+    }
+
+    public function scopeFilterByRole($query)
+    {
+        if (auth('api')->check()) {
+            $user = auth('api')->user();
+            if ($user->hasRole('admin')) {
+                return $query;
+            } else {
+                return $query->where('parent_id', $user->id); // Return child users for other roles
+            }
+        }
+
+        return $query; // Default to returning all users if no authenticated user (optional, depending on your use case)
     }
 }

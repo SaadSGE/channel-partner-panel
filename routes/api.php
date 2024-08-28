@@ -15,6 +15,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\EmailController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -49,6 +50,11 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/user/profile', [UserController::class, 'updateProfile']);
     Route::post('/user/change-password', [UserController::class, 'changePassword']);
     Route::get('dashboard', [DashboardController::class,'index']);
+
+    Route::get('emails/received', [EmailController::class, 'receivedEmails']);
+    Route::get('emails/sent', [EmailController::class, 'sentEmails']);
+    Route::post('emails/send', [EmailController::class, 'sendEmail']);
+    Route::get('fetch-all-user', [UserController::class,'fetchAllUser']);
 
 });
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');

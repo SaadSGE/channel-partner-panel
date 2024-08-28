@@ -27,6 +27,7 @@ class CreatePermissionSeeder extends Seeder
             'dashboard.read','dashboard.create', 'dashboard.filter',
             'application.status','application.comment','application.university_communication',
             'user.create', 'user.edit', 'user.read', 'user.delete',
+            'email.create', 'email.edit', 'email.read', 'email.delete',
             'user.filter'
 
 
