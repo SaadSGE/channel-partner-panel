@@ -1,4 +1,11 @@
 <script setup>
+definePage({
+  meta: {
+    action: 'read',
+    subject: 'email',
+
+  }
+});
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 
 const props = defineProps({

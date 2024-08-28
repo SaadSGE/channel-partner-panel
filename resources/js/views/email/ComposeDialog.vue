@@ -1,4 +1,11 @@
 <script setup>
+definePage({
+  meta: {
+    action: 'read',
+    subject: 'email',
+
+  }
+});
 import { useEmailStore } from '@/@core/stores/email';
 import { useUserStore } from '@/@core/stores/user'; // Import user store
 import { computed, ref, watch } from 'vue';

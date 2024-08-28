@@ -1,10 +1,10 @@
 <script setup>
 definePage({
   meta: {
-    public: 'true',
+    action: 'read',
+    subject: 'email',
     layoutWrapperClasses: 'layout-content-height-fixed'
   }
-
 });
 import { useEmailStore } from '@/@core/stores/email';
 import ComposeDialog from '@/views/email/ComposeDialog.vue';

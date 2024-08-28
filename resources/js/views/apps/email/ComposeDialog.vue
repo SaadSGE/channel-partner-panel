@@ -27,6 +27,7 @@ const resetValues = () => {
     class="email-compose-dialog"
     elevation="10"
     max-width="30vw"
+
   >
     <VCardItem class="py-3 px-6">
       <div class="d-flex align-center">
@@ -181,6 +182,7 @@ const resetValues = () => {
 
 .v-card.email-compose-dialog {
   z-index: 910 !important;
+  height:32vw I !important;
 
   @include mixins.elevation(18);
 

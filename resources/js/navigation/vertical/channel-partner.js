@@ -10,7 +10,7 @@ export default [
 
     {
       title: 'New Application',
-      icon: { icon: 'tabler-apps' },
+      icon: { icon: 'tabler-school' },
       to: 'application-new',
       action: 'create',
       subject: 'application',
@@ -59,7 +59,7 @@ export default [
 
     {
       title: 'Roles & Permission',
-      icon: { icon: 'tabler-files' },
+      icon: { icon: 'tabler-command' },
       action: 'create',
       subject: 'dashboard',
       children: [
@@ -85,7 +85,7 @@ export default [
     },
     {
       title: 'User',
-      icon: { icon: 'tabler-apps' },
+      icon: { icon: 'tabler-user' },
       to: 'user',
       action: 'read',
       subject: 'user',
@@ -93,7 +93,7 @@ export default [
 
     {
       title: 'Email',
-      icon: { icon: 'tabler-apps' },
+      icon: { icon: 'tabler-mail' },
       to: 'email',
       action: 'read',
       subject: 'email',
