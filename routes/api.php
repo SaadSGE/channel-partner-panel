@@ -63,4 +63,4 @@ Route::post('student-document-upload-existing-application', [StudentFileControll
 
 Route::post('register', [AuthController::class,'register']);
 Route::post('login', [AuthController::class,'login']);
-Route::get('course-detail-all2', [CourseDetailsController::class,'courseDetailsAll']);
+Route::get('course-detail-all2', [CourseDetailsController::class,'courseDetailsAll2']);
