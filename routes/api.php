@@ -33,7 +33,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/roles/{roleName}/permissions', [RoleController::class, 'store']);
     Route::apiResource('permissions', PermissionController::class);
     Route::get('all-permissions', [PermissionController::class,'allPermission']);
-    Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAll']);
+
     Route::apiResource('application', ApplicationController::class);
 
     Route::get('get-country-intake-university-course', [CourseDetailsController::class,'countryIntakeUniversityCourse']);
@@ -64,3 +64,4 @@ Route::post('student-document-upload-existing-application', [StudentFileControll
 Route::post('register', [AuthController::class,'register']);
 Route::post('login', [AuthController::class,'login']);
 Route::get('course-detail-all2', [CourseDetailsController::class,'courseDetailsAll2']);
+Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAll']);
