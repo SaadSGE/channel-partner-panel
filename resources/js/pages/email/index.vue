@@ -133,7 +133,9 @@ const openEmail = (email) => {
           </template>
         </PerfectScrollbar>
       </VCard>
+
       <ComposeDialog v-show="isComposeDialogVisible" @close="isComposeDialogVisible = false" />
+
     </VMain>
   </VLayout>
 </template>

@@ -42,7 +42,11 @@ class AuthController extends Controller
 
             // Determine the role based on the form type
             $role = $request->createForm === 'admin' ? $validatedData['role'] : 'channel partner';
-
+            if (strtolower($role) == 'probable channel partner') {
+                $status = 0;
+            } else {
+                $status = 1;
+            }
             // Handle file uploads
             $agreementPath = null;
             $commissionStructurePath = null;
@@ -77,6 +81,7 @@ class AuthController extends Controller
                 'post_code' => $validatedData['postCode'] ?? null,
                 'country' => $validatedData['country'] ?? null,
                 'role' => $role,
+                'status' => $status,
                 'recruit_countries' => isset($validatedData['recruitCountries']) ? json_encode($validatedData['recruitCountries']) : null,
                 'password' => bcrypt($validatedData['password']),
             ]);
@@ -104,12 +109,13 @@ class AuthController extends Controller
             $assignedRole = Role::where('name', $role)->first();
             $userDetail->assignRole($assignedRole);
 
-            // Notify the user
-            Notification::route('mail', $userDetail->email)->notify(new \App\Notifications\WelcomeNotification($userDetail));
+            if (strtolower($role) != 'probable channel partner') {
+                Notification::route('mail', $userDetail->email)->notify(new \App\Notifications\WelcomeNotification($userDetail));
 
-            // Notify the admin
-            $admin = User::where('role', 'admin')->first();
-            $admin->notify(new NewUserRegistrationNotification($userDetail));
+                // Notify the admin
+                $admin = User::where('role', 'admin')->first();
+                $admin->notify(new NewUserRegistrationNotification($userDetail));
+            }
 
             return $this->successJsonResponse('User Registration Successful', $userDetail);
         } catch (\Illuminate\Validation\ValidationException $e) {

@@ -1,46 +1,70 @@
 <script setup>
-definePage({
-  meta: {
-    action: 'read',
-    subject: 'email',
-
-  }
-});
-import { useEmailStore } from '@/@core/stores/email';
-import { useUserStore } from '@/@core/stores/user'; // Import user store
-import { computed, ref, watch } from 'vue';
+import { useEmailStore } from '@/@core/stores/email'; // Import email store
+import { useRolePermissionStore } from '@/@core/stores/rolePermission'; // Import user store
+import { useUserStore } from '@/@core/stores/user';
+import { formatKey } from "@/@core/utils/helpers.js";
+import { computed, onMounted, ref } from 'vue';
 const emit = defineEmits(['close']);
 
 const content = ref('');
 const to = ref([]); // Updated to be an array for multiple selections
 const subject = ref('');
 const message = ref('');
+const selectedRoles = ref([]); // To keep track of selected roles
 
 // Import the user store to access all users for autocomplete
+const roleStore = useRolePermissionStore()
 const userStore = useUserStore();
 const emailStore = useEmailStore();
-// Fetch all users when the component is mounted
-await userStore.fetcAllhUser();
-
-const items = [
-  'Schedule Mail',
-  'Save Draft',
-  'Sent',
-];
 
 const users = computed(() => userStore.allUsers); // Computed property for all users
+const roles = ref([]); // Store roles
+
+// Fetch all users and roles when the component is mounted
+onMounted(async () => {
+  await userStore.fetcAllhUser();
+  await fetchAllRoles();
+});
+
+// Function to fetch all roles
+const fetchAllRoles = async () => {
+  try {
+    await roleStore.getAllRoles();
+    roles.value = roleStore.roles;
+  } catch (error) {
+    console.error('Error fetching roles:', error);
+  }
+};
+
+// Watcher to handle changes in selectedRoles
+watch(selectedRoles, (newRoles, oldRoles) => {
+  const addedRoles = newRoles.filter(role => !oldRoles.includes(role));
+  const removedRoles = oldRoles.filter(role => !newRoles.includes(role));
+
+  // Add users with the newly selected roles
+  addedRoles.forEach(role => {
+    const roleUsers = userStore.allUsers
+      .filter(user => user.role === role)
+      .map(user => user.id);
+    to.value = [...new Set([...to.value, ...roleUsers])];
+  });
+
+  // Remove users with the deselected roles
+  removedRoles.forEach(role => {
+    to.value = to.value.filter(
+      userId => !userStore.allUsers.some(user => user.id === userId && user.role === role)
+    );
+  });
+});
 
 const resetValues = () => {
   to.value = [];
   subject.value = '';
   message.value = '';
   content.value = '';
+  selectedRoles.value = []; // Reset selected roles
 };
 
-// Watch for changes in user input for the "to" field
-watch(to, (newValue) => {
-  // If needed, handle changes in selected users here
-});
 const sendEmail = async () => {
   const recipients = to.value;
   const emailData = {
@@ -62,7 +86,7 @@ const sendEmail = async () => {
 </script>
 
 <template>
-  <VCard class="email-compose-dialog" elevation="10" max-width="30vw">
+  <VCard class="email-compose-dialog" elevation="10" max-width="35vw">
     <VCardItem class="py-3 px-6">
       <div class="d-flex align-center">
         <h5 class="text-h5">Compose Mail</h5>
@@ -74,7 +98,19 @@ const sendEmail = async () => {
       </div>
     </VCardItem>
 
+    <!-- Roles Checkboxes -->
+    <div class="px-1 pe-6 py-1">
+      <VCheckbox
+        v-for="role in roles"
+        :key="role.id"
+        :label="formatKey(role.role)"
+        :value="role.role"
+        v-model="selectedRoles"
+        class="cursor-pointer"
+      />
+    </div>
 
+    <!-- To Field -->
     <div class="px-1 pe-6 py-1">
       <AppAutocomplete
         v-model="to"
@@ -84,9 +120,7 @@ const sendEmail = async () => {
         multiple
         chips
         closable-chips
-
       >
-
         <template #prepend-inner>
           <div class="text-base font-weight-medium text-disabled">
             To:
@@ -114,10 +148,7 @@ const sendEmail = async () => {
     <div class="d-flex align-center px-6 py-4">
       <VBtn color="primary" class="me-4" append-icon="tabler-send" @click="sendEmail()">
         Send
-
       </VBtn>
-
-
     </div>
   </VCard>
 </template>
@@ -127,7 +158,8 @@ const sendEmail = async () => {
 
 .v-card.email-compose-dialog {
   z-index: 910 !important;
-
+  overflow: auto;
+  height: 500px;
   @include mixins.elevation(18);
 
   .v-field--prepended {

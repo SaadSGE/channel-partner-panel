@@ -16,16 +16,16 @@ class UserController extends Controller
     {
         // Retrieve query parameters
         $searchQuery = strtoupper(strtolower(trim(request()->query('searchQuery'))));
-        $perPage = (int) request()->query('perPage', 10); // Default to 10 if not specified
-        $sortBy = request()->query('sortBy', 'created_at'); // Default to sorting by 'created_at'
+        $perPage = (int) request()->query('perPage', 10);
+        $sortBy = request()->query('sortBy', 'created_at');
         $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
-        $roleFilter = request()->query('role', null); // Get the role filter query parameter
-        $parentId = request()->query('parentId', null); // Get the parentId filter query parameter
-        if(auth('api')->user()->role != 'admin') {
+        $roleFilter = request()->query('role', null);
+        $parentId = request()->query('parentId', null);
+        if (auth('api')->user()->role != 'admin') {
             $parentId = auth('api')->user()->id;
         }
         // Query the users
-        $queryResult = User::with(['parent:id,parent_id,first_name,last_name,role','documents'])->where('role', '!=', 'admin') // Exclude admin users
+        $queryResult = User::with(['parent:id,parent_id,first_name,last_name,role','documents'])->where('role', '!=', 'admin')
             ->when($searchQuery, function ($query, $searchQuery) {
                 return $query->where(function ($query) use ($searchQuery) {
                     $query->where('first_name', 'LIKE', "%$searchQuery%")
@@ -34,10 +34,10 @@ class UserController extends Controller
                 });
             })
             ->when($roleFilter, function ($query, $roleFilter) {
-                return $query->where('role', $roleFilter); // Apply role filtering
+                return $query->where('role', $roleFilter);
             })
             ->when($parentId, function ($query, $parentId) {
-                return $query->where('parent_id', $parentId); // Apply parent_id filtering
+                return $query->where('parent_id', $parentId);
             })
             ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
                 return $query->orderBy($sortBy, $sortDesc ? 'DESC' : 'ASC');
@@ -74,7 +74,7 @@ class UserController extends Controller
         try {
             $user = User::with('documents')->findOrFail($id);
             return $this->successJsonResponse('User data found', $user);
-        } catch(\Throwable $th) {
+        } catch (\Throwable $th) {
             \Log::error($th);
             return $this->exceptionJsonResponse('Failed to find user', $th);
         }
@@ -314,7 +314,7 @@ class UserController extends Controller
 
     public function fetchAllUser()
     {
-        $users = User::filterByRole()->get(['id','first_name','last_name','email']);
+        $users = User::filterByRole()->get(['id','first_name','last_name','email','role']);
         return $this->successJsonResponse('User list found', $users);
     }
 }
