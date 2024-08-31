@@ -37,7 +37,6 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('application', ApplicationController::class);
     Route::post('student-document-upload', [StudentFileController::class,'upload']);
     Route::post('student-document-upload-existing-application', [StudentFileController::class,'uploadExistingApplication']);
-    Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
     Route::get('get-country-intake-university-course', [CourseDetailsController::class,'countryIntakeUniversityCourse']);
     Route::post('update-application-file', [ApplicationController::class,'updateApplicationFile']);
     Route::get('application-statuses/{id}', [ApplicationController::class,'applicationStatuses']);
@@ -57,6 +56,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('fetch-all-user', [UserController::class,'fetchAllUser']);
 
 });
+Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');
 Route::get('/download/{fileName}', [FileController::class, 'download'])->name('file.download');
 
