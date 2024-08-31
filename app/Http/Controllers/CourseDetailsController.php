@@ -20,8 +20,8 @@ class CourseDetailsController extends Controller
         $id = (int) request()->query('id') ?: null;
         $userId = auth('api')->user()->id;
         $userRole = auth('api')->user()->role;
-        if($id == null) {
-            if($userRole == 'editor') {
+        if ($id == null) {
+            if ($userRole == 'editor') {
                 $id = $userId;
             }
         }
@@ -208,9 +208,27 @@ class CourseDetailsController extends Controller
 
     public function courseDetailsAll()
     {
-        $courseDetails = CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
-        return $this->successJsonResponse('Course details found', $courseDetails);
+        // Define a cache key
+        $cacheKey = 'course_details_all';
+
+        try {
+            // Check if the data is already cached. If not, execute the query and cache the result.
+            $courseDetails = Cache::rememberForever($cacheKey, function () {
+                return CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
+            });
+
+            // Return the cached or fresh data
+            return $this->successJsonResponse('Course details found', $courseDetails);
+
+        } catch (Exception $e) {
+            // Log the error message
+            Log::error('Error in courseDetailsAll: ' . $e->getMessage());
+
+            // Return a generic error response
+            return $this->errorJsonResponse('An error occurred while retrieving course details.', 500);
+        }
     }
+
     public function courseDetailsAll2()
     {
         // Define a cache key
