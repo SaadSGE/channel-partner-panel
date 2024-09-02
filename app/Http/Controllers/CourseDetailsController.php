@@ -73,7 +73,7 @@ class CourseDetailsController extends Controller
             // Start the database transaction
             DB::beginTransaction();
 
-
+            // Validate the incoming request
             $validatedData = $request->validate([
                 'countryId' => 'required|exists:application_countries,id',
                 'intakeId' => 'required|exists:intakes,id',
@@ -106,21 +106,27 @@ class CourseDetailsController extends Controller
             // Commit the transaction
             DB::commit();
 
-            Cache::forget('course_details_all2');
+            // Clear the cache for course details
+
+            Cache::forget('course_details_all');
+
             // Log the newly created course detail
             Log::info('CourseDetail created: ', $courseDetail->toArray());
 
-            return $this->successJsonResponse('Course details found', $courseDetail);
+            // Return success response
+            return $this->successJsonResponse('Course detail created successfully', $courseDetail);
         } catch (\Throwable $th) {
             // Rollback the transaction
             DB::rollBack();
 
             // Log the error
             Log::error('Error creating CourseDetail: ', ['error' => $th]);
-            return $this->exceptionJsonResponse('Error creating CourseDetail', $th);
 
+            // Return error response
+            return $this->exceptionJsonResponse($th, 'Error creating CourseDetail');
         }
     }
+
 
     /**
      * Display the specified resource.
