@@ -215,7 +215,7 @@ class CourseDetailsController extends Controller
 
     public function courseDetailsAll()
     {
-        Cache::forget('course_details_all');
+
         // Define a cache key
         $cacheKey = 'course_details_all';
 
