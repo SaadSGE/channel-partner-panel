@@ -1,36 +1,35 @@
-name: Deploy to DigitalOcean
+name: Deploy Laravel Project
 
 on:
   push:
     branches:
-      - master # Ensure this is the correct branch
+      - main # Change to your default branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Check out the repository
+        uses: actions/checkout@v3
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.3
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
         with:
-          ssh-private-key: ${{ secrets.DO_KEY }}
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Echo SSH public key for debugging
+      - name: Deploy to Server
+        env:
+          SSH_USER: username
+          SSH_HOST: your_server_ip
+          SSH_PATH: /var/www/your_project # Path to your Laravel project on the server
         run: |
-          echo "$SSH_AUTH_SOCK"
-          ssh-add -L
-
-      - name: Deploy to DigitalOcean
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << 'EOF'
-            cd /var/www/html  # Corrected path
-            git pull origin master  # Ensure this matches your branch name
-            composer install --no-interaction --prefer-dist --optimize-autoloader
-            php artisan migrate --force
-            php artisan config:cache
+          ssh $SSH_USER@$SSH_HOST "
+            cd $SSH_PATH &&
+            git pull origin main &&
+            composer install --no-interaction --prefer-dist --optimize-autoloader &&
+            php artisan migrate --force &&
+            php artisan cache:clear &&
+            php artisan config:cache &&
             php artisan route:cache
-            php artisan view:cache
-            # Restart PHP FPM or any other required services
-          EOF
+          "
