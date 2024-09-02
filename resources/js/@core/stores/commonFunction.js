@@ -18,47 +18,53 @@ export const commonFunction = defineStore({
     }),
 
     getters: {
-        getFilteredCourseDetails: (state) => (countryId, courseId, intakeId, universityId) => {
-            state.selectedCountryId = countryId;
-            state.selectedCourseId = courseId;
-            state.selectedIntakeId = intakeId;
-            state.selectedUniversityId = universityId;
-            const filtered = state.courseDetails.find(
-                (detail) =>
-                    parseInt(detail.country_id, 10) === countryId &&
-                    parseInt(detail.course_id, 10) === courseId &&
-                    parseInt(detail.intake_id, 10) === intakeId &&
-                    parseInt(detail.university_id, 10) === universityId
+      getFilteredCourseDetails: (state) => (countryId, courseId, intakeId, universityId) => {
+        state.selectedCountryId = countryId;
+        state.selectedCourseId = courseId;
+        state.selectedIntakeId = intakeId;
+        state.selectedUniversityId = universityId;
+
+        const filtered = state.countryIntakeUniversityCourse.find((detail) => {
+            return (
+                parseInt(detail.country_id, 10) === countryId &&
+                parseInt(detail.course_id, 10) === courseId &&
+                parseInt(detail.intake_id, 10) === intakeId &&
+                parseInt(detail.university_id, 10) === universityId
             );
-            console.log(state.courseDetails);
-            console.log(filtered);
-            if (filtered) {
-                state.selectedCourseDetailsId = filtered.id;
-                return {
-                    courseName: filtered.course?.name || '',
-                    intake: filtered.intake?.name || '',
-                    tuitionFee: filtered.tuition_fee || '',
-                    courseDuration: filtered.course_duration || '',
-                    courseLabel: filtered.course?.type || '',
-                    location: filtered.country?.name || '',
-                    universityLogo: filtered.university?.logo || '',
-                    academicRequirement: filtered.academic_requirement || '',
-                    englishRequirement: filtered.english_requirement || '',
-                };
-            } else {
-                return {
-                    courseName: '',
-                    intake: '',
-                    tuitionFee: '',
-                    courseDuration: '',
-                    courseLabel: '',
-                    location: '',
-                    universityLogo: '',
-                    academicRequirement: '',
-                    englishRequirement: '',
-                };
-            }
+        });
+       // console.log(filtered)
+        if (filtered) {
+          console.log('test')
+          console.log(filtered)
+            state.selectedCourseDetailsId = filtered.id;
+            return {
+                courseName: filtered.course_name,
+                intake: filtered.intake_name,
+                tuitionFee: filtered.tution_fee,
+                courseDuration: filtered.course_duration,
+                courseLabel: filtered.course_type ,
+                location: filtered.country_name,
+                universityLogo: filtered.university_logo || '',
+                academicRequirement: filtered.academic_requirement || '',
+                englishRequirement: filtered.english_requirement || '',
+            };
         }
+        else{
+          return {
+            courseName: '',
+            intake: '',
+            tuitionFee: '',
+            courseDuration: '',
+            courseLabel: '',
+            location: '',
+            universityLogo: '',
+            academicRequirement: '',
+            englishRequirement: '',
+        };
+        }
+
+    }
+
     },
 
     actions: {
@@ -118,16 +124,31 @@ export const commonFunction = defineStore({
                 this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
             }
         },
-        async getUniversities() {
-            try {
-                const response = await $api('/university', { method: 'GET' });
+        async getUniversities(page = null, searchQuery = '', perPage = 10, sortBy = 'created_at') {
+          try {
+              const response = await $api('/university', {
+                  method: 'GET',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  params: {
+                      page,
+                      searchQuery,
+                      perPage,
+                      sortBy,
 
-                this.universities = response.data;
-            } catch (error) {
-                console.error('Error fetching universities:', error);
-                this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-            }
-        },
+                  },
+              });
+
+              this.universities = response.data;
+              return response; // Return response to allow further processing if needed
+          } catch (error) {
+              console.error('Error fetching universities:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+              throw error; // Re-throw error to handle it outside if necessary
+          }
+      },
+
         async getCourseDetails() {
             try {
                 const response = await $api('/course-detail-all', { method: 'GET' });

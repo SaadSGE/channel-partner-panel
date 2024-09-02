@@ -12,19 +12,25 @@ return new class () extends Migration {
     public function up(): void
     {
         DB::statement('
-            CREATE VIEW country_intake_course_university_map_view AS
+            CREATE OR REPLACE VIEW country_intake_course_university_map_view AS
             SELECT DISTINCT
+				cd.id AS id,
                 ac.id AS country_id,
                 ac.name AS country_name,
                 i.id AS intake_id,
                 i.name AS intake_name,
                 c.id AS course_id,
                 c.name AS course_name,
+                cd.tuition_fee as tution_fee,
+                cd.course_duration as course_duration,
+				cd.academic_requirement as academic_requirement,
+                cd.english_requirement as english_requirement,
                 c.type AS course_type,
                 u.id AS university_id,
                 u.name AS university_name,
                 u.logo AS university_logo,
-                u.address AS university_address
+                u.address AS university_address,
+                cd.created_by as created_by
             FROM
                 course_details cd
             JOIN

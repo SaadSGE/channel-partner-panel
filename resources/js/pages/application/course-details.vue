@@ -20,6 +20,7 @@ const props = defineProps({
   },
 
 });
+
 const emit = defineEmits(['update:showCourseDetails', 'update:showApplicationForm']);
 const back = () => {
   emit('update:showCourseDetails', false);

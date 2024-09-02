@@ -9,6 +9,7 @@ use Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Exception;
+use App\Models\CountryIntakeUniversityCourse;
 
 class CourseDetailsController extends Controller
 {
@@ -214,13 +215,14 @@ class CourseDetailsController extends Controller
 
     public function courseDetailsAll()
     {
+
         // Define a cache key
         $cacheKey = 'course_details_all';
 
         try {
             // Check if the data is already cached. If not, execute the query and cache the result.
             $courseDetails = Cache::rememberForever($cacheKey, function () {
-                return CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
+                return CountryIntakeUniversityCourse::get();
             });
 
             // Return the cached or fresh data
@@ -268,7 +270,7 @@ class CourseDetailsController extends Controller
 
     public function countryIntakeUniversityCourse()
     {
-        $data = DB::table('country_intake_course_university_map_view')->get();
+        $data = CountryIntakeUniversityCourse::get();
         return $this->successJsonResponse('Course Intake University Details Found', $data);
     }
 }

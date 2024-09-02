@@ -14,9 +14,43 @@ class UniversityController extends Controller
      */
     public function index()
     {
-        $universities = University::with('country')->get();
-        return $this->successJsonResponse('University Data Found', $universities);
+        // Retrieve query parameters
+        $searchQuery = strtoupper(strtolower(trim(request()->query('searchQuery'))));
+        $perPage = request()->query('perPage');
+        $page = request()->query('page');
+        $sortBy = request()->query('sortBy', 'created_at');
+        $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
+
+        // Query the universities
+        $query = University::with('country')
+            ->when($searchQuery, function ($query, $searchQuery) {
+                return $query->where(function ($query) use ($searchQuery) {
+                    $query->where('name', 'LIKE', "%$searchQuery%");
+                });
+            })
+            ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
+                return $query->orderBy($sortBy, $sortDesc ? 'DESC' : 'ASC');
+            }, function ($query) {
+                return $query->latest('created_at');
+            });
+
+        // Check if page is null, if so, fetch all records without pagination
+        if (is_null($page)) {
+            $universities = $query->get()->toArray();
+            $totalRows = count($universities);
+        } else {
+            // Paginate the results if page is provided
+            $perPage = (int) $perPage ?: 10; // Set a default perPage value if null
+            $queryResult = $query->paginate($perPage)->toArray();
+            $universities = $queryResult['data'];
+            $totalRows = $queryResult['total'];
+        }
+
+        // Return success response with university data
+        return $this->successJsonResponse('University Data Found', $universities, $totalRows);
     }
+
+
 
     /**
      * Store a newly created resource in storage.
@@ -84,7 +118,7 @@ class UniversityController extends Controller
             $university->logo = $validatedData['logo'];
             $university->save();
             return $this->successJsonResponse('University updated successfully', $university->load('country'));
-        } catch(\Throwable $th) {
+        } catch (\Throwable $th) {
             Log::error($th);
             return $this->exceptionJsonResponse('An unexpected error occurred', $th);
         }
@@ -104,7 +138,7 @@ class UniversityController extends Controller
             }
             $university->delete();
             return $this->successJsonResponse('University deleted successfully');
-        } catch(\Throwable $th) {
+        } catch (\Throwable $th) {
             \Log::error('University logo delete error: ' . $th);
             return $this->exceptionJsonResponse('An unexpected error occurred', $th);
         }

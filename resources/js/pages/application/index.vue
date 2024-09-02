@@ -56,6 +56,7 @@ const props = defineProps({
 
 // Methods
 const fetchApplications = async () => {
+
   isLoading.value = true;
   try {
     const response = await store.getApplicationList(
@@ -81,7 +82,7 @@ const fetchApplications = async () => {
 const updateOptions = (options) => {
   sortBy.value = options.sortBy[0]?.key;
   orderBy.value = options.sortBy[0]?.order;
-  fetchApplications();
+ fetchApplications();
 };
 
 const viewApplicationDetail = (applicationId) => {

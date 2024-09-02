@@ -58,37 +58,36 @@ const courseDetails = ref({
 const refForm = ref(null);
 const showAppllicationForm = ref(true);
 const showCourseDetails = ref(false);
+const filteredCourseDetails = ref()
 const next = () => {
   refForm.value.validate().then((success) => {
-    console.log(success);
+
     if (success.valid) {
       showCourseDetails.value = true;
       showAppllicationForm.value = false;
+      filteredCourseDetails.value = commonFunctionStore.getFilteredCourseDetails(
+      countryToApply.value,
+      course.value,
+      intake.value,
+      university.value
+  );
+  console.log(filteredCourseDetails.value)
     }
   });
 };
-const filteredCourseDetails = computed(() => {
-  return commonFunctionStore.getFilteredCourseDetails(
-    countryToApply.value,
-    course.value,
-    intake.value,
-    university.value
-  );
-});
+
 
 onMounted(async () => {
   await commonFunctionStore.getCountryIntakeUniversityCourse();
 
-  await commonFunctionStore.getCourses();
-  await commonFunctionStore.getIntakes();
-  await commonFunctionStore.getUniversities();
+
   countryIntakeUniversityCourse.value = commonFunctionStore.countryIntakeUniversityCourse;
   countries.value = commonFunctionStore.countries;
   courses.value = commonFunctionStore.courses;
   intakes.value = commonFunctionStore.intakes;
   universities.value = commonFunctionStore.universities;
   isLoading.value = false
-  await commonFunctionStore.getCourseDetails();
+
 
 
 
