@@ -180,7 +180,7 @@ class CourseDetailsController extends Controller
 
             // Commit the transaction
             DB::commit();
-
+            Cache::forget('course_details_all');
             // Log the updated course detail
             Log::info('CourseDetail updated: ', $courseDetail->toArray());
 
@@ -215,7 +215,7 @@ class CourseDetailsController extends Controller
 
     public function courseDetailsAll()
     {
-
+        Cache::forget('course_details_all');
         // Define a cache key
         $cacheKey = 'course_details_all';
 
