@@ -9,24 +9,21 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-   steps:
+    steps:
       - name: Checkout files
         uses: actions/checkout@v2
+
       - name: Updating docker image
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DO_HOST}}
+          host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_KEY }}
-      run: |
-        echo "$SSH_KEY" > deploy_key
-        chmod 600 deploy_key
-        ssh -i deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
-          cd /var/www/your_project &&  # Adjust to your project directory
-          git pull origin main &&
-          composer install --no-interaction --prefer-dist --optimize-autoloader &&
-          php artisan migrate --force &&
-          php artisan cache:clear &&
-          php artisan config:cache &&
-          php artisan route:cache
-        "
+          script: |
+            cd /var/www/your_project  # Adjust to your project directory
+            git pull origin main
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+            php artisan migrate --force
+            php artisan cache:clear
+            php artisan config:cache
+            php artisan route:cache
