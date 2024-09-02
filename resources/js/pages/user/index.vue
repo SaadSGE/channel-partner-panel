@@ -194,7 +194,7 @@ watch([searchQuery, selectedRole, selectedParent], () => {
 
     <VCard class="mb-6">
       <VCardItem class="pb-4" v-if="$can('filter','user')">
-        <VCardTitle>Filters</VCardTitle>
+        <VCardTitle>Filter</VCardTitle>
       </VCardItem>
 
       <VCardText v-if="$can('filter','user')">

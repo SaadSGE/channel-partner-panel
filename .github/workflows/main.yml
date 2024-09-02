@@ -25,7 +25,5 @@ jobs:
             php artisan optimize:clear
             composer install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
-            npm install --no-audit --no-progress
-            npm run build
             php artisan config:cache
             php artisan route:cache
