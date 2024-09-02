@@ -110,7 +110,7 @@ class CourseDetailsController extends Controller
             // Clear the cache for course details
 
             Cache::forget('course_details_all');
-
+            Cache::forget('country_intake_university_course');
             // Log the newly created course detail
             Log::info('CourseDetail created: ', $courseDetail->toArray());
 
@@ -181,6 +181,7 @@ class CourseDetailsController extends Controller
             // Commit the transaction
             DB::commit();
             Cache::forget('course_details_all');
+            Cache::forget('country_intake_university_course');
             // Log the updated course detail
             Log::info('CourseDetail updated: ', $courseDetail->toArray());
 
@@ -270,7 +271,25 @@ class CourseDetailsController extends Controller
 
     public function countryIntakeUniversityCourse()
     {
-        $data = CountryIntakeUniversityCourse::get();
-        return $this->successJsonResponse('Course Intake University Details Found', $data);
+        // Define a cache key
+        $cacheKey = 'country_intake_university_course';
+
+        try {
+            // Check if the data is already cached. If not, execute the query and cache the result.
+            $data = Cache::rememberForever($cacheKey, function () {
+                return CountryIntakeUniversityCourse::get();
+            });
+
+            // Return the cached or fresh data
+            return $this->successJsonResponse('Course Intake University Details Found', $data);
+
+        } catch (Exception $e) {
+            // Log the error message
+            Log::error('Error in countryIntakeUniversityCourse: ' . $e->getMessage());
+
+            // Return a generic error response
+            return $this->errorJsonResponse('An error occurred while retrieving course intake university details.', 500);
+        }
     }
+
 }
