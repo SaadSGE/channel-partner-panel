@@ -16,7 +16,7 @@ class University extends Model
 
     public function getLogoAttribute($value)
     {
-        return getImageUrl().$value;
+        return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/".$value;
     }
 
 }

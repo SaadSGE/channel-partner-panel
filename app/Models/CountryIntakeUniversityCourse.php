@@ -13,7 +13,7 @@ class CountryIntakeUniversityCourse extends Model
 
     public function getUniversityLogoAttribute($value)
     {
-        return getImageUrl().$value;
+        return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/".$value;
 
     }
 }

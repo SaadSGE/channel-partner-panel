@@ -60,7 +60,7 @@ class ApplicationStatusHistory extends Model
     public function getDocumentAttribute($value)
     {
         if ($value) {
-            return getImageUrl() . $value;
+            return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/" . $value;
         }
         return null;
     }

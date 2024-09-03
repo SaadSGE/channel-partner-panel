@@ -32,7 +32,7 @@ class StudentDocument extends Model
     {
         $fileType = $this->determineFileType($value);
         return [
-            'path' => getImageUrl().$value,
+            'path' => "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/".$value,
             'file_name' => basename($value),
             'file_type' => $fileType
         ];
