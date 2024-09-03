@@ -60,8 +60,8 @@ class UniversityController extends Controller
 
         $request->validate([
             'countryId' => 'required',
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
+            'name' => 'required|string',
+            'address' => 'required|string',
             'logo' => 'required'
         ]);
 
@@ -104,8 +104,8 @@ class UniversityController extends Controller
     {
 
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
+            'name' => 'required|string',
+            'address' => 'required|string',
             'countryId' => 'required|integer',
             'logo' => 'required',
         ]);

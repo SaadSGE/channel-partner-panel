@@ -35,60 +35,70 @@ class ApplicationController extends Controller
         $id = (int) request()->query('id') ?: null;
         $sortBy = (string) request()->query('sortBy');
         $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
-        $userId = auth('api')->user()->id;
-        $userRole = auth('api')->user()->role;
+        $user = auth('api')->user();
+        $userId = $user->id;
+        $userRole = $user->role;
 
-        // Set id to user ID if user is a channel partner and no ID is provided
-        if ($id == null && $userRole == 'channel partner') {
-            $id = $userId;
+        // Determine base query
+        $query = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user.parent:id,first_name,last_name,email']);
+
+        // Role-based filtering
+        if ($userRole === 'admin') {
+            // Admin sees all records, no additional filtering needed
+        } elseif ($userRole === 'channel partner') {
+            // Channel partner sees only their own records
+            $query->where('created_by', $userId);
+        } else {
+            // Other users see records created by their child accounts
+            $query->whereHas('user', function ($q) use ($userId) {
+                $q->where('parent_id', $userId);
+            });
         }
 
-        $queryResult = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user.parent:id,first_name,last_name,email'])
-            ->when($id, function ($query, $id) {
-                return $query->where('created_by', $id);
-            })
-            ->when($searchQuery, function ($query, $searchQuery) {
-                return $query->where(function ($query) use ($searchQuery) {
-                    // Search across multiple fields
-                    $query->where('application_id', 'LIKE', "%$searchQuery%")
-                        ->orWhereHas('student', function ($q) use ($searchQuery) {
-                            $q->where('first_name', 'LIKE', "%$searchQuery%")
-                                ->orWhere('last_name', 'LIKE', "%$searchQuery%")
-                                ->orWhere('email', 'LIKE', "%$searchQuery%");
-                        })
-                        ->orWhereHas('user', function ($q) use ($searchQuery) {
-                            $q->where('first_name', 'LIKE', "%$searchQuery%")
-                                ->orWhere('last_name', 'LIKE', "%$searchQuery%")
-                                ->orWhere('email', 'LIKE', "%$searchQuery%");
-                        })
-                        ->orWhereHas('university', function ($q) use ($searchQuery) {
-                            $q->where('name', 'LIKE', "%$searchQuery%");
-                        });
-                });
-            })
-            ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
-                return $query->when($sortBy === 'id', function ($sq) use ($sortDesc) {
-                    return $sq->when($sortDesc, function ($ssq) {
-                        return $ssq->orderBy('id', 'DESC');
-                    }, function ($ssq) {
-                        return $ssq->orderBy('id');
-                    });
-                });
-            }, function ($query) {
-                return $query->latest('created_at');
-            })
-            ->when($perPage, function ($query, $perPage) {
-                return $query->paginate($perPage);
-            }, function ($query) {
-                return $query->get();
-            })
-            ->toArray();
+        // Additional filters based on request parameters
+        if ($id) {
+            $query->where('created_by', $id);
+        }
 
-        $products = $perPage ? $queryResult['data'] : $queryResult;
-        $totalRows = $perPage ? $queryResult['total'] : count($queryResult);
+        if ($searchQuery) {
+            $query->where(function ($query) use ($searchQuery) {
+                $query->where('application_id', 'LIKE', "%$searchQuery%")
+                    ->orWhereHas('student', function ($q) use ($searchQuery) {
+                        $q->where('first_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('last_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('user', function ($q) use ($searchQuery) {
+                        $q->where('first_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('last_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('university', function ($q) use ($searchQuery) {
+                        $q->where('name', 'LIKE', "%$searchQuery%");
+                    });
+            });
+        }
+
+        if ($sortBy) {
+            $query->orderBy($sortBy, $sortDesc ? 'desc' : 'asc');
+        } else {
+            $query->latest('created_at');
+        }
+
+        // Pagination or get all records
+        if ($perPage) {
+            $queryResult = $query->paginate($perPage)->toArray();
+            $products = $queryResult['data'];
+            $totalRows = $queryResult['total'];
+        } else {
+            $queryResult = $query->get()->toArray();
+            $products = $queryResult;
+            $totalRows = count($queryResult);
+        }
 
         return $this->successJsonResponse("Product Information found!", $products, $totalRows);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -103,18 +113,18 @@ class ApplicationController extends Controller
                 'intake_id' => 'required|exists:intakes,id',
                 'university_id' => 'required|exists:universities,id',
                 'course_details_id' => 'required|exists:course_details,id',
-                'student_passport_no' => 'required|string|max:255|unique:students,passport_no',
+                'student_passport_no' => 'required|string|unique:students,passport_no',
                 'date_of_birth' => 'required|date',
-                'student_first_name' => 'required|string|max:255',
-                'student_last_name' => 'required|string|max:255',
-                'student_whatsapp_number' => 'nullable|string|max:255',
-                'counsellor_number' => 'nullable|string|max:255',
+                'student_first_name' => 'required|string',
+                'student_last_name' => 'required|string',
+                'student_whatsapp_number' => 'nullable|string',
+                'counsellor_number' => 'nullable|string',
                 'student_email' => 'nullable|string',
                 'counsellor_email' => 'nullable|string|email',
                 'student_address' => 'nullable|string',
-                'student_city' => 'nullable|string|max:255',
-                'student_country' => 'nullable|string|max:255',
-                'student_region_state' => 'nullable|string|max:255',
+                'student_city' => 'nullable|string',
+                'student_country' => 'nullable|string',
+                'student_region_state' => 'nullable|string',
                 'gender' => 'required|in:male,female',
                 'visa_refusal' => 'required|in:yes,no',
                 'document_paths' => 'nullable|array',

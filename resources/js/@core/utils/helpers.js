@@ -61,12 +61,14 @@ export const handleErrorResponse = (error) => {
     const { status, message, data } = error.response._data;
 
     // Check if the response indicates a validation error
-    if (!status && message === 'Validation Error') {
+    if (!status) {
       // If `data` is an array, extract the first error message
       if (Array.isArray(data) && data.length > 0) {
+
         firstErrorMessage = data[0];
       }
     } else {
+
       // If it's a different kind of error, use the provided message or a generic one
       firstErrorMessage = message || 'An unexpected error occurred';
     }
@@ -74,8 +76,9 @@ export const handleErrorResponse = (error) => {
 
   // Log the error response data for debugging
   if (error.response) {
-    console.error('Error response data:', error.response._data);
+    console.error('Error responses data:', error.response._data);
   }
+
 
   // Re-throw the first error message as a new Error
   throw new Error(firstErrorMessage);

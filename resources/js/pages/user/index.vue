@@ -36,7 +36,7 @@ const selectedUser = ref(null);
 const isParentDialogVisible = ref(false);
 const parentId = ref(null);
 const userToSetParent = ref(null);
-
+const isAdmin = ref(getUserRole() === 'admin');
 // Methods
 const setParent = (user) => {
   userToSetParent.value = user;
@@ -142,7 +142,10 @@ const headers = [
   { title: "Name", key: "full_name" },
   { title: "Email", key: "email" },
   { title: "Role", key: "role" },
-  { title: "Parent", key: "parent.full_name" },
+  ...(isAdmin.value
+    ? [ { title: "Parent", key: "parent.full_name" }]
+    : []),
+
   { title: "Record Count", key: "record_count" },
   { title: "Actions", key: "actions", sortable: false },
 ];
@@ -176,7 +179,7 @@ watch([searchQuery, selectedRole, selectedParent], () => {
             <AppAutocomplete
               v-model="parentId"
               :items="userStore.parentUsers"
-              :item-title="(item) => item.full_name"
+              :item-title="(item) => item.name_with_email"
               :item-value="(item) => item.id"
               label="Parent"
               placeholder="Select Parent"

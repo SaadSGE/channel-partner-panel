@@ -85,24 +85,24 @@ class UserController extends Controller
  */
     public function update(Request $request, string $id, FileUploadService $fileUploadService)
     {
-        \Log::info('Request Data:', $request->all());
+
         // Validate the incoming request data
         $validatedData = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
             'email' => 'required|email|unique:users,email,' . $id,
             'mobile_number' => 'nullable|string',
             'whatsapp_number' => 'nullable|string',
             'company_name' => 'nullable|string',
             'website' => 'nullable',
-            'address' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string',
             'post_code' => 'nullable|string',
-            'country' => 'nullable|string|max:255',
+            'country' => 'nullable|string',
             'role' => 'required|string',
             'recruit_countries' => 'nullable|array',
-            'agreement' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048', // Added validation for file
-            'commission_structure' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048', // Added validation for file
+            'agreement' => 'nullable',
+            'commission_structure' => 'nullable',
         ]);
 
         try {
@@ -204,7 +204,7 @@ class UserController extends Controller
 
     public function allUser()
     {
-        $users = User::get(['id','first_name','last_name','role']);
+        $users = User::get(['id','first_name','email','last_name','role']);
         return $this->successJsonResponse('User Data Found', $users);
     }
     public function getProfile()
@@ -233,16 +233,16 @@ class UserController extends Controller
         \Log::info($request->all());
         // Validate the incoming request data
         $validatedData = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'mobile_number' => 'nullable|string|max:15',
-            'whatsapp_number' => 'nullable|string|max:15',
-            'company_name' => 'nullable|string|max:255',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'mobile_number' => 'nullable|string',
+            'whatsapp_number' => 'nullable|string',
+            'company_name' => 'nullable|string',
             'website' => 'nullable|url',
-            'address' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'post_code' => 'nullable|string|max:10',
-            'country' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string',
+            'post_code' => 'nullable|string',
+            'country' => 'nullable|string',
         ]);
 
         try {

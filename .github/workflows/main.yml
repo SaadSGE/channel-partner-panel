@@ -13,10 +13,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Deploy to server via SSH
+      - name: Deploy to server 1 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DO_HOST }}
+          host: ${{ secrets.HOST_AFRICA }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_KEY }}
+          script: |
+            cd /var/www/html
+            git pull
+            php artisan optimize:clear
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+
+      - name: Deploy to server 2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_BANGLADESH }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_KEY }}
           script: |

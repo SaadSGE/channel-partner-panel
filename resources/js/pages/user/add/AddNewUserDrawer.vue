@@ -128,11 +128,11 @@ const onSubmit = async () => {
         });
 
       } catch (error) {
-        console.error('Error in registration:', error);
+
         Swal.fire({
           icon: 'error',
           title: 'Registration Failed',
-          text: error.response?.data.message || 'An unexpected error occurred',
+          text: error,
           confirmButtonText: 'OK',
         });
       }

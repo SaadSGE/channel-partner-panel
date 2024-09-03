@@ -194,7 +194,7 @@ export const useUserStore = defineStore( {
 
         return response.data; // Return the response data
       } catch (error) {
-        console.log(error)
+
         handleErrorResponse(error)
       }
     }
