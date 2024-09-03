@@ -13,7 +13,7 @@ class CountryIntakeUniversityCourse extends Model
 
     public function getUniversityLogoAttribute($value)
     {
-        return env('DO_URL').$value;
+        return getImageUrl().$value;
 
     }
 }

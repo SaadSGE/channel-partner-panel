@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -59,7 +60,7 @@ class ApplicationStatusHistory extends Model
     public function getDocumentAttribute($value)
     {
         if ($value) {
-            return env('DO_URL') . $value;
+            return getImageUrl() . $value;
         }
         return null;
     }

@@ -7,3 +7,10 @@ if (!function_exists('findRole')) {
         return $user->role;
     }
 }
+
+if (!function_exists('getImageUrl')) {
+    function getImageUrl()
+    {
+        return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/";
+    }
+}

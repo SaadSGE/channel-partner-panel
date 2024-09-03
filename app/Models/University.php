@@ -16,7 +16,7 @@ class University extends Model
 
     public function getLogoAttribute($value)
     {
-        return env('DO_URL').$value;
+        return getImageUrl().$value;
     }
 
 }

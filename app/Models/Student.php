@@ -21,7 +21,7 @@ class Student extends Model
     }
     public function getDocumentZipLinkAttribute($value)
     {
-        return env('DO_URL').$value;
+        return getImageUrl().$value;
 
     }
 

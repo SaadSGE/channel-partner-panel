@@ -32,7 +32,7 @@ class StudentDocument extends Model
     {
         $fileType = $this->determineFileType($value);
         return [
-            'path' => env('DO_URL').$value,
+            'path' => getImageUrl().$value,
             'file_name' => basename($value),
             'file_type' => $fileType
         ];

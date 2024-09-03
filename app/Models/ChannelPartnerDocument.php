@@ -27,6 +27,6 @@ class ChannelPartnerDocument extends Model
 
     public function getDocumentPathAttribute($value)
     {
-        return env('DO_URL').$value;
+        return getImageUrl().$value;
     }
 }
