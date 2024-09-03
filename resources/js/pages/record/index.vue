@@ -84,9 +84,11 @@ const filteredCourseDetails = computed(() => {
 
 // Methods
 const getRecord = async (page=1) => {
+  isLoading.value = true;
   const fetchRecord = await recordStore.fetchRecord(page,searchQuery.value);
   records.value = fetchRecord.data;
   total.value = fetchRecord.total;
+  isLoading.value = false;
 };
 
 const resetForm = async() => {
@@ -239,7 +241,7 @@ onMounted(async () => {
   if (commonFunctionStore.courses.length === 0) await commonFunctionStore.getCourses();
   if (commonFunctionStore.intakes.length === 0) await commonFunctionStore.getIntakes();
   if (commonFunctionStore.universities.length === 0) await commonFunctionStore.getUniversities();
-  if (commonFunctionStore.courseDetails.length === 0) await commonFunctionStore.getCourseDetails();
+
 
   countries.value = commonFunctionStore.countries;
   courses.value = commonFunctionStore.courses;
@@ -502,7 +504,7 @@ onMounted(async () => {
             <AppTextField
               v-model="searchQuery"
               style="max-inline-size: 200px; min-inline-size: 200px"
-              placeholder="Search Review"
+              placeholder="Search Record"
             />
           </div>
           <div class="d-flex flex-row gap-4 align-center flex-wrap">
