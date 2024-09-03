@@ -247,7 +247,7 @@ const updateUserOptions = (options) => {
           <AppTextField
             v-model="searchQuery"
             style="max-inline-size: 200px; min-inline-size: 200px"
-            placeholder="Search Review"
+            placeholder="Search Record"
           />
         </div>
         <div class="d-flex flex-row gap-4 align-center flex-wrap">

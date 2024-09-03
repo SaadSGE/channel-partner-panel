@@ -25,6 +25,23 @@ export default [
     },
 
     {
+      title: 'Course Request',
+      icon: { icon: 'tabler-command' },
+      action: 'read',
+      subject: 'dashboard',
+      children: [
+        {
+          title: 'Course',
+          to: 'course-request',
+          action: 'read',
+          subject: 'dashboard'
+
+        },
+
+      ],
+    },
+
+    {
       title: 'Record',
       icon: { icon: 'tabler-files' },
       action: 'read',

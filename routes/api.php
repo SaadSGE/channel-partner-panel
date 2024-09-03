@@ -28,6 +28,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('all-user', [UserController::class,'allUser']);
     Route::apiResource('intake', IntakeController::class);
     Route::apiResource('university', UniversityController::class);
+    Route::post('request-record', [CourseDetailsController::class,'requestRecord']);
     Route::apiResource('course-detail', CourseDetailsController::class);
     Route::apiResource('roles', RoleController::class);
     Route::post('/roles/{roleName}/permissions', [RoleController::class, 'store']);

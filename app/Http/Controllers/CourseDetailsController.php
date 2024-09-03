@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Exception;
 use App\Models\CountryIntakeUniversityCourse;
+use App\Models\RequestRecord;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\EmailNotification;
+use App\Models\User;
 
 class CourseDetailsController extends Controller
 {
@@ -21,49 +25,63 @@ class CourseDetailsController extends Controller
         $id = (int) request()->query('id') ?: null;
         $userId = auth('api')->user()->id;
         $userRole = auth('api')->user()->role;
-        if ($id == null) {
-            if ($userRole == 'editor') {
-                $id = $userId;
-            }
-        }
-        $searchQuery = strtoupper(strtolower(trim(request()->query('q'))));
-        $perPage = (int)request()->query('perPage') ?: 10;
-        $sortBy = (string)request()->query('sortBy');
-        $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
-        $queryResult = CourseDetails::with(['course', 'country', 'intake', 'university'])->when($searchQuery, function ($query, $searchQuery) {
-            return $query->where(function ($query) use ($searchQuery) {
-                $query->where('course_id', 'LIKE', "%$searchQuery%");
 
-            });
-        })
-        ->when($id, function ($query, $id) {
-            return $query->where('created_by', $id);
-        })
-        ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
-            return
-                $query->when($sortBy === 'id', function ($sq) use ($sortDesc) {
+
+        if ($id == null && $userRole == 'editor') {
+            $id = $userId;
+        }
+
+        $searchQuery = strtoupper(strtolower(trim(request()->query('searchQuery'))));
+        $perPage = (int) request()->query('perPage') ?: 10;
+        $sortBy = (string) request()->query('sortBy');
+        $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
+
+        $queryResult = CourseDetails::with(['course', 'country', 'intake', 'university'])
+            ->when($searchQuery, function ($query, $searchQuery) {
+                return $query->where(function ($query) use ($searchQuery) {
+                    // Search in course_id
+                    $query->where('course_id', 'LIKE', "%$searchQuery%")
+                        // Search in course.name
+                        ->orWhereHas('course', function ($q) use ($searchQuery) {
+                            $q->where('name', 'LIKE', "%$searchQuery%");
+                        })
+                        // Search in university.name
+                        ->orWhereHas('university', function ($q) use ($searchQuery) {
+                            $q->where('name', 'LIKE', "%$searchQuery%");
+                        })
+                        // Search in intake.name
+                        ->orWhereHas('intake', function ($q) use ($searchQuery) {
+                            $q->where('name', 'LIKE', "%$searchQuery%");
+                        });
+                });
+            })
+            ->when($id, function ($query, $id) {
+                return $query->where('created_by', $id);
+            })
+            ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
+                return $query->when($sortBy === 'id', function ($sq) use ($sortDesc) {
                     return $sq->when($sortDesc, function ($ssq) {
-                        return $ssq->orderBy('P.id', 'DESC');
+                        return $ssq->orderBy('id', 'DESC');
                     }, function ($ssq) {
-                        return $ssq->orderBy('P.id');
+                        return $ssq->orderBy('id');
                     });
                 });
+            }, function ($query) {
+                return $query->latest('created_at');
+            })
+            ->when($perPage, function ($query, $perPage) {
+                return $query->paginate($perPage);
+            }, function ($query) {
+                return $query->get();
+            })
+            ->toArray();
 
-
-        }, function ($query) {
-            return $query->latest('created_at');
-        })
-       ->when($perPage, function ($query, $perPage) {
-           return $query->paginate($perPage);
-       }, function ($query) {
-           return $query->get();
-       })
-        ->toArray();
         $products = $perPage ? $queryResult['data'] : $queryResult;
         $totalRows = $perPage ? $queryResult['total'] : count($queryResult);
-        return $this->successJsonResponse("Course Details Information found!", $products, $totalRows);
 
+        return $this->successJsonResponse("Course Details Information found!", $products, $totalRows);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -291,5 +309,57 @@ class CourseDetailsController extends Controller
             return $this->errorJsonResponse('An error occurred while retrieving course intake university details.', 500);
         }
     }
+
+    public function requestRecord(Request $request)
+    {
+        $validatedData = $request->validate([
+            'universityName' => 'required|string',
+            'courseName' => 'required|string',
+            'intakeName' => 'required|string',
+        ]);
+
+        try {
+            // Create the request record
+            $requestRecord = RequestRecord::create([
+                'university_name' => $validatedData['universityName'],
+                'course_name' => $validatedData['courseName'],
+                'intake' => $validatedData['intakeName'],
+                'user_id' => auth('api')->id(),
+            ]);
+
+            // Fetch admin users to notify
+            $users = User::where('role', 'admin')->get();
+
+            // Prepare the notification details
+            $details = [
+                'subject' => 'Request for New Course/University/Intake',
+                'body' => "A new request has been submitted for the following details:<br><br>"
+                        . "University Name: " . $validatedData['universityName'] . "<br>"
+                        . "Course Name: " . $validatedData['courseName'] . "<br>"
+                        . "Intake: " . $validatedData['intakeName'] . "<br><br>"
+                        . "Please review and take necessary action.",
+                'recipients' => $users->pluck('email')->toArray(),
+                'sender_id' => $request->user()->id,
+                'sender_name' => $request->user()->full_name,
+                'sender_email' => $request->user()->email,
+                'notification_type' => 'email',
+            ];
+
+
+            // Send email notification to admin users
+            Notification::route('mail', 'no-reply@shabujglobal.africa')
+                ->notify(new EmailNotification($details));
+
+            // Send database notification to admin users
+            $details['send_via'] = 'database';
+            Notification::send($users, new EmailNotification($details));
+
+            return $this->successJsonResponse('Request record submitted successfully', $requestRecord);
+
+        } catch (\Throwable $th) {
+            return $this->exceptionJsonResponse('Failed to submit request record.', $th);
+        }
+    }
+
 
 }

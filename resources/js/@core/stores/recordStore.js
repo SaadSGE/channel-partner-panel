@@ -82,5 +82,24 @@ export const useRecordStore = defineStore({
           : ["An unexpected error occurred"];
       }
     },
+    async requestForm(requestData) {
+      try {
+        const response = await $api("/request-record", {
+          method: "POST",
+          body: requestData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        this.successMessage = "Request submitted successfully";
+        return response.data;
+      } catch (error) {
+        console.error("Error submitting request form:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+        throw error;
+      }
+    },
   },
 });
