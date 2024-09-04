@@ -172,6 +172,7 @@ declare module 'vue-router/auto/routes' {
     'roles': RouteRecordInfo<'roles', '/roles', Record<never, never>, Record<never, never>>,
     'tables-data-table': RouteRecordInfo<'tables-data-table', '/tables/data-table', Record<never, never>, Record<never, never>>,
     'tables-simple-table': RouteRecordInfo<'tables-simple-table', '/tables/simple-table', Record<never, never>, Record<never, never>>,
+    'university-list': RouteRecordInfo<'university-list', '/university-list', Record<never, never>, Record<never, never>>,
     'user': RouteRecordInfo<'user', '/user', Record<never, never>, Record<never, never>>,
     'user-add-add-new-user-drawer': RouteRecordInfo<'user-add-add-new-user-drawer', '/user/add/AddNewUserDrawer', Record<never, never>, Record<never, never>>,
     'user-add-edit-new-user-drawer': RouteRecordInfo<'user-add-edit-new-user-drawer', '/user/add/EditNewUserDrawer', Record<never, never>, Record<never, never>>,

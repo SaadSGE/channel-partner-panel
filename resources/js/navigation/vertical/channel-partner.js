@@ -25,6 +25,15 @@ export default [
     },
 
     {
+      title: 'University List',
+      icon: { icon: 'tabler-apps' },
+      to: 'university-list',
+      action: 'read',
+      subject: 'dashboard',
+
+    },
+
+    {
       title: 'Course Request',
       icon: { icon: 'tabler-command' },
       action: 'read',
@@ -116,6 +125,7 @@ export default [
       subject: 'email',
 
     },
+
 
 
 
