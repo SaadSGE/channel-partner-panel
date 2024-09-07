@@ -131,7 +131,7 @@
                             <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:'Cabin',sans-serif;" align="left">
 
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
-                              <h1 style="margin: 0px; color: #1227c9; line-height: 140%; text-align: center; word-wrap: break-word; font-size: 22px; font-weight: 400;"><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><strong>{{ env('EMAIL_HEADER') }}</strong></span></span>
+                              <h1 style="margin: 0px; color: #1227c9; line-height: 140%; text-align: center; word-wrap: break-word; font-size: 22px; font-weight: 400;"><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><strong>{{ config('services.email.header') }}</strong></span></span>
                                 </span>
                                 </span>
                                 </span>
@@ -381,7 +381,7 @@
                                     <tbody>
                                       <tr style="vertical-align: top">
                                         <td align="center" valign="middle" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-                                          <a href="{{ env('FACEBOOK_URL') }}" title="Facebook" target="_blank">
+                                          <a href="{{ config('services.facebook.url') }}" title="Facebook" target="_blank">
                                             <img src="https://cdn.tools.unlayer.com/social/icons/circle-black/facebook.png" alt="Facebook" title="Facebook" width="32" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                           </a>
                                         </td>
@@ -395,7 +395,7 @@
                                     <tbody>
                                       <tr style="vertical-align: top">
                                         <td align="center" valign="middle" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-                                          <a href="{{ env('INSTAGRAM_URL') }}" title="Instagram" target="_blank">
+                                          <a href="{{ config('services.instagram.url') }}" title="Instagram" target="_blank">
                                             <img src="https://cdn.tools.unlayer.com/social/icons/circle-black/instagram.png" alt="Instagram" title="Instagram" width="32" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                           </a>
                                         </td>

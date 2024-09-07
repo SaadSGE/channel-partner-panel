@@ -30,5 +30,15 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'facebook' => [
+    'url' => env('FACEBOOK_URL'),
+    ],
+
+    'instagram' => [
+    'url' => env('INSTAGRAM_URL'),
+],
+'email' => [
+    'header' => env('EMAIL_HEADER'),
+],
 
 ];
