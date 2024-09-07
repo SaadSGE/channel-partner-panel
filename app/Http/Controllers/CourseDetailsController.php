@@ -14,6 +14,10 @@ use App\Models\RequestRecord;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\EmailNotification;
 use App\Models\User;
+use App\Models\UniqueCountryIntakeView;
+use App\Models\UniqueCountryIntakeCourseTypeView;
+use App\Models\UniqueCountryIntakeCourseUniversityView;
+use App\Models\IntakeUniversityCourseDetailsView;
 
 class CourseDetailsController extends Controller
 {
@@ -360,6 +364,89 @@ class CourseDetailsController extends Controller
             return $this->exceptionJsonResponse('Failed to submit request record.', $th);
         }
     }
+
+    public function getUniqueCountry()
+    {
+        try {
+            $countries = UniqueCountryIntakeView::distinct()->select('country_id as id', 'country_name as name')->get();
+            return $this->successJsonResponse('Country retrive successfully', $countries);
+        } catch (Exception $e) {
+            return $this->exceptionJsonResponse($e, 'Failed to retrieve country.');
+        }
+    }
+
+    public function getIntakeByCountry($id)
+    {
+        try {
+            $intakes = UniqueCountryIntakeView::where('country_id', $id)->get(['intake_id','intake_name']);
+            return $this->successJsonResponse('Intakes retrieved successfully', $intakes);
+        } catch (Exception $e) {
+            return $this->exceptionJsonResponse($e, 'Failed to retrieve intakes.');
+        }
+    }
+
+
+    public function getCourseTypeByCountryIntake($countryId, $intakeId)
+    {
+        try {
+            $courseTypes = UniqueCountryIntakeCourseTypeView::where('country_id', $countryId)
+                                                            ->where('intake_id', $intakeId)
+                                                            ->get(['course_type']);
+
+            // Transforming the data to have 'id' and 'name' as the same value
+            $transformedCourseTypes = $courseTypes->map(function ($courseType) {
+                return [
+                    'id' => $courseType->course_type,
+                    'name' => $courseType->course_type
+                ];
+            });
+
+            return $this->successJsonResponse('Course types retrieved successfully', $transformedCourseTypes);
+        } catch (Exception $e) {
+            return $this->exceptionJsonResponse($e, 'Failed to retrieve course types.');
+        }
+    }
+
+
+
+    public function getUniversityByCountryIntakeCourseType($countryId, $intakeId, $courseType)
+    {
+        try {
+            $universities = UniqueCountryIntakeCourseUniversityView::where('country_id', $countryId)
+                                                                   ->where('intake_id', $intakeId)
+                                                                   ->where('course_type', $courseType)
+                                                                   ->get(['university_id','university_name','university_logo','university_address']);
+            return $this->successJsonResponse('Universities retrieved successfully', $universities);
+        } catch (Exception $e) {
+            return $this->exceptionJsonResponse($e, 'Failed to retrieve universities.');
+        }
+    }
+
+
+    public function getCourseDetails($intakeId, $universityId, $courseType)
+    {
+        try {
+            // Fetch only the course-related details
+            $courseDetails = CountryIntakeUniversityCourse::where('intake_id', $intakeId)
+                                                          ->where('university_id', $universityId)
+                                                          ->where('course_type', $courseType)
+                                                          ->get([
+                                                              'id',
+                                                              'course_id',
+                                                              'course_name',
+                                                              'tution_fee',
+                                                              'course_duration',
+                                                              'academic_requirement',
+                                                              'english_requirement'
+                                                          ]);
+            return $this->successJsonResponse('Course details retrieved successfully', $courseDetails);
+        } catch (Exception $e) {
+            return $this->exceptionJsonResponse($e, 'Failed to retrieve course details.');
+        }
+    }
+
+
+
 
 
 }

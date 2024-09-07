@@ -27,6 +27,14 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/users/{id}/set-parent', [UserController::class, 'setParent']);
     Route::get('all-user', [UserController::class,'allUser']);
     Route::apiResource('intake', IntakeController::class);
+    Route::get('getUniqueCountry', [CourseDetailsController::class, 'getUniqueCountry']);
+    Route::get('/intakes/country/{id}', [CourseDetailsController::class, 'getIntakeByCountry']);
+
+    Route::get('/course-types/{countryId}/{intakeId}', [CourseDetailsController::class, 'getCourseTypeByCountryIntake']);
+    Route::get('/universities/{countryId}/{intakeId}/{courseType}', [CourseDetailsController::class, 'getUniversityByCountryIntakeCourseType']);
+
+    Route::get('/course-details/{intakeId}/{universityId}/{courseType}', [CourseDetailsController::class, 'getCourseDetails']);
+
     Route::apiResource('university', UniversityController::class);
     Route::post('request-record', [CourseDetailsController::class,'requestRecord']);
     Route::apiResource('course-detail', CourseDetailsController::class);

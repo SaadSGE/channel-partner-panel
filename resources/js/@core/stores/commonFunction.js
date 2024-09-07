@@ -34,8 +34,7 @@ export const commonFunction = defineStore({
         });
        // console.log(filtered)
         if (filtered) {
-          console.log('test')
-          console.log(filtered)
+
             state.selectedCourseDetailsId = filtered.id;
             return {
                 courseName: filtered.course_name,
