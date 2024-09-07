@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class University extends Model
 {
     use HasFactory;
+    protected $connection = 'mysql_africa';
     protected $guarded = [];
     public function country()
     {

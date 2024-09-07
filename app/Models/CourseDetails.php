@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Cache;
 class CourseDetails extends Model
 {
     use HasFactory;
-
+    protected $connection = 'mysql_africa';
     protected $guarded = [];
 
     protected static function booted()

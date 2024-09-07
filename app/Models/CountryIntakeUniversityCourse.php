@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class CountryIntakeUniversityCourse extends Model
 {
     //use HasFactory;
+    protected $connection = 'mysql_africa';
     protected $table = 'country_intake_course_university_map_view';
 
     public function getUniversityLogoAttribute($value)

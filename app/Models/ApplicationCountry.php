@@ -8,5 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class ApplicationCountry extends Model
 {
     use HasFactory;
+    protected $connection = 'mysql_africa';
     protected $guarded = [];
 }
