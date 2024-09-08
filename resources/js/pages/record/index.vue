@@ -11,7 +11,7 @@ import { commonFunction } from "@/@core/stores/commonFunction";
 import { useRecordStore } from "@/@core/stores/recordStore";
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import Swal from 'sweetalert2';
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { VForm } from 'vuetify/components/VForm';
 const router = useRouter();
@@ -72,6 +72,12 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
 ];
 
+// Add these to your reactive state
+const selectedCountry = ref(null);
+const selectedIntake = ref(null);
+const selectedUniversity = ref(null);
+const selectedCourseName = ref("");
+
 // Computed properties
 const filteredCourseDetails = computed(() => {
   return commonFunctionStore.getFilteredCourseDetails(
@@ -85,7 +91,14 @@ const filteredCourseDetails = computed(() => {
 // Methods
 const getRecord = async (page=1) => {
   isLoading.value = true;
-  const fetchRecord = await recordStore.fetchRecord(page,searchQuery.value);
+  const fetchRecord = await recordStore.fetchRecord(
+    page,
+    searchQuery.value,
+    selectedCountry.value,
+    selectedIntake.value,
+    selectedUniversity.value,
+    selectedCourseName.value
+  );
   records.value = fetchRecord.data;
   total.value = fetchRecord.total;
   isLoading.value = false;
@@ -235,6 +248,11 @@ const updateOptions = (event) =>{
   getRecord(event.page)
 }
 
+// Add this watch effect
+watch([searchQuery, selectedCountry, selectedIntake, selectedUniversity, selectedCourseName], () => {
+  getRecord();
+});
+
 onMounted(async () => {
   isLoading.value =  true
   if (commonFunctionStore.countries.length === 0) await commonFunctionStore.getCountries();
@@ -271,7 +289,7 @@ onMounted(async () => {
               :style="{
                 transform: isContentCollapsed ? 'rotate(-180deg)' : undefined,
               }"
-              style="transition-duration: 0.28s"
+
             />
           </IconBtn>
         </div>
@@ -358,7 +376,7 @@ onMounted(async () => {
               :rules="[requiredValidator]"
             />
           </VCol>
-          <VCol cols="12" md="12" style="margin: auto">
+          <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">Academic Requirement</VLabel>
             <QuillEditor
               theme="snow"
@@ -367,7 +385,7 @@ onMounted(async () => {
             />
           </VCol>
 
-          <VCol cols="12" md="12" style="margin: auto">
+          <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">English Requirement</VLabel>
             <QuillEditor
               theme="snow"
@@ -376,7 +394,7 @@ onMounted(async () => {
             />
           </VCol>
 
-          <!-- Submit and Reset Buttons -->
+
           <VCol cols="12">
             <VBtn @click="submit()" type="submit" color="primary" block>
               Submit
@@ -469,7 +487,7 @@ onMounted(async () => {
               :rules="[requiredValidator]"
             />
           </VCol>
-          <VCol cols="12" md="12" style="margin: auto">
+          <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">Academic Requirement</VLabel>
             <QuillEditor
               theme="snow"
@@ -478,7 +496,7 @@ onMounted(async () => {
             />
           </VCol>
 
-          <VCol cols="12" md="12" style="margin: auto">
+          <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">English Requirement</VLabel>
             <QuillEditor
               theme="snow"
@@ -499,11 +517,54 @@ onMounted(async () => {
 
     <AppCardActions title="Course Details" class="mt-2" :loading="isLoading" no-actions>
       <VCardText>
-        <div class="d-flex justify-space-between flex-wrap gap-6">
+        <VRow>
+          <VCol cols="12" sm="6" md="3">
+            <AppAutocomplete
+              v-model="selectedCountry"
+              :items="countries"
+              :item-title="(item) => item.name"
+              :item-value="(item) => item.id"
+              label="Filter by Country"
+              placeholder="Select Country"
+              clearable
+            />
+          </VCol>
+          <VCol cols="12" sm="6" md="3">
+            <AppAutocomplete
+              v-model="selectedIntake"
+              :items="intakes"
+              :item-title="(item) => item.name"
+              :item-value="(item) => item.id"
+              label="Filter by Intake"
+              placeholder="Select Intake"
+              clearable
+            />
+          </VCol>
+          <VCol cols="12" sm="6" md="3">
+            <AppAutocomplete
+              v-model="selectedUniversity"
+              :items="universities"
+              :item-title="(item) => item.name"
+              :item-value="(item) => item.id"
+              label="Filter by University"
+              placeholder="Select University"
+              clearable
+            />
+          </VCol>
+          <VCol cols="12" sm="6" md="3">
+            <AppTextField
+              v-model="selectedCourseName"
+              label="Filter by Course Name"
+              placeholder="Enter Course Name"
+              clearable
+            />
+          </VCol>
+        </VRow>
+        <div class="d-flex justify-space-between flex-wrap gap-6 mt-5">
           <div>
             <AppTextField
               v-model="searchQuery"
-              style="max-inline-size: 200px; min-inline-size: 200px"
+              style="max-inline-size: 200px; min-inline-size: 200px;"
               placeholder="Search Record"
             />
           </div>
@@ -511,7 +572,7 @@ onMounted(async () => {
             <AppSelect
               v-model="itemsPerPage"
               :items="[10, 25, 50, 100]"
-              style="inline-size: 6.25rem"
+              style="inline-size: 6.25rem;"
             />
           </div>
         </div>
@@ -556,26 +617,29 @@ onMounted(async () => {
 </template>
 <style lang="scss">
 .form-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
+
 .label {
   color: black;
 }
+
 .ql-editor {
-  height: 250px;
-  max-height: 250px;
   overflow: auto;
+  block-size: 250px;
+  max-block-size: 250px;
 }
 
-.v-data-table > .v-data-table__wrapper > table > thead > tr > th,td {
-  max-width: 30rem; /* Adjust the max-width as needed */
+.v-data-table > .v-data-table__wrapper > table > thead > tr > th,
+td {
   overflow: auto;
+  max-inline-size: 30rem; /* Adjust the max-width as needed */
   white-space: nowrap;
   word-wrap: break-word;
-
 }
 
-.v-table__wrapper{
-  max-height: 35rem !important;
+.v-table__wrapper {
+  max-block-size: 35rem !important;
 }
 </style>

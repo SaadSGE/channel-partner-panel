@@ -23,25 +23,12 @@ const isNavDrawerOpen = ref(false)
 const isNavDrawerOpenEdit= ref(false)
 onMounted(async () => {
   isLoading.value = true
-  if (commonFunctionStore.countries.length === 0) {
-    await commonFunctionStore.getCountries();
-  }
-  if (commonFunctionStore.courses.length === 0) {
-    await commonFunctionStore.getCourses();
-  }
+
   if (commonFunctionStore.intakes.length === 0) {
     await commonFunctionStore.getIntakes();
   }
-  if (commonFunctionStore.universities.length === 0) {
-    await commonFunctionStore.getUniversities();
-  }
-  if (commonFunctionStore.courseDetails.length === 0) {
-    await commonFunctionStore.getCourseDetails();
-  }
 
-  countries.value = commonFunctionStore.countries;
   intakes.value = commonFunctionStore.intakes;
-  universities.value = commonFunctionStore.universities;
   isLoading.value = false
 });
 
@@ -159,9 +146,12 @@ const deleteItem = async (item) => {
 
 <style lang="scss">
 .form-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
+
 .table-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
 </style>

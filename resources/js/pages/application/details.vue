@@ -6,6 +6,8 @@ definePage({
   },
 });
 import { useApplicationListStore } from "@/@core/stores/applicationList";
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import Document from "./details-document.vue";
@@ -226,9 +228,10 @@ const handleAddUniversityComm = async () => {
                 class="mt-2"
               />
               <VLabel class="mt-2">Message</VLabel>
-              <AppTextarea
-                v-model="newUniversityComm.message"
-                placeholder="Message"
+              <QuillEditor
+                theme="snow"
+                v-model:content="newUniversityComm.message"
+                content-type="html"
                 class="mt-2"
               />
             </VForm>
@@ -424,40 +427,40 @@ const handleAddUniversityComm = async () => {
   align-items: center;
   justify-content: space-between;
   padding: 10px;
-  margin-bottom: 5px;
-  background-color: #f8f9fa;
   border-radius: 5px;
+  background-color: #f8f9fa;
+  margin-block-end: 5px;
 }
 
 .file-item i.fas.fa-file-alt {
-  margin-right: 10px;
+  margin-inline-end: 10px;
 }
 
 .delete-btn {
-  margin-left: 10px;
+  margin-inline-start: 10px;
 }
 
 .progress {
-  width: 100%;
+  inline-size: 100%;
 }
 
 .comment-section {
-  margin-top: 10px;
+  margin-block-start: 10px;
 }
 
 .comment {
   padding: 10px;
   border: 1px solid #ccc;
-  margin-bottom: 10px;
   border-radius: 5px;
   background-color: #f9f9f9;
+  margin-block-end: 10px;
 }
 
 .comment-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
+  justify-content: space-between;
+  margin-block-end: 5px;
 }
 
 .comment-date {
@@ -465,17 +468,23 @@ const handleAddUniversityComm = async () => {
 }
 
 .comment-status {
-  float: right;
+  float: inline-end;
 }
 
 .comment-body {
-  font-size: 14px;
   color: #333;
+  font-size: 14px;
 }
 
 .current-status-label {
   color: red;
   font-weight: bold;
-  margin-left: 5px;
+  margin-inline-start: 5px;
+}
+
+.ql-editor {
+  overflow: auto;
+  block-size: 250px;
+  max-block-size: 250px;
 }
 </style>

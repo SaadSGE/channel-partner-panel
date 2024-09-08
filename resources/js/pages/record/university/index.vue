@@ -7,7 +7,7 @@ definePage({
 })
 import { commonFunction } from "@/@core/stores/commonFunction";
 import Swal from "sweetalert2";
-import { onMounted, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import UniversityAdd from "./add.vue";
 import UniversityEdit from "./edit.vue";
 
@@ -48,9 +48,7 @@ const editedIndex = ref(-1);
 const editedItem = ref(defaultItem.value);
 
 // Fetch data on mounted
-onMounted(() => {
-    //fetchUniversities();
-});
+
 
 const fetchUniversities = async () => {
     isLoading.value = true;
@@ -176,9 +174,12 @@ const updateOptions = (options) => {
 
 <style lang="scss">
 .form-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
+
 .table-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
 </style>

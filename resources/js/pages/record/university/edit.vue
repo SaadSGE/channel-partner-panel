@@ -1,13 +1,7 @@
 <script  setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
-import { defineEmits, defineProps, onMounted, ref, watch } from "vue";
-onMounted(async () => {
-  if (commonFunctionStore.courseDetails.length === 0) {
-    await commonFunctionStore.getCourseDetails();
-  }
+import { defineEmits, defineProps, ref, watch } from "vue";
 
-  countries.value = commonFunctionStore.countries;
-});
 
 const props = defineProps({
   isNavDrawerOpen: Boolean,
@@ -30,6 +24,13 @@ const courseTypes = ["Graduate", "Post Graduate"];
 const id = ref(null);
 const refForm = ref(null);
 const emits = defineEmits(["update:isNavDrawerOpen"]);
+onMounted(async () => {
+  if (commonFunctionStore.countries.length === 0) {
+    await commonFunctionStore.getCountries();
+  }
+  countries.value = commonFunctionStore.countries;
+
+});
 watch(
   () => props.editedItem,
   async (newValue) => {
@@ -146,7 +147,7 @@ const submitUniversity = async () => {
       />
 
       <div class="mb-2">
-        <label class="mb-2" style="font-size: 0.9rem">University Logo</label>
+        <label class="mb-2" style="font-size: 0.9rem;">University Logo</label>
 
         <div class="image-container" v-if="!showFileAgent">
           <VImg :src="universityLogo" aspect-ratio="16/9" height="150" />
@@ -166,7 +167,7 @@ const submitUniversity = async () => {
         @click="showFileAgent = false"
         color="info"
         class="mb-2 mt-2"
-        style="float: right"
+        style="float: inline-end;"
       >
       <VIcon
 
@@ -181,7 +182,7 @@ const submitUniversity = async () => {
         @click="showFileAgent = true"
         color="success"
         class="mb-2 mt-2"
-        style="float: right"
+        style="float: inline-end;"
       >
         Change Logo
         <VIcon end icon="tabler-cloud-upload" />
@@ -200,8 +201,10 @@ const submitUniversity = async () => {
 </template>
 <style lang="scss">
 .form-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
+
 .app-customizer {
   .customizer-section {
     display: flex;
@@ -244,10 +247,11 @@ const submitUniversity = async () => {
   .customizer-skins {
     .custom-input.active {
       .customizer-skins-icon-wrapper {
-        background-color: rgba(
-          var(--v-global-theme-primary),
-          var(--v-selected-opacity)
-        );
+        background-color:
+          rgba(
+            var(--v-global-theme-primary),
+            var(--v-selected-opacity)
+          );
       }
     }
   }
@@ -266,11 +270,12 @@ const submitUniversity = async () => {
   inset-block-start: 20%;
   inset-inline-end: 0;
 }
+
 .image-container {
-  border: 1px dotted gray;
-  padding: 10px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border: 1px dotted gray;
 }
 </style>

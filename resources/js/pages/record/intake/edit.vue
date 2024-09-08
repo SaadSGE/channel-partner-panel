@@ -1,6 +1,6 @@
 <script  setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
-import { defineEmits, defineProps, onMounted, ref, watch } from "vue";
+import { defineEmits, defineProps, ref, watch } from "vue";
 const loadings = ref([]);
 
 const commonFunctionStore = commonFunction();
@@ -22,27 +22,7 @@ const id = ref(null);
 const refForm = ref(null);
 const emits = defineEmits(["update:isNavDrawerOpen"]);
 
-onMounted(async () => {
-  if (commonFunctionStore.countries.length === 0) {
-    await commonFunctionStore.getCountries();
-  }
-  if (commonFunctionStore.courses.length === 0) {
-    await commonFunctionStore.getCourses();
-  }
-  if (commonFunctionStore.intakes.length === 0) {
-    await commonFunctionStore.getIntakes();
-  }
-  if (commonFunctionStore.universities.length === 0) {
-    await commonFunctionStore.getUniversities();
-  }
-  if (commonFunctionStore.courseDetails.length === 0) {
-    await commonFunctionStore.getCourseDetails();
-  }
 
-  countries.value = commonFunctionStore.countries;
-  intakes.value = commonFunctionStore.intakes;
-  universities.value = commonFunctionStore.universities;
-});
 watch(
   () => props.editedItem,
   async (newValue) => {
@@ -143,8 +123,10 @@ const submitintake = async() =>{
 </template>
 <style lang="scss">
 .form-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
+
 .app-customizer {
   .customizer-section {
     display: flex;
@@ -187,7 +169,8 @@ const submitintake = async() =>{
   .customizer-skins {
     .custom-input.active {
       .customizer-skins-icon-wrapper {
-        background-color: rgba(
+        background-color:
+ rgba(
           var(--v-global-theme-primary),
           var(--v-selected-opacity)
         );

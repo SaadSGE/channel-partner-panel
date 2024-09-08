@@ -30,7 +30,6 @@ class CourseDetailsController extends Controller
         $userId = auth('api')->user()->id;
         $userRole = auth('api')->user()->role;
 
-
         if ($id == null && $userRole == 'editor') {
             $id = $userId;
         }
@@ -40,20 +39,22 @@ class CourseDetailsController extends Controller
         $sortBy = (string) request()->query('sortBy');
         $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
 
+        // New filter parameters
+        $countryId = request()->query('countryId');
+        $intakeId = request()->query('intakeId');
+        $universityId = request()->query('universityId');
+        $courseName = request()->query('courseName');
+
         $queryResult = CourseDetails::with(['course', 'country', 'intake', 'university'])
             ->when($searchQuery, function ($query, $searchQuery) {
                 return $query->where(function ($query) use ($searchQuery) {
-                    // Search in course_id
                     $query->where('course_id', 'LIKE', "%$searchQuery%")
-                        // Search in course.name
                         ->orWhereHas('course', function ($q) use ($searchQuery) {
                             $q->where('name', 'LIKE', "%$searchQuery%");
                         })
-                        // Search in university.name
                         ->orWhereHas('university', function ($q) use ($searchQuery) {
                             $q->where('name', 'LIKE', "%$searchQuery%");
                         })
-                        // Search in intake.name
                         ->orWhereHas('intake', function ($q) use ($searchQuery) {
                             $q->where('name', 'LIKE', "%$searchQuery%");
                         });
@@ -61,6 +62,21 @@ class CourseDetailsController extends Controller
             })
             ->when($id, function ($query, $id) {
                 return $query->where('created_by', $id);
+            })
+            // New filter conditions
+            ->when($countryId, function ($query, $countryId) {
+                return $query->where('country_id', $countryId);
+            })
+            ->when($intakeId, function ($query, $intakeId) {
+                return $query->where('intake_id', $intakeId);
+            })
+            ->when($universityId, function ($query, $universityId) {
+                return $query->where('university_id', $universityId);
+            })
+            ->when($courseName, function ($query, $courseName) {
+                return $query->whereHas('course', function ($q) use ($courseName) {
+                    $q->where('name', 'LIKE', "%$courseName%");
+                });
             })
             ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
                 return $query->when($sortBy === 'id', function ($sq) use ($sortDesc) {
