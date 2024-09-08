@@ -27,7 +27,6 @@ jobs:
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
-            php artisan l5-swagger:generate
 
       - name: Deploy to server 2 via SSH
         uses: appleboy/ssh-action@v1.0.3
