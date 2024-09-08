@@ -3,21 +3,48 @@ import { defineStore } from 'pinia';
 export const commonFunction = defineStore({
     id: "common-function",
     state: () => ({
-        countries: [],
-        courses: [],
-        intakes: [],
-        errors: [],
-        universities: [],
-        courseDetails: [],
-        countryIntakeUniversityCourse:[],
-        selectedCountryId: null,
-        selectedCourseId: null,
-        selectedIntakeId: null,
-        selectedUniversityId: null,
-        selectedCourseDetailsId: null
+      countries: [],
+      courses: [],
+      intakes: [],
+      errors: [],
+      universities: [],
+      courseDetails: [],
+      courseTypes: [],
+      countryIntakeUniversityCourse:[],
+      selectedCountryId: null,
+      selectedCourseId: null,
+      selectedIntakeId: null,
+      selectedUniversityId: null,
+      selectedCourseDetailsId: null
+
     }),
 
     getters: {
+      getPreparedCourseDetails: (state) => {
+        if (state.courseDetails.length === 0 || !state.selectedCourseDetailsId) {
+          return null;
+        }
+
+        const courseDetail = state.courseDetails.find(detail => detail.id === state.selectedCourseDetailsId);
+        state.selectedCourseId = courseDetail.course_id;
+
+        if (!courseDetail) {
+          return null;
+        }
+
+        return {
+          courseName: courseDetail.course_name,
+          intake: state.intakes.find(i => i.intake_id === state.selectedIntakeId)?.intake_name || '',
+          tuitionFee: courseDetail.tution_fee,
+          courseDuration: courseDetail.course_duration,
+          courseLabel: state.courseTypes.find(ct => ct.id === state.selectedCourseId)?.name || '',
+          location: state.countries.find(c => c.id === state.selectedCountryId)?.name || '',
+          universityLogo: state.universities.find(u => u.university_id === state.selectedUniversityId)?.university_logo || '',
+          academicRequirement: courseDetail.academic_requirement || '',
+          englishRequirement: courseDetail.english_requirement || '',
+        };
+      },
+
       getFilteredCourseDetails: (state) => (countryId, courseId, intakeId, universityId) => {
         state.selectedCountryId = countryId;
         state.selectedCourseId = courseId;
@@ -67,6 +94,60 @@ export const commonFunction = defineStore({
     },
 
     actions: {
+
+      async getUniqueCountries() {
+        try {
+          const response = await $api('/getUniqueCountry', { method: 'GET' });
+          this.countries = response.data;
+        } catch (error) {
+          console.error('Error fetching countries:', error);
+          this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        }
+      },
+      async getIntakesByCountry(countryId) {
+        try {
+          const response = await $api(`/intakes/country/${countryId}`, { method: 'GET' });
+          this.intakes = response.data;
+        } catch (error) {
+          console.error('Error fetching intakes:', error);
+          this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        }
+      },
+      async getCourseTypesByCountryIntake(countryId, intakeId) {
+        try {
+          const response = await $api(`/course-types/${countryId}/${intakeId}`, { method: 'GET' });
+          this.courseTypes = response.data;
+        } catch (error) {
+          console.error('Error fetching course types:', error);
+          this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        }
+      },
+      async getUniversitiesByCountryIntakeCourseType(countryId, intakeId, courseType) {
+        try {
+          const response = await $api(`/universities/${countryId}/${intakeId}/${courseType}`, { method: 'GET' });
+          this.universities = response.data;
+        } catch (error) {
+          console.error('Error fetching universities:', error);
+          this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        }
+      },
+      async getCourseDetails(intakeId, universityId, courseType) {
+        try {
+            const response = await $api(`/course-details/${intakeId}/${universityId}/${courseType}`, {
+                method: 'GET'
+            });
+            this.courseDetails = response.data;
+            this.selectedIntakeId = intakeId;
+            this.selectedUniversityId = universityId;
+
+        } catch (error) {
+            console.error('Error fetching course details:', error);
+            this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        }
+    },
+    setSelectedCountryId(countryId) {
+      this.selectedCountryId = countryId;
+    },
       async getCountryIntakeUniversityCourse(){
         try {
           const response = await $api('/get-country-intake-university-course', { method: 'GET' });
@@ -148,7 +229,7 @@ export const commonFunction = defineStore({
           }
       },
 
-        async getCourseDetails() {
+        async getCourseDetailsAll() {
             try {
                 const response = await $api('/course-detail-all', { method: 'GET' });
 
