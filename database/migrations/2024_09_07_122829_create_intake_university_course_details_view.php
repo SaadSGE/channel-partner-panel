@@ -11,8 +11,11 @@ return new class () extends Migration {
      */
     public function up(): void
     {
+        DB::statement('
+        DROP VIEW IF EXISTS intake_university_course_details_view;
+    ');
         DB::statement("
-        CREATE OR REPLACE VIEW intake_university_course_details_view AS
+        CREATE VIEW intake_university_course_details_view AS
         SELECT DISTINCT
             intake_id,
             university_id,

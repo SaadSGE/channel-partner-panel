@@ -12,7 +12,10 @@ return new class () extends Migration {
     public function up(): void
     {
         DB::statement('
-            CREATE OR REPLACE VIEW country_intake_course_university_map_view AS
+            DROP VIEW IF EXISTS country_intake_course_university_map_view;
+        ');
+        DB::statement('
+            CREATE VIEW country_intake_course_university_map_view AS
             SELECT DISTINCT
 				cd.id AS id,
                 ac.id AS country_id,
