@@ -7,13 +7,17 @@ definePage({
 });
 
 import { useApplicationListStore } from '@/@core/stores/applicationList';
-import { getUserRole } from '@/@core/utils/helpers';
+import { commonFunction } from '@/@core/stores/commonFunction';
+import { useUserStore } from '@/@core/stores/user';
+
+
 import Swal from 'sweetalert2';
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Store and Router
 const store = useApplicationListStore();
+const userStore = useUserStore();
 const router = useRouter();
 const isAdmin = ref(getUserRole() === 'admin');
 
@@ -25,26 +29,33 @@ const page = ref(1);
 const sortBy = ref();
 const orderBy = ref();
 const search = ref('');
-const selectedStatus = ref();
+const selectedStatus = ref(null);
 const selectedUniversity = ref(null);
 const selectedChannelPartner = ref(null);
+const selectedApplicationOfficer = ref(null);
+const selectedStudentEmail = ref('');
+const dateFrom = ref(null);
+const dateTo = ref(null);
 const isLoading = ref(false);
-const universities = ref([]);  // Fetch this list from API or store if needed
-const channelPartners = ref([]);  // Fetch this list from API or store if needed
+const universities = ref([]);
+const channelPartners = ref([]);
+const applicationOfficers = ref([]);
+const applicationStore = useApplicationListStore();
+const commonsFunctionStore = commonFunction();
 const statuses = ref([
-  { value: 0, name: 'Application Processing' },
-  { value: 1, name: 'Application Submitted' },
-  { value: 2, name: 'Pending Docs' },
-  { value: 3, name: 'Offer Issue Conditional' },
-  { value: 4, name: 'Offer Issue Unconditional' },
-  { value: 5, name: 'Need Payment' },
-  { value: 6, name: 'CAS Issued' },
-  { value: 7, name: 'Additional Doc Needed' },
-  { value: 8, name: 'Refund Required' },
-  { value: 9, name: 'Application Rejected' },
-  { value: 10, name: 'Session Expired' },
-  { value: 11, name: 'Doc Received' },
-  { value: 12, name: 'Partial Payment' },
+  { id: 0, name: 'Application Processing' },
+  { id: 1, name: 'Application Submitted' },
+  { id: 2, name: 'Pending Docs' },
+  { id: 3, name: 'Offer Issue Conditional' },
+  { id: 4, name: 'Offer Issue Unconditional' },
+  { id: 5, name: 'Need Payment' },
+  { id: 6, name: 'CAS Issued' },
+  { id: 7, name: 'Additional Doc Needed' },
+  { id: 8, name: 'Refund Required' },
+  { id: 9, name: 'Application Rejected' },
+  { id: 10, name: 'Session Expired' },
+  { id: 11, name: 'Doc Received' },
+  { id: 12, name: 'Partial Payment' },
 ]);
 
 const props = defineProps({
@@ -56,7 +67,6 @@ const props = defineProps({
 
 // Methods
 const fetchApplications = async () => {
-
   isLoading.value = true;
   try {
     const response = await store.getApplicationList(
@@ -69,6 +79,10 @@ const fetchApplications = async () => {
       selectedStatus.value,
       selectedUniversity.value,
       selectedChannelPartner.value,
+      selectedApplicationOfficer.value,
+      selectedStudentEmail.value,
+      dateFrom.value,
+      dateTo.value
     );
     applicationLists.value = response.data;
     totalApplications.value = response.total;
@@ -82,7 +96,7 @@ const fetchApplications = async () => {
 const updateOptions = (options) => {
   sortBy.value = options.sortBy[0]?.key;
   orderBy.value = options.sortBy[0]?.order;
- fetchApplications();
+  fetchApplications();
 };
 
 const viewApplicationDetail = (applicationId) => {
@@ -112,15 +126,52 @@ const deleteItem = async (itemId) => {
   }
 };
 
+// Fetch filter options
+const fetchFilterOptions = async () => {
+  try {
+
+    const universityList = await commonsFunctionStore.getUniversities();
+
+    universities.value = universityList.data.map(university => ({
+      id: university.id,
+      name: university.name
+    }));
+
+    const channelPartnersResponse = await userStore.fetchUsers(1, '', 'channel partner', '', true);
+    channelPartners.value = channelPartnersResponse.data.map(user => ({
+      id: user.id,
+      name: user.company_name_with_email
+    }));
+
+    const applicationOfficersResponse = await userStore.fetchUsers(1, '', 'application control officer', '', true);
+    applicationOfficers.value = applicationOfficersResponse.data.map(user => ({
+      id: user.id,
+      name: user.name_with_email
+    }));
+
+  } catch (error) {
+    console.error('Error fetching filter options:', error);
+  }
+};
+
 // Watchers
-watch([search, selectedStatus, selectedUniversity, selectedChannelPartner], () => {
+watch([
+  search,
+  selectedStatus,
+  selectedUniversity,
+  selectedChannelPartner,
+  selectedApplicationOfficer,
+  selectedStudentEmail,
+  dateFrom,
+  dateTo
+], () => {
   fetchApplications();
 });
 
 // Mounted Hook
 onMounted(() => {
+  fetchFilterOptions();
   fetchApplications();
-  // You can also load the filter options here (like universities and channel partners)
 });
 
 // Header Definitions
@@ -128,7 +179,6 @@ const headers = ref([
   { title: 'APPLICATION ID', key: 'application_id' },
   { title: 'Student Name', key: 'student.name' },
   { title: 'Student Email', key: 'student.email' },
-
   ...(isAdmin.value
     ? [{ title: 'Application Officer', key: 'user.parent.email' }]
     : []),
@@ -161,64 +211,11 @@ const resolveStatusName = (status) => {
   };
   return statusNames[status] || 'Unknown Status';
 };
-const triggerCollapse = () => {
-  isContentCollapsed.value = !isContentCollapsed.value;
-};
-const isContentCollapsed = ref(true);
 </script>
 
 <template>
   <div>
-    <!-- <VCard class="mb-4" title="Filter">
-
-
-
-  <VCardText >
-
-    <VRow >
-
-      <VCol cols="12" sm="4">
-        <AppSelect
-          v-model="selectedStatus"
-          placeholder="Select Status"
-          :items="statuses"
-          clearable
-          clear-icon="tabler-x"
-          :item-title="(item) => item.name"
-          :item-value="(item) => item.value"
-        />
-      </VCol>
-
-
-      <VCol cols="12" sm="4">
-        <AppSelect
-          v-model="selectedUniversity"
-          placeholder="Select University"
-          :items="universities"
-          clearable
-          clear-icon="tabler-x"
-          :item-title="(item) => item.name"
-          :item-value="(item) => item.id"
-        />
-      </VCol>
-
-
-      <VCol cols="12" sm="4">
-        <AppSelect
-          v-model="selectedChannelPartner"
-          placeholder="Select Channel Partner"
-          :items="channelPartners"
-          clearable
-          clear-icon="tabler-x"
-          :item-title="(item) => item.email"
-          :item-value="(item) => item.id"
-        />
-      </VCol>
-    </VRow>
-  </VCardText>
-</VCard> -->
     <AppCardActions title="New Application" :loading="isLoading" no-actions>
-
       <!-- Search and Pagination -->
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-3 d-flex gap-3">
@@ -231,7 +228,7 @@ const isContentCollapsed = ref(true);
               { value: 100, title: 100 },
               { value: -1, title: 'All' },
             ]"
-            style="inline-size: 6.25rem"
+            style="inline-size: 6.25rem;"
             @update:model-value="itemsPerPage = parseInt($event, 10)"
           />
         </div>
@@ -239,11 +236,76 @@ const isContentCollapsed = ref(true);
 
         <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
           <!-- 👉 Search  -->
-          <div style="inline-size: 15.625rem">
+          <div style="inline-size: 15.625rem;">
             <AppTextField v-model="search" placeholder="Search Application" />
           </div>
         </div>
       </VCardText>
+
+      <!-- New Filters Section -->
+      <!-- <VCardText>
+        <VRow>
+          <VCol cols="12" md="3">
+            <AppAutocomplete
+              v-model="selectedStatus"
+              :items="statuses"
+              :item-title="(item) => item.name"
+              :item-value="(item) => item.id"
+              label="Status"
+              placeholder="Select Status"
+              clearable
+            />
+          </VCol>
+          <VCol cols="12" md="3">
+            <AppAutocomplete
+              v-model="selectedChannelPartner"
+              :items="channelPartners"
+              :item-title="(item) => item.name"
+              :item-value="(item) => item.id"
+              label="Channel Partner"
+              placeholder="Select Channel Partner"
+              clearable
+            />
+          </VCol>
+          <VCol cols="12" md="3">
+            <AppAutocomplete
+              v-model="selectedUniversity"
+              :items="universities"
+              :item-title="(item) => item.name"
+              :item-value="(item) => item.id"
+              label="University"
+              placeholder="Select University"
+              clearable
+            />
+          </VCol>
+          <VCol cols="12" md="3">
+            <AppAutocomplete
+              v-model="selectedApplicationOfficer"
+              :items="applicationOfficers"
+              :item-title="(item) => item.name"
+              :item-value="(item) => item.id"
+              label="Application Officer"
+              placeholder="Select Application Officer"
+              clearable
+            />
+          </VCol>
+
+          <VCol cols="12" md="3">
+            <AppDateTimePicker
+              v-model="dateFrom"
+              label="From Date"
+              placeholder="Select From Date"
+            />
+          </VCol>
+          <VCol cols="12" md="3">
+            <AppDateTimePicker
+              v-model="dateTo"
+              label="To Date"
+              placeholder="Select To Date"
+            />
+          </VCol>
+        </VRow>
+      </VCardText> -->
 
       <!-- Data Table -->
       <VDataTableServer
@@ -257,6 +319,14 @@ const isContentCollapsed = ref(true);
       >
         <template #item.student.name="{ item }">
           <p>{{ item.student.first_name }} {{ item.student.last_name }}</p>
+        </template>
+        <template #item.user.email="{ item }">
+          <div class="d-flex flex-column">
+            <span class="d-block font-weight-medium text-truncate text-high-emphasis">
+              {{ item.user.company_name }}
+            </span>
+            <span class="text-md">{{ item.user.email }}</span>
+          </div>
         </template>
         <template #item.university.name="{ item }">
           <div class="d-flex flex-column ms-3">
@@ -301,114 +371,26 @@ const isContentCollapsed = ref(true);
   </div>
 </template>
 
-
 <style scoped>
-/* Table Container */
-.v-table {
-  overflow-x: auto; /* Enable horizontal scrolling */
-  overflow-y: auto; /* Enable vertical scrolling if content overflows */
-  white-space: nowrap; /* Prevent text from wrapping */
-  scroll-behavior: smooth; /* Smooth scrolling effect */
-  max-height: 33rem /* Adjust to match window height, minus any desired offset */
+.form-padding {
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
 
-/* Table Header and Cells */
-.v-data-table__thead th,
-.v-data-table__tbody td {
-  max-width: 30rem; /* Control maximum width */
-  padding: 0.75rem 1rem; /* Add padding for better spacing */
-  text-align: left; /* Ensure left alignment for readability */
-  vertical-align: middle; /* Align content vertically in the middle */
-  overflow: hidden; /* Hide overflow to maintain layout */
-  white-space: nowrap; /* Prevent text from wrapping */
-  text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+.label {
+  color: black;
 }
 
-/* Chip Styling for Status Column */
-.v-chip {
-  padding: 0.25rem 0.5rem; /* Adjust padding for better spacing */
-  border-radius: 12px; /* Rounded corners for a modern look */
-  font-weight: 500; /* Bold font for better readability */
-  display: inline-flex; /* Ensure proper alignment */
-  align-items: center; /* Center-align items within the chip */
+.v-data-table > .v-data-table__wrapper > table > thead > tr > th,
+td {
+  overflow: auto;
+  max-inline-size: 30rem; /* Adjust the max-width as needed */
+  white-space: nowrap;
+  word-wrap: break-word;
 }
 
-/* Action Buttons */
-.v-btn {
-  padding: 0.5rem; /* Adjust padding for smaller buttons */
-  margin: 0.25rem 0; /* Add margin for spacing between buttons */
-  border-radius: 50%; /* Round buttons for a clean look */
-  display: inline-flex; /* Inline-flex for consistent button sizing */
-  justify-content: center; /* Center content within the button */
-  align-items: center; /* Align items to the center */
+.v-table__wrapper {
+  max-block-size: 35rem !important;
 }
-
-.v-btn--icon {
-  width: 2rem; /* Set a fixed width */
-  height: 2rem; /* Set a fixed height */
-}
-
-/* Pagination Styling */
-.v-pagination__list {
-  display: flex; /* Display pagination items in a row */
-  justify-content: center; /* Center pagination controls */
-  gap: 0.5rem; /* Add space between pagination buttons */
-}
-
-.v-pagination__item {
-  padding: 0.5rem; /* Adjust padding for a better click area */
-  border-radius: 8px; /* Rounded corners for a cohesive design */
-  background-color: #f0f0f0; /* Light background for non-active items */
-}
-
-.v-pagination__item--is-active {
-  background-color: #0055a5; /* Highlight active page */
-  color: #fff; /* White text for contrast */
-}
-
-/* Miscellaneous */
-.v-divider {
-  margin: 1rem 0; /* Add margin to separate content */
-  border-top: 1px solid #ddd; /* Light border color */
-}
-
-.text-disabled {
-  color: #888; /* Grey color for disabled text */
-}
-
-.d-flex {
-  display: flex; /* Flexbox for layouts */
-}
-
-.flex-column {
-  flex-direction: column; /* Column layout */
-}
-
-.align-center {
-  align-items: center; /* Center align items */
-}
-
-.justify-center {
-  justify-content: center; /* Center align content horizontally */
-}
-
-.ms-3 {
-  margin-left: 1rem; /* Add margin for spacing */
-}
-
-.gap-3 {
-  gap: 1rem; /* Uniform gap between items */
-}
-
-.text-no-wrap {
-  white-space: nowrap; /* Prevent text wrapping */
-}
-
-
-
-.font-weight-medium {
-  font-weight: 500; /* Medium font weight */
-}
-
 </style>
 

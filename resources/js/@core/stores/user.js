@@ -8,7 +8,8 @@ export const useUserStore = defineStore( {
         users:[],
         errors: [],
         user:[],
-        profile:[]
+        profile:[],
+        channelPartners: [] // Add this line to store channel partners
       }),
   actions: {
     async fetcAllhUser() {
@@ -30,30 +31,31 @@ export const useUserStore = defineStore( {
         throw error;
       }
     },
-    async fetchUsers(page=1, searchQuery = '',role='',parentId='') {
-        try {
-          const response = await $api("/users", {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            params: {
-              page: page,
-              searchQuery: searchQuery,
-              role:role,
-              parentId:parentId
-            }
-          });
+    async fetchUsers(page = 1, searchQuery = '', role = '', parentId = '', fetchAll = false) {
+      try {
+        const response = await $api("/users", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: page,
+            searchQuery: searchQuery,
+            role: role,
+            parentId: parentId,
+            fetchAll: fetchAll
+          }
+        });
 
-          return response;
-        } catch (error) {
-          console.error("Error getting users list:", error);
-          this.errors = error.response
-            ? error.response.data.errors
-            : ["An unexpected error occurred"];
-          throw error;
-        }
-      },
+        return response;
+      } catch (error) {
+        console.error("Error getting users list:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+        throw error;
+      }
+    },
       async fetchUser(id) {
         try {
           const response = await $api(`/users/${id}`, {
@@ -197,11 +199,25 @@ export const useUserStore = defineStore( {
 
         handleErrorResponse(error)
       }
+    },
+    async fetchChannelPartners() {
+      try {
+        const response = await $api('/channel-partners', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        this.channelPartners = response.data;
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching channel partners:', error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ['An unexpected error occurred'];
+        throw error;
+      }
     }
-
-
-
-
-
   },
 });

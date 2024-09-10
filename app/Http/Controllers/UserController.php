@@ -21,11 +21,15 @@ class UserController extends Controller
         $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
         $roleFilter = request()->query('role', null);
         $parentId = request()->query('parentId', null);
+        $fetchAll = filter_var(request()->query('fetchAll'), FILTER_VALIDATE_BOOLEAN);
+
         if (auth('api')->user()->role != 'admin') {
             $parentId = auth('api')->user()->id;
         }
+
         // Query the users
-        $queryResult = User::with(['parent:id,parent_id,first_name,last_name,role','documents'])->where('role', '!=', 'admin')
+        $query = User::with(['parent:id,parent_id,first_name,last_name,role','documents'])
+            ->where('role', '!=', 'admin')
             ->when($searchQuery, function ($query, $searchQuery) {
                 return $query->where(function ($query) use ($searchQuery) {
                     $query->where('first_name', 'LIKE', "%$searchQuery%")
@@ -34,7 +38,7 @@ class UserController extends Controller
                 });
             })
             ->when($roleFilter, function ($query, $roleFilter) {
-                return $query->where('role', $roleFilter);
+                return $query->where('role', 'LIKE', "%$roleFilter%");
             })
             ->when($parentId, function ($query, $parentId) {
                 return $query->where('parent_id', $parentId);
@@ -43,13 +47,16 @@ class UserController extends Controller
                 return $query->orderBy($sortBy, $sortDesc ? 'DESC' : 'ASC');
             }, function ($query) {
                 return $query->latest('created_at');
-            })
-            ->paginate($perPage)
-            ->toArray();
+            });
 
-        // Extract users and total rows
-        $users = $perPage ? $queryResult['data'] : $queryResult;
-        $totalRows = $perPage ? $queryResult['total'] : count($queryResult);
+        if ($fetchAll) {
+            $users = $query->get();
+            $totalRows = $users->count();
+        } else {
+            $queryResult = $query->paginate($perPage)->toArray();
+            $users = $queryResult['data'];
+            $totalRows = $queryResult['total'];
+        }
 
         // Return success response with user data
         return $this->successJsonResponse('User List Found', $users, $totalRows);

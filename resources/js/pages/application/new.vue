@@ -33,6 +33,7 @@ const passportCountries = [
   "India",
   "Bhutan",
   "Ghana",
+  "Pakistan",
 ];
 
 onMounted(async () => {
@@ -191,6 +192,7 @@ const next = () => {
 
 <style lang="scss">
 .form-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
 </style>

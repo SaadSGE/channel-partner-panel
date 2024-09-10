@@ -17,7 +17,8 @@ class User extends Authenticatable
     use HasRoles;
 
     protected $guarded = [];
-    protected $appends = ['full_name', 'record_count', 'dashboard','name_with_email'];
+
+    protected $appends = ['full_name', 'record_count', 'dashboard','name_with_email','company_name_with_email'];
 
     protected $hidden = [
         'password',
@@ -54,6 +55,10 @@ class User extends Authenticatable
         return trim("{$this->first_name} {$this->last_name} ({$this->email})");
     }
 
+    public function getCompanyNameWithEmailAttribute(): string
+    {
+        return trim("{$this->company_name} ({$this->email})");
+    }
 
     public function applications()
     {
