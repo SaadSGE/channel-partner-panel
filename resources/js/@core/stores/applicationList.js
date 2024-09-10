@@ -22,12 +22,15 @@ export const useApplicationListStore = defineStore({
       page = 1,
       itemsPerPage = 10,
       searchQuery = '',
-      role = '',
       sortBy = '',
       orderBy = '',
       status = null,
       university = null,
-      channelPartner = null
+      channelPartner = null,
+      applicationOfficer = null,
+      studentEmail = '',
+      dateFrom = null,
+      dateTo = null
     ) {
       try {
         const response = await $api('/application', {
@@ -36,16 +39,19 @@ export const useApplicationListStore = defineStore({
             'Content-Type': 'application/json',
           },
           params: {
-            id: id,
-            page: page,
+            id,
+            page,
             perPage: itemsPerPage,
             searchQuery,
-            role,
             sortBy,
             orderBy,
             status,
             university,
-            channelPartner
+            channelPartner,
+            applicationOfficer,
+            studentEmail,
+            dateFrom,
+            dateTo
           }
         });
         return response;

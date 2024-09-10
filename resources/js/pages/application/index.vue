@@ -216,34 +216,8 @@ const resolveStatusName = (status) => {
 <template>
   <div>
     <AppCardActions title="New Application" :loading="isLoading" no-actions>
-      <!-- Search and Pagination -->
-      <VCardText class="d-flex flex-wrap gap-4">
-        <div class="me-3 d-flex gap-3">
-          <AppSelect
-            :model-value="itemsPerPage"
-            :items="[
-              { value: 10, title: '10' },
-              { value: 25, title: '25' },
-              { value: 50, title: '50' },
-              { value: 100, title: 100 },
-              { value: -1, title: 'All' },
-            ]"
-            style="inline-size: 6.25rem;"
-            @update:model-value="itemsPerPage = parseInt($event, 10)"
-          />
-        </div>
-        <VSpacer />
-
-        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-          <!-- 👉 Search  -->
-          <div style="inline-size: 15.625rem;">
-            <AppTextField v-model="search" placeholder="Search Application" />
-          </div>
-        </div>
-      </VCardText>
-
       <!-- New Filters Section -->
-      <!-- <VCardText>
+      <VCardText>
         <VRow>
           <VCol cols="12" md="3">
             <AppAutocomplete
@@ -256,7 +230,7 @@ const resolveStatusName = (status) => {
               clearable
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol v-if="isAdmin"  cols="12" md="3">
             <AppAutocomplete
               v-model="selectedChannelPartner"
               :items="channelPartners"
@@ -278,7 +252,7 @@ const resolveStatusName = (status) => {
               clearable
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol v-if="isAdmin" cols="12" md="3">
             <AppAutocomplete
               v-model="selectedApplicationOfficer"
               :items="applicationOfficers"
@@ -305,7 +279,34 @@ const resolveStatusName = (status) => {
             />
           </VCol>
         </VRow>
-      </VCardText> -->
+      </VCardText>
+      <!-- Search and Pagination -->
+      <VCardText class="d-flex flex-wrap gap-4">
+        <div class="me-3 d-flex gap-3">
+          <AppSelect
+            :model-value="itemsPerPage"
+            :items="[
+              { value: 10, title: '10' },
+              { value: 25, title: '25' },
+              { value: 50, title: '50' },
+              { value: 100, title: 100 },
+              { value: -1, title: 'All' },
+            ]"
+            style="inline-size: 6.25rem;"
+            @update:model-value="itemsPerPage = parseInt($event, 10)"
+          />
+        </div>
+        <VSpacer />
+
+        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+          <!-- 👉 Search  -->
+          <div style="inline-size: 15.625rem;">
+            <AppTextField v-model="search" placeholder="Search Application" />
+          </div>
+        </div>
+      </VCardText>
+
+
 
       <!-- Data Table -->
       <VDataTableServer
