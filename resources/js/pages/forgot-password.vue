@@ -1,22 +1,67 @@
 <script setup>
-import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
-import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
-import { themeConfig } from '@themeConfig'
-import authV2ForgotPasswordIllustrationDark from '@images/pages/auth-v2-forgot-password-illustration-dark.png'
-import authV2ForgotPasswordIllustrationLight from '@images/pages/auth-v2-forgot-password-illustration-light.png'
-import authV2MaskDark from '@images/pages/misc-mask-dark.png'
-import authV2MaskLight from '@images/pages/misc-mask-light.png'
-
-const email = ref('')
-const authThemeImg = useGenerateImageVariant(authV2ForgotPasswordIllustrationLight, authV2ForgotPasswordIllustrationDark)
-const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
+import { useAuthStore } from "@/@core/stores/auth";
+import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant';
+import authV2ForgotPasswordIllustrationDark from '@images/pages/auth-v2-forgot-password-illustration-dark.png';
+import authV2ForgotPasswordIllustrationLight from '@images/pages/auth-v2-forgot-password-illustration-light.png';
+import loginImage from "@images/pages/login-image.png"; // Import the login image
+import authV2MaskDark from '@images/pages/misc-mask-dark.png';
+import authV2MaskLight from '@images/pages/misc-mask-light.png';
+import { VNodeRenderer } from '@layouts/components/VNodeRenderer';
+import { themeConfig } from '@themeConfig';
+import { storeToRefs } from 'pinia';
+import Swal from 'sweetalert2'; // Import SweetAlert2
+import { ref } from 'vue';
+import { useRouter } from 'vue-router'; // Import useRouter
 
 definePage({
   meta: {
-    layout: 'blank',
+    layout: "blank",
     unauthenticatedOnly: true,
   },
-})
+});
+
+const email = ref('')
+const authStore = useAuthStore()
+const { errors } = storeToRefs(authStore)
+const isSubmitting = ref(false)
+const resetStatus = ref('')
+const router = useRouter(); // Initialize router
+
+const authThemeImg = useGenerateImageVariant(authV2ForgotPasswordIllustrationLight, authV2ForgotPasswordIllustrationDark)
+const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
+const loginImage2 = useGenerateImageVariant(loginImage); // Generate image variant
+
+const resetPassword = async () => {
+  isSubmitting.value = true
+  resetStatus.value = ''
+  try {
+    const response = await authStore.resetPassword(email.value)
+    resetStatus.value = response.message; // Assuming the API returns a success message
+
+    // Show success message using SweetAlert
+    Swal.fire({
+      icon: 'success',
+      title: 'Password Reset Successful',
+      text: 'A new password has been sent to your email.',
+      confirmButtonText: 'OK',
+    }).then(() => {
+      // Redirect to login page after confirmation
+      router.push({ name: 'login' });
+    });
+
+    email.value = '' // Clear the email input
+  } catch (error) {
+    // Show error using SweetAlert
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'An error occurred while resetting the password.',
+      confirmButtonText: 'OK',
+    });
+  } finally {
+    isSubmitting.value = false
+  }
+}
 </script>
 
 <template>
@@ -43,14 +88,14 @@ definePage({
           style="padding-inline: 150px;"
         >
           <VImg
-            max-width="468"
-            :src="authThemeImg"
-            class="auth-illustration mt-16 mb-2"
+            max-width="800"
+            :src="loginImage2"
+            class="auth-illustration mt-16 mb-2 flip-in-rtl"
           />
         </div>
 
         <img
-          class="auth-footer-mask"
+          class="auth-footer-mask flip-in-rtl"
           :src="authThemeMask"
           alt="auth-footer-mask"
           height="280"
@@ -62,24 +107,24 @@ definePage({
     <VCol
       cols="12"
       md="4"
-      class="d-flex align-center justify-center"
+      class="auth-card-v2 d-flex align-center justify-center"
     >
       <VCard
         flat
         :max-width="500"
-        class="mt-12 mt-sm-0 pa-4"
+        class="mt-12 mt-sm-0 pa-6"
       >
         <VCardText>
           <h4 class="text-h4 mb-1">
             Forgot Password? 🔒
           </h4>
           <p class="mb-0">
-            Enter your email and we'll send you instructions to reset your password
+            Enter your email and we'll send you a temporary password
           </p>
         </VCardText>
 
         <VCardText>
-          <VForm @submit.prevent="() => {}">
+          <VForm @submit.prevent="resetPassword">
             <VRow>
               <!-- email -->
               <VCol cols="12">
@@ -87,9 +132,20 @@ definePage({
                   v-model="email"
                   autofocus
                   label="Email"
-                  type="email"
                   placeholder="johndoe@email.com"
+                  type="email"
+                  :error-messages="errors.email"
                 />
+              </VCol>
+
+              <!-- Reset status -->
+              <VCol v-if="resetStatus" cols="12">
+                <VAlert
+                  :type="errors.email ? 'error' : 'success'"
+                  class="mb-3"
+                >
+                  {{ resetStatus }}
+                </VAlert>
               </VCol>
 
               <!-- Reset link -->
@@ -97,8 +153,9 @@ definePage({
                 <VBtn
                   block
                   type="submit"
+                  :loading="isSubmitting"
                 >
-                  Send Reset Link
+                  Send Temporary Password
                 </VBtn>
               </VCol>
 

@@ -10,6 +10,9 @@ use Spatie\Permission\Models\Role;
 use App\Notifications\NewUserRegistrationNotification;
 use Illuminate\Support\Facades\Notification;
 use App\Services\FileUploadService;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use App\Notifications\EmailNotification;
 
 class AuthController extends Controller
 {
@@ -155,5 +158,47 @@ class AuthController extends Controller
         return $this->successJsonResponse('Credential match', ['accessToken' => $token,
             'userData' => $user, 'abilities' => $formattedAbilities]);
 
+    }
+
+    public function resetPassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,email',
+            ]);
+
+            $user = User::where('email', $request->email)->first();
+
+            // Generate a random password
+            $newPassword = Str::random(10);
+
+            // Update the user's password
+            $user->password = Hash::make($newPassword);
+            $user->save();
+
+            // Prepare email details
+            $details = [
+                'subject' => 'Password Reset',
+                'body' => "Your new password is: $newPassword<br><br>Please change your password after logging in.",
+                'recipients' => [$user->email],
+                'sender_id' => 1, // Assuming 1 is the ID for system-generated emails
+                'sender_name' => 'System',
+                'sender_email' => config('mail.from.address'),
+                'notification_type' => 'email',
+            ];
+
+            // Send the email notification
+            Notification::route('mail', config('mail.from.address'))
+                ->notify(new EmailNotification($details));
+
+            return $this->successJsonResponse('A new password has been sent to your email.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Handle validation errors
+            return $this->handleValidationErrors($e);
+        } catch (\Throwable $th) {
+            // Log the error and return a response
+            \Log::error('Failed to reset password', ['error' => $th->getMessage()]);
+            return $this->exceptionJsonResponse('Failed to reset password', $th);
+        }
     }
 }

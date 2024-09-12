@@ -90,6 +90,21 @@ export const useAuthStore = defineStore({
         this.errors = error.response?.data.errors || ['An unexpected error occurred'];
         throw error;
       }
+    },
+    async resetPassword(email) {
+      try {
+        const response = await $api('/reset-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        return response.data;
+      } catch (error) {
+        handleErrorResponse(error)
+      }
     }
 
 

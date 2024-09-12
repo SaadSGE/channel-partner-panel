@@ -100,7 +100,7 @@ const onSubmit = () => {
       <div class="position-relative bg-background w-100 me-0">
         <div
           class="d-flex align-center justify-center w-100 h-100"
-          style="padding-inline: 6.25rem"
+          style="padding-inline: 6.25rem;"
         >
           <VImg :src="loginImage2" class="auth-illustration mt-16 mb-2" />
         </div>
@@ -162,6 +162,12 @@ const onSubmit = () => {
                     v-model="authStore.rememberMe"
                     label="Remember Me"
                   />
+                  <RouterLink
+                    class="text-primary"
+                    to="/forgot-password"
+                  >
+                    Forgot Password?
+                  </RouterLink>
                 </div>
 
                 <VBtn block type="submit"> Login </VBtn>
