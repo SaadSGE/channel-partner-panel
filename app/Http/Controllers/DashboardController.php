@@ -16,25 +16,19 @@ class DashboardController extends Controller
         $user = auth('api')->user();
 
         // Determine the dashboard data based on the user's role
-        switch ($user->role) {
-            case 'admin':
-                $dashboard = $this->getAdminDashboard();
-                break;
-
-            case 'channel partner':
-                $dashboard = $this->getChannelPartnerDashboard($user);
-                break;
-
-            case 'editor':
-                $dashboard = $this->getEditorDashboard($user);
-                break;
-
-            default:
-                $dashboard = [];
+        if (stringContains($user->role, 'admin')) {
+            $dashboard = $this->getAdminDashboard();
+        } elseif (stringContains($user->role, 'channel partner')) {
+            $dashboard = $this->getChannelPartnerDashboard($user);
+        } elseif (stringContains($user->role, 'editor')) {
+            $dashboard = $this->getEditorDashboard($user);
+        } elseif (stringContains($user->role, 'application control officer')) {
+            $dashboard = $this->getApplicationOfficerDashboard();
+        } else {
+            $dashboard = [];
         }
+
         return $this->successJsonResponse('Dashboard data retrieved successfully', $dashboard);
-
-
     }
 
     protected function getAdminDashboard(): array
@@ -124,8 +118,54 @@ class DashboardController extends Controller
         return [
             'applications_by_status' => $dashboard
         ];
-    }
+    }public function getApplicationOfficerDashboard(): array
+    {
+        // Get channel partners associated with this officer using the scope
+        $channelPartners = User::filterByRole()->where('role', 'channel partner')->get();
 
+        $dashboard = [
+            'applications_by_status' => [
+                'total_channel_partners' => $channelPartners->count(),
+                'total_applications' => 0,
+                'application_processing' => 0,
+                'application_submitted' => 0,
+                'pending_docs' => 0,
+                'offer_issue_conditional' => 0,
+                'offer_issue_unconditional' => 0,
+                'need_payment' => 0,
+                'cas_issued' => 0,
+                'additional_doc_needed' => 0,
+                'refund_required' => 0,
+                'application_rejected' => 0,
+                'session_expired' => 0,
+                'doc_received' => 0,
+                'partial_payment' => 0,
+            ],
+            'state_wise_data' => [],
+        ];
+
+        foreach ($channelPartners as $partner) {
+            // Count applications by status
+            $partnerApplications = $partner->applications;
+            foreach ($partnerApplications as $application) {
+                $dashboard['applications_by_status'][$application->status]++;
+                $dashboard['applications_by_status']['total_applications']++;
+            }
+
+            // Group by state
+            $state = $partner->state ?? 'Unknown';
+            if (!isset($dashboard['state_wise_data'][$state])) {
+                $dashboard['state_wise_data'][$state] = [
+                    'channel_partners' => 0,
+                    'total_applications' => 0,
+                ];
+            }
+            $dashboard['state_wise_data'][$state]['channel_partners']++;
+            $dashboard['state_wise_data'][$state]['total_applications'] += $partnerApplications->count();
+        }
+
+        return $dashboard;
+    }
     protected function getEditorDashboard(User $user): array
     {
         // Count total courses for the editor

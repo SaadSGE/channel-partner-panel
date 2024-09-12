@@ -8,9 +8,14 @@ if (!function_exists('findRole')) {
     }
 }
 
-if (!function_exists('getImageUrl')) {
-    function getImageUrl()
+if (!function_exists('stringContains')) {
+    function stringContains($haystack, $needle, $caseSensitive = false)
     {
-        return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/";
+        if (!$caseSensitive) {
+            $haystack = strtolower($haystack);
+            $needle = strtolower($needle);
+        }
+
+        return str_contains($haystack, $needle);
     }
 }
