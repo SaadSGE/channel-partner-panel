@@ -25,6 +25,7 @@ jobs:
             php artisan optimize:clear
             composer install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
+            composer dump-autoload
             php artisan config:cache
             php artisan route:cache
 
@@ -40,5 +41,6 @@ jobs:
             php artisan optimize:clear
             composer install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
+            composer dump-autoload
             php artisan config:cache
             php artisan route:cache

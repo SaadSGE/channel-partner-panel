@@ -36,7 +36,14 @@ const passportCountries = [
   "Ghana",
 ];
 const intakes = ref();
-const courseTypes = ["Graduate", "Post Graduate"];
+const courseTypes = [
+  "Graduate",
+  "Post Graduate",
+  "Foundation (Pathway)",
+  "International Year One (Pathway)",
+];
+
+
 const universities = ref();
 const courses = ref();
 const courseDetails = ref({
@@ -225,12 +232,12 @@ const resetForm = () => {
               :rules="[requiredValidator]"
             />
           </VCol>
-          <VCol cols="12" md="12" style="margin: auto">
+          <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">Academic Requirement</VLabel>
             <QuillEditor theme="snow"  v-model:content="academicRequirementEditor" content-type="html"/>
           </VCol>
 
-          <VCol cols="12" md="12" style="margin: auto">
+          <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">English Requirement</VLabel>
             <QuillEditor theme="snow" v-model:content="englishRequirementEditor" content-type="html"/>
           </VCol>
@@ -246,14 +253,17 @@ const resetForm = () => {
 </template>
 <style lang="scss">
 .form-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
+
 .label {
   color: black;
 }
+
 .ql-editor {
-  height: 250px;
-  max-height: 250px;
   overflow: auto;
+  block-size: 250px;
+  max-block-size: 250px;
 }
 </style>
