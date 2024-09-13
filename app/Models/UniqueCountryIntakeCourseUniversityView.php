@@ -25,7 +25,7 @@ class UniqueCountryIntakeCourseUniversityView extends Model
             return null;
         }
 
-        $doUrl = config('filesystems.disks.do.url', env('DO_URL'));
+        $doUrl = getImageUrl();
         return $doUrl . $value;
     }
 }

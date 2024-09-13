@@ -19,3 +19,10 @@ if (!function_exists('stringContains')) {
         return str_contains($haystack, $needle);
     }
 }
+
+if (!function_exists('getImageUrl')) {
+    function getImageUrl()
+    {
+        return config('filesystems.disks.do_spaces.url', env('DO_URL'));
+    }
+}
