@@ -15,7 +15,8 @@ export const commonFunction = defineStore({
       selectedCourseId: null,
       selectedIntakeId: null,
       selectedUniversityId: null,
-      selectedCourseDetailsId: null
+      selectedCourseDetailsId: null,
+      selectedCourseType: null,
 
     }),
 
@@ -31,13 +32,14 @@ export const commonFunction = defineStore({
         if (!courseDetail) {
           return null;
         }
-
+        console.log(state.courseTypes)
+        console.log(state)
         return {
           courseName: courseDetail.course_name,
           intake: state.intakes.find(i => i.intake_id === state.selectedIntakeId)?.intake_name || '',
           tuitionFee: courseDetail.tution_fee,
           courseDuration: courseDetail.course_duration,
-          courseLabel: state.courseTypes.find(ct => ct.id === state.selectedCourseId)?.name || '',
+          courseLabel: state.selectedCourseType,
           location: state.countries.find(c => c.id === state.selectedCountryId)?.name || '',
           universityLogo: state.universities.find(u => u.university_id === state.selectedUniversityId)?.university_logo || '',
           academicRequirement: courseDetail.academic_requirement || '',

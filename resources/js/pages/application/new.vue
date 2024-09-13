@@ -65,6 +65,7 @@ watch(courseType, async (newVal) => {
   if (newVal) {
     university.value = null;
     course.value = null;
+    commonFunctionStore.selectedCourseType = newVal;
     await commonFunctionStore.getUniversitiesByCountryIntakeCourseType(countryToApply.value, intake.value, newVal);
   }
 });

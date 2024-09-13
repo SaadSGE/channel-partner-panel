@@ -50,7 +50,7 @@ const uploadDocument = ()=>{
               height="140"
             />
           </div>
-          <div style="color: black">
+          <div style="color: black;">
             <div class="mb-4">
               <label class="font-weight-bold">Course Name: </label>
               <span> {{ courseDetails.courseName }}</span>
@@ -68,6 +68,7 @@ const uploadDocument = ()=>{
               <span> {{ courseDetails.courseDuration }}</span>
             </div>
             <div class="mb-4">
+
               <label class="font-weight-bold">Course Label: </label>
               <span> {{ courseDetails.courseLabel }}</span>
             </div>
@@ -125,6 +126,7 @@ const uploadDocument = ()=>{
 
 <style lang="scss">
 .form-padding {
-  padding: 0rem 2rem 2rem 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
 </style>
