@@ -58,7 +58,7 @@ const passportCountries = [
   "Ghana",
 ];
 
-const courseTypes = ["Graduate", "Post Graduate"];
+const courseTypes = ["Graduate", "Post Graduate", "Foundation (Pathway)", "International Year One (Pathway)"];
 const headers = [
   { title: 'Country', key: 'country.name' },
   { title: 'Intake', key: 'intake.name' },
