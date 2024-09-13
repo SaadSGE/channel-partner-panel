@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\AIController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -76,3 +77,5 @@ Route::post('login', [AuthController::class,'login']);
 Route::get('course-detail-all2', [CourseDetailsController::class,'courseDetailsAll2']);
 Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAll']);
 Route::post('reset-password', [AuthController::class,'resetPassword']);
+
+Route::post('/generate', [AIController::class, 'generateResponse']);
