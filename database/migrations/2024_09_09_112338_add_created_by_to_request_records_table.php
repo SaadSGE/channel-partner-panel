@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('request_records', function (Blueprint $table) {
-
+            $table->unsignedBigInteger('created_by')->nullable()->after('id');
             $table->integer('status')->default(0)->after('created_by');
 
         });
