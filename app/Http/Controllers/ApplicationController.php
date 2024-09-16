@@ -134,10 +134,10 @@ class ApplicationController extends Controller
             // Use $request->validate() for automatic validation handling
             $validatedData = $request->validate([
 
-                'country_id' => 'required|exists:application_countries,id',
-                'intake_id' => 'required|exists:intakes,id',
-                'university_id' => 'required|exists:universities,id',
-                'course_details_id' => 'required|exists:course_details,id',
+                'country_id' => 'required',
+                'intake_id' => 'required',
+                'university_id' => 'required',
+                'course_details_id' => 'required',
                 'student_passport_no' => 'required|string|unique:students,passport_no',
                 'date_of_birth' => 'required|date',
                 'student_first_name' => 'required|string',
