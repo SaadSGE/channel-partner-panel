@@ -27,7 +27,7 @@ export const commonFunction = defineStore({
         }
 
         const courseDetail = state.courseDetails.find(detail => detail.id === state.selectedCourseDetailsId);
-        state.selectedCourseId = courseDetail.course_id;
+
 
         if (!courseDetail) {
           return null;

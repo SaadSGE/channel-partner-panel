@@ -22,6 +22,7 @@ use App\Notifications\StatusChangedNotification;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Jobs\GenerateStudentDocumentsZip;
+use App\Models\CourseDetails;
 
 class ApplicationController extends Controller
 {
@@ -132,7 +133,7 @@ class ApplicationController extends Controller
         try {
             // Use $request->validate() for automatic validation handling
             $validatedData = $request->validate([
-                'course_id' => 'required|exists:courses,id',
+
                 'country_id' => 'required|exists:application_countries,id',
                 'intake_id' => 'required|exists:intakes,id',
                 'university_id' => 'required|exists:universities,id',
@@ -177,10 +178,12 @@ class ApplicationController extends Controller
             $randomNumber = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
             $paddedStudentId = str_pad($student->id, 5, '0', STR_PAD_LEFT);
             $applicationId = $randomNumber . $paddedStudentId;
-
+            // Find the course_id from course_details_id
+            $courseDetails = CourseDetails::findOrFail($validatedData['course_details_id']);
+            $courseId = $courseDetails->course_id;
             $application = ApplicationList::create([
                 'application_id' => $applicationId,
-                'course_id' => $validatedData['course_id'],
+                'course_id' => $courseId,
                 'country_id' => $validatedData['country_id'],
                 'intake_id' => $validatedData['intake_id'],
                 'university_id' => $validatedData['university_id'],
