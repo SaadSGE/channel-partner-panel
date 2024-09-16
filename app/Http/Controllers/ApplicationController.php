@@ -181,6 +181,7 @@ class ApplicationController extends Controller
             // Find the course_id from course_details_id
             $courseDetails = CourseDetails::findOrFail($validatedData['course_details_id']);
             $courseId = $courseDetails->course_id;
+            \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
             $application = ApplicationList::create([
                 'application_id' => $applicationId,
                 'course_id' => $courseId,
