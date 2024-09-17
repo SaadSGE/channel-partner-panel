@@ -64,7 +64,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('emails/sent', [EmailController::class, 'sentEmails']);
     Route::post('emails/send', [EmailController::class, 'sendEmail']);
     Route::get('fetch-all-user', [UserController::class,'fetchAllUser']);
-
+    Route::get('/user/login-activity', [AuthController::class, 'getLoginActivity']);
+    Route::get('/users/{user}/activity-logs', [UserController::class, 'getActivityLogs']);
 });
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');
@@ -77,5 +78,3 @@ Route::post('login', [AuthController::class,'login']);
 Route::get('course-detail-all2', [CourseDetailsController::class,'courseDetailsAll2']);
 Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAll']);
 Route::post('reset-password', [AuthController::class,'resetPassword']);
-
-Route::post('/generate', [AIController::class, 'generateResponse']);

@@ -13,6 +13,7 @@ use App\Services\FileUploadService;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use App\Notifications\EmailNotification;
+use Spatie\Activitylog\Models\Activity;
 
 class AuthController extends Controller
 {
@@ -139,25 +140,38 @@ class AuthController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        if (!Auth::attempt($credentials)) {
-            return $this->errorJsonResponse('The provided credentials are incorrect');
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('login');
+
+            // Get the authenticated user
+
+
+            $abilities = $user->getUserAbilitiesAttribute();
+
+            $formattedAbilities = [];
+            foreach ($abilities as $ability) {
+                list($action, $subject) = explode('.', $ability);
+                $formattedAbilities[] = ['action' => $subject, 'subject' => $action];
+            }
+
+            // Log the login activity
+
+
+            $token = $user->createToken('authToken')->plainTextToken;
+            return $this->successJsonResponse('Credential match', ['accessToken' => $token,
+                'userData' => $user, 'abilities' => $formattedAbilities]);
         }
 
-        // Get the authenticated user
-        $user = Auth::user();
-
-        $abilities = $user->getUserAbilitiesAttribute();
-
-        $formattedAbilities = [];
-        foreach ($abilities as $ability) {
-            list($action, $subject) = explode('.', $ability);
-            $formattedAbilities[] = ['action' => $subject, 'subject' => $action];
-        }
-
-        $token = $user->createToken('authToken')->plainTextToken;
-        return $this->successJsonResponse('Credential match', ['accessToken' => $token,
-            'userData' => $user, 'abilities' => $formattedAbilities]);
-
+        return $this->errorJsonResponse('The provided credentials are incorrect');
     }
 
     public function resetPassword(Request $request)
@@ -200,5 +214,19 @@ class AuthController extends Controller
             \Log::error('Failed to reset password', ['error' => $th->getMessage()]);
             return $this->exceptionJsonResponse('Failed to reset password', $th);
         }
+    }
+
+    // Add this new method to fetch login activity
+    public function getLoginActivity()
+    {
+        $user = Auth::user();
+        $loginActivities = Activity::where('subject_type', User::class)
+            ->where('subject_id', $user->id)
+            ->where('description', 'User logged in')
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        return $this->successJsonResponse('Login activity retrieved successfully', $loginActivities);
     }
 }

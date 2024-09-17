@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Activitylog\Models\Activity;
 
 class UserController extends Controller
 {
@@ -167,7 +168,15 @@ class UserController extends Controller
 
             // Save the updated user details
             $user->save();
-
+            activity()
+            ->performedOn($user)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'updated_fields' => $validatedData,
+            ])
+            ->log('profile_update');
             // Return success response
             return $this->successJsonResponse('User updated successfully', $user);
 
@@ -304,7 +313,14 @@ class UserController extends Controller
             // Update the user's password
             $user->password = Hash::make($validatedData['new_password']);
             $user->save();
-
+            activity()
+            ->performedOn($user)
+            ->causedBy($user)
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ])
+            ->log('password_change');
             // Return a success response
             return $this->successJsonResponse('Password changed successfully');
 
@@ -323,5 +339,22 @@ class UserController extends Controller
     {
         $users = User::filterByRole()->get(['id','first_name','last_name','email','role']);
         return $this->successJsonResponse('User list found', $users);
+    }
+
+    public function getActivityLogs(Request $request, User $user)
+    {
+        $perPage = $request->input('per_page', 10);
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $activityLogs = Activity::causedBy($user)
+            ->orWhere(function ($query) use ($user) {
+                $query->where('subject_type', User::class)
+                      ->where('subject_id', $user->id);
+            })
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate($perPage);
+
+        return $this->successJsonResponse('Activity logs retrieved successfully', $activityLogs);
     }
 }

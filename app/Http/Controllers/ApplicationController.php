@@ -23,6 +23,10 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Jobs\GenerateStudentDocumentsZip;
 use App\Models\CourseDetails;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
+use App\Models\University;
+use App\Models\Intake;
 
 class ApplicationController extends Controller
 {
@@ -216,6 +220,22 @@ class ApplicationController extends Controller
 
             DB::commit();
 
+            $university = University::findOrFail($application->university_id);
+            $intake = Intake::findOrFail($application->intake_id);
+
+            activity()
+                ->performedOn($application)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'application_id' => $application->application_id,
+                    'student_email' => $student->email,
+                    'university_name' => $university->name,
+                    'intake_name' => $intake->name,
+                ])
+                ->log('application_submit');
+
             return $this->successJsonResponse('Application created successfully', $application, '', 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->handleValidationErrors($e);
@@ -255,22 +275,44 @@ class ApplicationController extends Controller
  */
     public function destroy(string $id)
     {
-
         try {
-
             DB::beginTransaction();
 
             $application = ApplicationList::findOrFail($id);
-            $application->delete();
 
+            // Log the application deletion activity before actually deleting it
+            activity()
+                ->performedOn($application)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'application_id' => $application->application_id,
+                    'student_email' => $application->student->email,
+                    'university_name' => $application->university->name,
+                    'intake_name' => $application->intake->name,
+                ])
+                ->log('application_deleted');
+
+            $application->delete();
 
             DB::commit();
 
             return $this->successJsonResponse('Application deleted successfully');
         } catch (\Exception $e) {
-            // Rollback the transaction if any error occurs
             DB::rollBack();
-            Log::error('Failed to delete application', ['error' => $e->getMessage()]);
+            Log::error('Failed to delete application', ['error' => $e->getMessage(), 'id' => $id]);
+
+            // Log the failed deletion attempt
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'attempted_application_id' => $id,
+                    'error_message' => $e->getMessage(),
+                ])
+                ->log('application_deletion_failed');
 
             return $this->exceptionJsonResponse('Failed to delete application', $e);
         }
@@ -278,28 +320,60 @@ class ApplicationController extends Controller
 
     public function updateApplicationFile(Request $request)
     {
-
         $applicationId = (int)$request->application_id;
         $applicationDocument = StudentDocument::where('application_id', $applicationId)->first();
         $studentId = $applicationDocument->student_id;
         $student = Student::where('id', $studentId)->first();
+        $uploadedDocuments = [];
+        $application = ApplicationList::where('id', $applicationId)->first();
         if (!empty($request->document_paths)) {
             foreach ($request->document_paths as $path) {
                 $filename = basename($path['path']);
-                $newPath = 'channelPartnerPanel/studentDocument/' .  $student->email. '/' . $student->email . '_' . $filename;
+                $newPath = 'channelPartnerPanel/studentDocument/' . $student->email . '/' . $student->email . '_' . $filename;
                 Storage::disk('do_spaces')->move($path['path'], $newPath);
-                StudentDocument::create([
+                $document = StudentDocument::create([
                     'student_id' => $student->id,
                     'application_id' => $applicationId,
                     'path' => $newPath
                 ]);
+                $uploadedDocuments[] = $filename;
+
+                // Log activity for each uploaded document
+                activity()
+                    ->performedOn($document)
+                    ->causedBy(Auth::user())
+                    ->withProperties([
+                        'ip' => $request->ip(),
+                        'user_agent' => $request->userAgent(),
+                        'application_id' => $applicationId,
+                        'student_email' => $student->email,
+                        'university_name' => $application->university->name,
+                        'intake_name' => $application->intake->name,
+                        'document_name' => $filename,
+                    ])
+                    ->log('document_upload');
             }
         }
 
         GenerateStudentDocumentsZip::dispatch($student);
+
+        // Log activity for the overall file update process
+
+        activity()
+            ->performedOn($student)
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $applicationId,
+                'student_email' => $student->email,
+                'university_name' => $application->university->name,
+                'intake_name' => $application->intake->name,
+                'uploaded_documents' => $uploadedDocuments,
+            ])
+            ->log('application_file_update');
+
         return $this->successJsonResponse('Student File Upload Successfully', $student);
-
-
     }
 
     public function applicationStatuses(Request $request)
@@ -324,57 +398,84 @@ class ApplicationController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-
         $validatedData = $request->validate([
             'status' => 'required',
             'comment' => 'nullable',
-            'file' => 'nullable|file', // Ensure this validation is correct for your case
+            'file' => 'nullable|file',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // Find the application
             $application = ApplicationList::findOrFail($id);
-
-            // Update the application's status
+            $oldStatus = $application->status_text; // Using the accessor for status text
             $application->status = $validatedData['status'];
             $application->save();
 
             $path = null;
-            // Handle file upload with FileUploadService
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
                 $filePath = 'channelPartnerPanel/studentStatusDocument/' . $application->student_id;
                 $fileUploadService = new FileUploadService();
                 $path = $fileUploadService->upload($filePath, $file);
-
             }
 
-            // Add status history
-            ApplicationStatusHistory::create([
+            $statusHistory = ApplicationStatusHistory::create([
                 'application_id' => $application->id,
                 'status' => $validatedData['status'],
                 'comment' => $validatedData['comment'],
                 'document' => $path,
             ]);
 
+            activity()
+                ->performedOn($application)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'application_id' => $application->application_id,
+                    'student_email' => $application->student->email,
+                    'university_name' => 'University of Hertfordshire',
+                    'intake_name' => 'January 2025',
+                    'old_status' => $oldStatus,
+                    'new_status' => $application->status_text, // Using the accessor for new status text
+                    'comment' => $validatedData['comment'],
+                    'document_uploaded' => $path ? true : false,
+                    'status_history_id' => $statusHistory->id,
+                ])
+                ->log('application_status_update');
+
             DB::commit();
+
             $userToNotify = $application->user;
-
-
             $adminUsers = User::where('role', 'admin')->get();
 
-            // Send the status change notification to the user and all admins
             Notification::send($adminUsers->push($userToNotify), new StatusChangedNotification($application));
+
             return $this->successJsonResponse('Status updated successfully', $application, '', 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error('Failed to update status', ['error' => $th->getMessage()]);
+
+            // Log the failed status update attempt
+            activity()
+                ->performedOn($application)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'application_id' => $application->application_id,
+                    'student_email' => $application->student->email,
+                    'university_name' => 'University of Hertfordshire',
+                    'intake_name' => 'January 2025',
+                    'attempted_status' => ApplicationList::$statusTexts[$validatedData['status']] ?? 'Unknown Status',
+                    'error_message' => $th->getMessage(),
+                ])
+                ->log('application_status_update_failed');
+
             return $this->exceptionJsonResponse('Failed to update status', $th);
         }
     }
-
 
     public function addComment(Request $request, $id)
     {
@@ -388,6 +489,20 @@ class ApplicationController extends Controller
         $comment->status = 0;
         $comment->save();
 
+        $application = ApplicationList::findOrFail($id);
+
+        activity()
+            ->performedOn($comment)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $application->application_id,
+                'student_email' => $application->student->email,
+                'university_name' => $application->university->name,
+                'intake_name' => $application->intake->name,
+            ])
+            ->log('comment_added');
         return response()->json(['message' => 'Comment added successfully', 'comment' => $comment], 201);
     }
 
@@ -411,6 +526,21 @@ class ApplicationController extends Controller
         $communication->created_by = auth('api')->user()->id; // Set the user who made the communication
         $communication->save();
 
+        $application = ApplicationList::findOrFail($id);
+
+        activity()
+            ->performedOn($communication)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $application->application_id,
+                'student_email' => $application->student->email,
+                'university_name' => $application->university->name,
+                'intake_name' => $application->intake->name,
+                'subject' => $communication->subject,
+            ])
+            ->log('university_communication_added');
         return response()->json(['message' => 'Communication added successfully', 'communication' => $communication], 201);
     }
 
