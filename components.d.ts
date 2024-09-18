@@ -371,7 +371,6 @@ declare module 'vue' {
     ErrorHeader: typeof import('./resources/js/components/ErrorHeader.vue')['default']
     FilePound: typeof import('./resources/js/@core/components/FilePound.vue')['default']
     I18n: typeof import('./resources/js/@core/components/I18n.vue')['default']
-    LoginActivity: typeof import('./resources/js/components/ActivityLog/LoginActivity.vue')['default']
     MoreBtn: typeof import('./resources/js/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./resources/js/@core/components/Notifications.vue')['default']
     PaymentProvidersDialog: typeof import('./resources/js/components/dialogs/PaymentProvidersDialog.vue')['default']
@@ -395,5 +394,6 @@ declare module 'vue' {
     UserActivityLog: typeof import('./resources/js/components/ActivityLog/UserActivityLog.vue')['default']
     UserInfoEditDialog: typeof import('./resources/js/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./resources/js/components/dialogs/UserUpgradePlanDialog.vue')['default']
+    VueApexCharts: typeof import('vue3-apexcharts')['default']
   }
 }
