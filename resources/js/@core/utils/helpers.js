@@ -84,3 +84,25 @@ export const handleErrorResponse = (error) => {
   throw new Error(firstErrorMessage);
 };
 
+// Application Status Mapping with colors
+export const applicationStatuses = {
+  0: { text: 'Application Processing', color: 'warning' },
+  1: { text: 'Application Submitted', color: 'info' },
+  2: { text: 'Pending Docs', color: 'warning' },
+  3: { text: 'Offer Issue Conditional', color: 'success' },
+  4: { text: 'Offer Issue Unconditional', color: 'success' },
+  5: { text: 'Need Payment', color: 'error' },
+  6: { text: 'CAS Issued', color: 'success' },
+  7: { text: 'Additional Doc Needed', color: 'warning' },
+  8: { text: 'Refund Required', color: 'error' },
+  9: { text: 'Application Rejected', color: 'error' },
+  10: { text: 'Session Expired', color: 'error' },
+  11: { text: 'Doc Received', color: 'success' },
+  12: { text: 'Partial Payment', color: 'warning' },
+};
+
+// Get status info (text and color) from status code
+export const getApplicationStatusInfo = (statusCode) => {
+  return applicationStatuses[statusCode] || { text: 'Unknown Status', color: 'default' };
+};
+

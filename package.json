@@ -33,6 +33,7 @@
     "axios": "^1.7.2",
     "chart.js": "4.4.2",
     "cookie-es": "1.0.0",
+    "date-fns": "^4.0.0",
     "eslint-plugin-regexp": "2.2.0",
     "filepond": "^4.31.1",
     "filepond-plugin-file-validate-type": "^1.2.9",

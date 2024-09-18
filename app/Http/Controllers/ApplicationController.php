@@ -23,32 +23,36 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Jobs\GenerateStudentDocumentsZip;
 use App\Models\CourseDetails;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
+use App\Models\University;
+use App\Models\Intake;
 
 class ApplicationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $searchQuery = strtoupper(strtolower(trim(request()->query('searchQuery'))));
-        $perPage = (int) request()->query('perPage') ?: 10;
-        $id = (int) request()->query('id') ?: null;
-        $sortBy = (string) request()->query('sortBy');
-        $orderBy = (string) request()->query('orderBy');
-        $status = request()->query('status');
-        $university = request()->query('university');
-        $channelPartner = request()->query('channelPartner');
-        $applicationOfficer = request()->query('applicationOfficer');
-        $studentEmail = request()->query('studentEmail');
-        $dateFrom = request()->query('dateFrom');
-        $dateTo = request()->query('dateTo');
+        $searchQuery = strtoupper(strtolower(trim($request->query('searchQuery'))));
+        $perPage = (int) $request->query('perPage') ?: 10;
+        $id = (int) $request->query('id') ?: null;
+        $sortBy = (string) $request->query('sortBy');
+        $orderBy = (string) $request->query('orderBy');
+        $status = $request->query('status');
+        $university = $request->query('university');
+        $channelPartner = $request->query('channelPartner');
+        $applicationOfficer = $request->query('applicationOfficer');
+        $studentEmail = $request->query('studentEmail');
+        $dateFrom = $request->query('dateFrom');
+        $dateTo = $request->query('dateTo');
 
         $user = auth('api')->user();
         $userId = $user->id;
         $userRole = $user->role;
 
-        // Determine base query
+        // Base query
         $query = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user.parent:id,first_name,last_name,email']);
 
         // Role-based filtering
@@ -60,7 +64,7 @@ class ApplicationController extends Controller
             });
         });
 
-        // Additional filters based on request parameters
+        // Additional filters
         $query->when($id, function ($q) use ($id) {
             return $q->where('created_by', $id);
         })->when($searchQuery, function ($q) use ($searchQuery) {
@@ -82,7 +86,7 @@ class ApplicationController extends Controller
             });
         });
 
-        // New filters using when
+        // Apply other filters
         $query->when($status !== null, function ($q) use ($status) {
             return $q->where('status', $status);
         })->when($university, function ($q) use ($university) {
@@ -110,20 +114,43 @@ class ApplicationController extends Controller
             return $q->latest('created_at');
         });
 
-        // Pagination or get all records
-        if ($perPage) {
-            $queryResult = $query->paginate($perPage)->toArray();
-            $applications = $queryResult['data'];
-            $totalRows = $queryResult['total'];
-        } else {
-            $queryResult = $query->get()->toArray();
-            $applications = $queryResult;
-            $totalRows = count($queryResult);
-        }
+        // Pagination
+        $applications = $query->paginate($perPage);
 
-        return $this->successJsonResponse("Application Information found!", $applications, $totalRows);
+        // Log the activity
+        $this->logIndexActivity($request, $applications->total());
+
+        return $this->successJsonResponse("Application Information found!", $applications->items(), $applications->total());
     }
 
+    private function logIndexActivity(Request $request, int $totalResults)
+    {
+        $activityType = 'application_index_view';
+        $properties = [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'total_results' => $totalResults,
+        ];
+
+        // Check if any filter or search is applied
+        $filterParams = ['status', 'university', 'channelPartner', 'applicationOfficer', 'studentEmail', 'dateFrom', 'dateTo'];
+        $appliedFilters = array_filter($request->only($filterParams));
+
+        if (!empty($appliedFilters)) {
+            $activityType = 'application_filter';
+            $properties['filters'] = $appliedFilters;
+        }
+
+        if ($request->filled('searchQuery')) {
+            $activityType = 'application_search';
+            $properties['search_query'] = $request->query('searchQuery');
+        }
+
+        activity()
+            ->causedBy(Auth::user())
+            ->withProperties($properties)
+            ->log($activityType);
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -217,6 +244,22 @@ class ApplicationController extends Controller
 
             DB::commit();
 
+            $university = University::findOrFail($application->university_id);
+            $intake = Intake::findOrFail($application->intake_id);
+
+            activity()
+                ->performedOn($application)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'application_id' => $application->application_id,
+                    'student_email' => $student->email,
+                    'university_name' => $university->name,
+                    'intake_name' => $intake->name,
+                ])
+                ->log('application_submit');
+
             return $this->successJsonResponse('Application created successfully', $application, '', 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->handleValidationErrors($e);
@@ -256,22 +299,44 @@ class ApplicationController extends Controller
  */
     public function destroy(string $id)
     {
-
         try {
-
             DB::beginTransaction();
 
             $application = ApplicationList::findOrFail($id);
-            $application->delete();
 
+            // Log the application deletion activity before actually deleting it
+            activity()
+                ->performedOn($application)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'application_id' => $application->application_id,
+                    'student_email' => $application->student->email,
+                    'university_name' => $application->university->name,
+                    'intake_name' => $application->intake->name,
+                ])
+                ->log('application_deleted');
+
+            $application->delete();
 
             DB::commit();
 
             return $this->successJsonResponse('Application deleted successfully');
         } catch (\Exception $e) {
-            // Rollback the transaction if any error occurs
             DB::rollBack();
-            Log::error('Failed to delete application', ['error' => $e->getMessage()]);
+            Log::error('Failed to delete application', ['error' => $e->getMessage(), 'id' => $id]);
+
+            // Log the failed deletion attempt
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'attempted_application_id' => $id,
+                    'error_message' => $e->getMessage(),
+                ])
+                ->log('application_deletion_failed');
 
             return $this->exceptionJsonResponse('Failed to delete application', $e);
         }
@@ -279,28 +344,59 @@ class ApplicationController extends Controller
 
     public function updateApplicationFile(Request $request)
     {
-
         $applicationId = (int)$request->application_id;
-        $applicationDocument = StudentDocument::where('application_id', $applicationId)->first();
-        $studentId = $applicationDocument->student_id;
-        $student = Student::where('id', $studentId)->first();
+        $application = ApplicationList::findOrFail($applicationId);
+        $student = $application->student;
+        $uploadedDocuments = [];
+
         if (!empty($request->document_paths)) {
             foreach ($request->document_paths as $path) {
                 $filename = basename($path['path']);
-                $newPath = 'channelPartnerPanel/studentDocument/' .  $student->email. '/' . $student->email . '_' . $filename;
+                $newPath = 'channelPartnerPanel/studentDocument/' . $student->email . '/' . $student->email . '_' . $filename;
                 Storage::disk('do_spaces')->move($path['path'], $newPath);
-                StudentDocument::create([
+                $document = StudentDocument::create([
                     'student_id' => $student->id,
                     'application_id' => $applicationId,
                     'path' => $newPath
                 ]);
+                $uploadedDocuments[] = $filename;
+
+                // Log activity for each uploaded document
+                activity()
+                    ->performedOn($application)
+                    ->causedBy(Auth::user())
+                    ->withProperties([
+                        'ip' => $request->ip(),
+                        'user_agent' => $request->userAgent(),
+                        'application_id' => $applicationId,
+                        'student_email' => $student->email,
+                        'university_name' => $application->university->name,
+                        'intake_name' => $application->intake->name,
+                        'document_name' => $filename,
+                        'document_id' => $document->id,
+                    ])
+                    ->log('document_upload');
             }
         }
 
         GenerateStudentDocumentsZip::dispatch($student);
+
+        // Log activity for the overall file update process
+        activity()
+            ->performedOn($application)
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $applicationId,
+                'student_email' => $student->email,
+                'university_name' => $application->university->name,
+                'intake_name' => $application->intake->name,
+                'uploaded_documents' => $uploadedDocuments,
+            ])
+            ->log('application_file_update');
+
         return $this->successJsonResponse('Student File Upload Successfully', $student);
-
-
     }
 
     public function applicationStatuses(Request $request)
@@ -325,57 +421,84 @@ class ApplicationController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-
         $validatedData = $request->validate([
             'status' => 'required',
             'comment' => 'nullable',
-            'file' => 'nullable|file', // Ensure this validation is correct for your case
+            'file' => 'nullable|file',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // Find the application
             $application = ApplicationList::findOrFail($id);
-
-            // Update the application's status
+            $oldStatus = $application->status_text; // Using the accessor for status text
             $application->status = $validatedData['status'];
             $application->save();
 
             $path = null;
-            // Handle file upload with FileUploadService
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
                 $filePath = 'channelPartnerPanel/studentStatusDocument/' . $application->student_id;
                 $fileUploadService = new FileUploadService();
                 $path = $fileUploadService->upload($filePath, $file);
-
             }
 
-            // Add status history
-            ApplicationStatusHistory::create([
+            $statusHistory = ApplicationStatusHistory::create([
                 'application_id' => $application->id,
                 'status' => $validatedData['status'],
                 'comment' => $validatedData['comment'],
                 'document' => $path,
             ]);
 
+            activity()
+                ->performedOn($application)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'application_id' => $application->application_id,
+                    'student_email' => $application->student->email,
+                    'university_name' => 'University of Hertfordshire',
+                    'intake_name' => 'January 2025',
+                    'old_status' => $oldStatus,
+                    'new_status' => $application->status_text, // Using the accessor for new status text
+                    'comment' => $validatedData['comment'],
+                    'document_uploaded' => $path ? true : false,
+                    'status_history_id' => $statusHistory->id,
+                ])
+                ->log('application_status_update');
+
             DB::commit();
+
             $userToNotify = $application->user;
-
-
             $adminUsers = User::where('role', 'admin')->get();
 
-            // Send the status change notification to the user and all admins
             Notification::send($adminUsers->push($userToNotify), new StatusChangedNotification($application));
+
             return $this->successJsonResponse('Status updated successfully', $application, '', 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error('Failed to update status', ['error' => $th->getMessage()]);
+
+            // Log the failed status update attempt
+            activity()
+                ->performedOn($application)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'application_id' => $application->application_id,
+                    'student_email' => $application->student->email,
+                    'university_name' => 'University of Hertfordshire',
+                    'intake_name' => 'January 2025',
+                    'attempted_status' => ApplicationList::$statusTexts[$validatedData['status']] ?? 'Unknown Status',
+                    'error_message' => $th->getMessage(),
+                ])
+                ->log('application_status_update_failed');
+
             return $this->exceptionJsonResponse('Failed to update status', $th);
         }
     }
-
 
     public function addComment(Request $request, $id)
     {
@@ -383,11 +506,28 @@ class ApplicationController extends Controller
             'comment' => 'required|string',
         ]);
 
+        $application = ApplicationList::findOrFail($id);
+
         $comment = new ApplicationCommentHistory();
         $comment->application_id = $id;
         $comment->comment = $request->comment;
         $comment->status = 0;
         $comment->save();
+
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth('api')->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $application->application_id,
+                'student_email' => $application->student->email,
+                'university_name' => $application->university->name,
+                'intake_name' => $application->intake->name,
+                'comment' => $comment->comment,
+                'comment_id' => $comment->id,
+            ])
+            ->log('comment_added');
 
         return response()->json(['message' => 'Comment added successfully', 'comment' => $comment], 201);
     }
@@ -405,14 +545,77 @@ class ApplicationController extends Controller
             'message' => 'required|string',
         ]);
 
+        $application = ApplicationList::findOrFail($id);
+
         $communication = new UniversityCommunication();
         $communication->application_id = $id;
         $communication->subject = $request->subject;
         $communication->message = $request->message;
-        $communication->created_by = auth('api')->user()->id; // Set the user who made the communication
+        $communication->created_by = auth('api')->user()->id;
         $communication->save();
 
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth('api')->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $application->application_id,
+                'student_email' => $application->student->email,
+                'university_name' => $application->university->name,
+                'intake_name' => $application->intake->name,
+                'subject' => $communication->subject,
+                'communication_id' => $communication->id,
+            ])
+            ->log('university_communication_added');
+
         return response()->json(['message' => 'Communication added successfully', 'communication' => $communication], 201);
+    }
+
+    public function getActivityLogs(Request $request, $id)
+    {
+        $perPage = $request->input('per_page', 10);
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+        $activityType = $request->input('activity_type');
+        $searchQuery = $request->input('search');
+
+        $application = ApplicationList::findOrFail($id);
+
+        $activityLogs = Activity::where(function ($query) use ($application) {
+            $query->where('subject_type', ApplicationList::class)
+                  ->where('subject_id', $application->id)
+
+                  ->orWhere(function ($q) use ($application) {
+                      $q->where('subject_type', UniversityCommunication::class)
+                        ->where('properties->application_id', $application->application_id);
+                  });
+        })
+        ->with('causer:id,first_name,last_name,email')
+        ->when($activityType, function ($query, $activityType) {
+            return $query->where('description', $activityType);
+        })
+        ->when($searchQuery, function ($query, $searchQuery) {
+            return $query->where(function ($query) use ($searchQuery) {
+                $query->where('description', 'LIKE', "%{$searchQuery}%")
+                      ->orWhere('properties', 'LIKE', "%{$searchQuery}%");
+            });
+        })
+        ->orderBy($sortBy, $sortOrder)
+        ->paginate($perPage);
+
+        // Transform the activity logs to include user information
+        $activityLogs->getCollection()->transform(function ($log) {
+            $log->user = $log->causer ? [
+                'id' => $log->causer->id,
+                'name' => $log->causer->first_name . ' ' . $log->causer->last_name,
+                'email' => $log->causer->email,
+            ] : null;
+            unset($log->causer);
+            return $log;
+        });
+
+        return $this->successJsonResponse('Activity logs retrieved successfully', $activityLogs);
     }
 
 

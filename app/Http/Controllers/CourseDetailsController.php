@@ -18,6 +18,8 @@ use App\Models\UniqueCountryIntakeView;
 use App\Models\UniqueCountryIntakeCourseTypeView;
 use App\Models\UniqueCountryIntakeCourseUniversityView;
 use App\Models\IntakeUniversityCourseDetailsView;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Facades\Activity;
 
 class CourseDetailsController extends Controller
 {
@@ -347,6 +349,19 @@ class CourseDetailsController extends Controller
                 'user_id' => auth('api')->id(),
             ]);
 
+            // Log the activity
+            activity()
+                ->performedOn($requestRecord)
+                ->causedBy(auth('api')->user())
+                ->withProperties([
+                    'university_name' => $validatedData['universityName'],
+                    'course_name' => $validatedData['courseName'],
+                    'intake' => $validatedData['intakeName'],
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('course_request_submitted');
+
             // Fetch admin users to notify
             $users = User::where('role', 'admin')->get();
 
@@ -365,7 +380,6 @@ class CourseDetailsController extends Controller
                 'notification_type' => 'email',
             ];
 
-
             // Send email notification to admin users
             Notification::route('mail', 'no-reply@shabujglobal.africa')
                 ->notify(new EmailNotification($details));
@@ -377,6 +391,19 @@ class CourseDetailsController extends Controller
             return $this->successJsonResponse('Request record submitted successfully', $requestRecord);
 
         } catch (\Throwable $th) {
+            // Log the error as an activity
+            activity()
+                ->causedBy(auth('api')->user())
+                ->withProperties([
+                    'error' => $th->getMessage(),
+                    'university_name' => $validatedData['universityName'],
+                    'course_name' => $validatedData['courseName'],
+                    'intake' => $validatedData['intakeName'],
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('course_request_failed');
+
             return $this->exceptionJsonResponse('Failed to submit request record.', $th);
         }
     }

@@ -39,6 +39,18 @@ export const useAuthStore = defineStore({
       }
     },
 
+    async getLoginActivity() {
+      try {
+        const response = await $api('/user/login-activity', {
+          method: 'GET',
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching login activity:', error);
+        throw error;
+      }
+    },
+
     // Implementation of the updateUser function
     async updateUser(form) {
       try {
