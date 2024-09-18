@@ -7,12 +7,13 @@ definePage({
 });
 import { useApplicationListStore } from "@/@core/stores/applicationList";
 import ActivityLog from "@/components/ActivityLog/ApplicationActivityLog.vue";
+
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import Document from "./details-document.vue";
-
+const isAdmin = ref(getUserRole() === 'admin');
 const route = useRoute();
 const applicationId = route.params.id;
 
@@ -253,7 +254,8 @@ const handleAddUniversityComm = async () => {
         <VTab value="status">Status</VTab>
         <VTab value="comments">Comments</VTab>
         <VTab value="university-communication">University Communication</VTab>
-        <VTab value="activity-logs">Activity Logs</VTab>
+
+        <VTab value="activity-logs" v-if="isAdmin">Activity Logs</VTab>
       </VTabs>
 
       <VCardText>

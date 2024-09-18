@@ -23,6 +23,7 @@ const route = useRoute("apps-user-view-id");
 const userTab = ref(null);
 const router = useRouter();
 const recordStore = useRecordStore();
+const isAdmin = ref(getUserRole() === 'admin');
 const tabs = [
   {
     icon: "tabler-users",
@@ -360,6 +361,6 @@ const handleActivityLogUpdate = (options) => {
       </template>
     </VDataTableServer>
   </VCard>
-  <UserActivityLog :userId="route.params.id" />
+  <UserActivityLog :userId="route.params.id" v-if="isAdmin" />
 
 </template>
