@@ -11,6 +11,7 @@ declare global {
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const alphaDashValidator: typeof import('./resources/js/@core/utils/validators.js')['alphaDashValidator']
   const alphaValidator: typeof import('./resources/js/@core/utils/validators.js')['alphaValidator']
+  const applicationStatuses: typeof import('./resources/js/@core/utils/helpers.js')['applicationStatuses']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const avatarText: typeof import('./resources/js/@core/utils/formatters.js')['avatarText']
@@ -53,6 +54,7 @@ declare global {
   const formatDateToMonthShort: typeof import('./resources/js/@core/utils/formatters.js')['formatDateToMonthShort']
   const formatKey: typeof import('./resources/js/@core/utils/helpers.js')['formatKey']
   const getActivePinia: typeof import('pinia')['getActivePinia']
+  const getApplicationStatusInfo: typeof import('./resources/js/@core/utils/helpers.js')['getApplicationStatusInfo']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getUserRole: typeof import('./resources/js/@core/utils/helpers.js')['getUserRole']
@@ -369,6 +371,7 @@ declare module 'vue' {
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly alphaDashValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['alphaDashValidator']>
     readonly alphaValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['alphaValidator']>
+    readonly applicationStatuses: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['applicationStatuses']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly avatarText: UnwrapRef<typeof import('./resources/js/@core/utils/formatters.js')['avatarText']>
@@ -411,6 +414,7 @@ declare module 'vue' {
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./resources/js/@core/utils/formatters.js')['formatDateToMonthShort']>
     readonly formatKey: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['formatKey']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
+    readonly getApplicationStatusInfo: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getApplicationStatusInfo']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getUserRole: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getUserRole']>
@@ -720,6 +724,7 @@ declare module '@vue/runtime-core' {
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly alphaDashValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['alphaDashValidator']>
     readonly alphaValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['alphaValidator']>
+    readonly applicationStatuses: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['applicationStatuses']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly avatarText: UnwrapRef<typeof import('./resources/js/@core/utils/formatters.js')['avatarText']>
@@ -762,6 +767,7 @@ declare module '@vue/runtime-core' {
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./resources/js/@core/utils/formatters.js')['formatDateToMonthShort']>
     readonly formatKey: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['formatKey']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
+    readonly getApplicationStatusInfo: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getApplicationStatusInfo']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getUserRole: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getUserRole']>

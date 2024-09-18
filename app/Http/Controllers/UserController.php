@@ -346,14 +346,35 @@ class UserController extends Controller
         $perPage = $request->input('per_page', 10);
         $sortBy = $request->input('sort_by', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
+        $activityType = $request->input('activity_type');
+        $searchQuery = $request->input('search');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
 
-        $activityLogs = Activity::causedBy($user)
-            ->orWhere(function ($query) use ($user) {
-                $query->where('subject_type', User::class)
-                      ->where('subject_id', $user->id);
-            })
-            ->orderBy($sortBy, $sortOrder)
-            ->paginate($perPage);
+        $activityLogs = Activity::where(function ($query) use ($user) {
+            $query->causedBy($user)
+                  ->orWhere(function ($subQuery) use ($user) {
+                      $subQuery->where('subject_type', User::class)
+                               ->where('subject_id', $user->id);
+                  });
+        })
+        ->when($activityType, function ($query, $activityType) {
+            return $query->where('description', $activityType);
+        })
+        ->when($searchQuery, function ($query, $searchQuery) {
+            return $query->where(function ($query) use ($searchQuery) {
+                $query->where('description', 'LIKE', "%{$searchQuery}%")
+                    ->orWhere('properties', 'LIKE', "%{$searchQuery}%");
+            });
+        })
+        ->when($dateFrom, function ($query, $dateFrom) {
+            return $query->whereDate('created_at', '>=', $dateFrom);
+        })
+        ->when($dateTo, function ($query, $dateTo) {
+            return $query->whereDate('created_at', '<=', $dateTo);
+        })
+        ->orderBy($sortBy, $sortOrder)
+        ->paginate($perPage);
 
         return $this->successJsonResponse('Activity logs retrieved successfully', $activityLogs);
     }

@@ -356,6 +356,8 @@
     "containsString": true,
     "formatKey": true,
     "handleErrorResponse": true,
-    "getUserRole": true
+    "getUserRole": true,
+    "applicationStatuses": true,
+    "getApplicationStatusInfo": true
   }
 }

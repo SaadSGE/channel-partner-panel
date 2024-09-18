@@ -11,6 +11,7 @@ import { } from "@/@core/stores/commonFunction";
 import { useRecordStore } from "@/@core/stores/recordStore";
 import { useUserStore } from "@/@core/stores/user";
 import { containsString } from '@/@core/utils/helpers.js';
+import UserActivityLog from "@/components/ActivityLog/UserActivityLog.vue";
 import ApplicationList from "@/pages/application/index.vue";
 import UserBioPanel from "@/pages/user/UserBioPanel.vue";
 
@@ -359,64 +360,6 @@ const handleActivityLogUpdate = (options) => {
       </template>
     </VDataTableServer>
   </VCard>
+  <UserActivityLog :userId="route.params.id" />
 
-  <VCard title="User Activity Log" class="mt-5">
-    <VCardText>
-      <VDataTable
-        v-model:options="activityLogOptions"
-        :headers="activityLogHeaders"
-        :items="activityLogs"
-        :items-length="totalActivityLogs"
-        :loading="isLoadingActivityLog"
-        class="elevation-1"
-        @update:options="handleActivityLogUpdate"
-      >
-        <template v-slot:item.description="{ item }">
-          <VChip
-            :color="getActivityColor(item.description)"
-            size="small"
-          >
-            {{ item.description }}
-          </VChip>
-        </template>
-
-        <template v-slot:item.details="{ item }">
-          <div v-if="item.description === 'application_submit'">
-            <strong>Application ID:</strong> {{ item.properties.application_id }}<br>
-            <strong>Student Name:</strong> {{ item.properties.student_name }}<br>
-            <strong>Student Email:</strong> {{ item.properties.student_email }}<br>
-            <strong>University:</strong> {{ item.properties.university_name }}<br>
-            <strong>Intake:</strong> {{ item.properties.intake_name }}
-          </div>
-          <div v-else-if="item.description === 'application_status_update'">
-            <strong>Application ID:</strong> {{ item.properties.application_id }}<br>
-            <strong>Student Name:</strong> {{ item.properties.student_eamil }}<br>
-            <strong>New Status:</strong> {{ item.properties.new_status }}<br>
-            <strong>Old Status:</strong> {{ item.properties.old_status }}
-          </div>
-          <div v-else-if="item.description === 'document_upload'">
-            <strong>Application ID:</strong> {{ item.properties.application_id }}<br>
-            <strong>Student Name:</strong> {{ item.properties.student_name }}<br>
-            <strong>Document Name:</strong> {{ item.properties.document_name }}
-          </div>
-          <div v-else-if="item.description === 'comment_added'">
-            <strong>Application ID:</strong> {{ item.properties.application_id }}<br>
-            <strong>Student Name:</strong> {{ item.properties.student_name }}<br>
-            <strong>Comment:</strong> {{ item.properties.comment }}
-          </div>
-          <div v-else-if="item.description === 'university_communication_added'">
-            <strong>Application ID:</strong> {{ item.properties.application_id }}<br>
-            <strong>Student Name:</strong> {{ item.properties.student_name }}<br>
-            <strong>Subject:</strong> {{ item.properties.subject }}
-          </div>
-          <div v-else>
-            {{ item.details }}
-          </div>
-        </template>
-
-
-
-      </VDataTable>
-    </VCardText>
-  </VCard>
 </template>
