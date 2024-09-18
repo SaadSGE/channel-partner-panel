@@ -107,8 +107,13 @@ const refreshData = async () => {
   );
 };
 
+const isStatusLoading = ref(false);
+const isCommentLoading = ref(false);
+const isUniversityCommLoading = ref(false);
+
 const handleStatusChange = async () => {
   try {
+    isStatusLoading.value = true;
     let data = new FormData();
     data.append("status", newStatus.value);
     data.append("comment", newComment.value);
@@ -118,25 +123,35 @@ const handleStatusChange = async () => {
 
     await store.updateStatus(applicationId, data);
     showModal.value = false;
-    await refreshData(); // Ensure refreshData is called to update the UI
+    // Reset fields
+    newStatus.value = "";
+    newComment.value = "";
+    statusFile.value = null;
+    await refreshData();
   } catch (error) {
     console.error("Error updating status:", error);
+  } finally {
+    isStatusLoading.value = false;
   }
 };
 
 const handleAddComment = async () => {
   try {
+    isCommentLoading.value = true;
     await store.addComment(applicationId, newComment.value);
     newComment.value = ""; // Clear the comment input
     showCommentModal.value = false; // Close the comment modal
     await refreshData(); // Refresh data to reflect new comment
   } catch (error) {
     console.error("Error adding comment:", error);
+  } finally {
+    isCommentLoading.value = false;
   }
 };
 
 const handleAddUniversityComm = async () => {
   try {
+    isUniversityCommLoading.value = true;
     await store.addUniversityCommunication(
       applicationId,
       newUniversityComm.value
@@ -146,6 +161,8 @@ const handleAddUniversityComm = async () => {
     await refreshData(); // Refresh data to reflect new communication
   } catch (error) {
     console.error("Error adding university communication:", error);
+  } finally {
+    isUniversityCommLoading.value = false;
   }
 };
 </script>
@@ -187,8 +204,10 @@ const handleAddUniversityComm = async () => {
           </VCardText>
           <VCardActions>
             <VSpacer></VSpacer>
-            <VBtn color="primary" @click="handleStatusChange">Submit</VBtn>
-            <VBtn @click="showModal = false">Cancel</VBtn>
+            <VBtn color="primary" @click="handleStatusChange" :loading="isStatusLoading" :disabled="isStatusLoading">
+              Submit
+            </VBtn>
+            <VBtn @click="showModal = false" :disabled="isStatusLoading">Cancel</VBtn>
           </VCardActions>
         </VCard>
       </VDialog>
@@ -209,10 +228,10 @@ const handleAddUniversityComm = async () => {
           </VCardText>
           <VCardActions>
             <VSpacer></VSpacer>
-            <VBtn color="primary" @click="handleAddComment"
-              >Submit Comment</VBtn
-            >
-            <VBtn @click="showCommentModal = false">Cancel</VBtn>
+            <VBtn color="primary" @click="handleAddComment" :loading="isCommentLoading" :disabled="isCommentLoading">
+              Submit Comment
+            </VBtn>
+            <VBtn @click="showCommentModal = false" :disabled="isCommentLoading">Cancel</VBtn>
           </VCardActions>
         </VCard>
       </VDialog>
@@ -240,10 +259,10 @@ const handleAddUniversityComm = async () => {
           </VCardText>
           <VCardActions>
             <VSpacer></VSpacer>
-            <VBtn color="primary" @click="handleAddUniversityComm"
-              >Submit Communication</VBtn
-            >
-            <VBtn @click="showUniversityCommModal = false">Cancel</VBtn>
+            <VBtn color="primary" @click="handleAddUniversityComm" :loading="isUniversityCommLoading" :disabled="isUniversityCommLoading">
+              Submit Communication
+            </VBtn>
+            <VBtn @click="showUniversityCommModal = false" :disabled="isUniversityCommLoading">Cancel</VBtn>
           </VCardActions>
         </VCard>
       </VDialog>
