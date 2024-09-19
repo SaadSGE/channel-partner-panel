@@ -140,7 +140,7 @@ const updateOptions = (options) => {
 
 const headers = [
   { title: "Name", key: "full_name" },
-  { title: "Email", key: "email" },
+  { title: "Company", key: "company_name_with_email" },
   { title: "Role", key: "role" },
   ...(isAdmin.value
     ? [ { title: "Parent", key: "parent.full_name" }]
@@ -242,7 +242,7 @@ watch([searchQuery, selectedRole, selectedParent], () => {
               { value: 100, title: 100 },
               { value: -1, title: 'All' },
             ]"
-            style="inline-size: 6.25rem"
+            style="inline-size: 6.25rem;"
             @update:model-value="itemsPerPage = parseInt($event, 10)"
           />
         </div>
@@ -250,7 +250,7 @@ watch([searchQuery, selectedRole, selectedParent], () => {
 
         <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
           <!-- 👉 Search  -->
-          <div style="inline-size: 15.625rem">
+          <div style="inline-size: 15.625rem;">
             <AppTextField v-model="searchQuery" placeholder="Search User" />
           </div>
 
