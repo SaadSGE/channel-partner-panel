@@ -256,7 +256,7 @@ const recruitCountries = [
               <VCol cols="12" md="6" sm="12">
                 <AppAutocomplete
                   v-model="form.country"
-                  :items="['India', 'Bangladesh', 'Nigeria', 'Nepal', 'Bhutan', 'Ghana', 'Sri Lanka']"
+                  :items="['India', 'Bangladesh', 'Nigeria', 'Nepal', 'Bhutan', 'Ghana', 'Sri Lanka','Pakistan']"
                   label="Country *"
                   :rules="[requiredValidator]"
                   placeholder="Select your country"
