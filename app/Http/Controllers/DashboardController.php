@@ -12,34 +12,26 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Get the authenticated user
         $user = auth('api')->user();
 
-        // Determine the dashboard data based on the user's role
-        if (stringContains($user->role, 'admin')) {
-            $dashboard = $this->getAdminDashboard();
-        } elseif (stringContains($user->role, 'channel partner')) {
-            $dashboard = $this->getChannelPartnerDashboard($user);
-        } elseif (stringContains($user->role, 'editor')) {
-            $dashboard = $this->getEditorDashboard($user);
-        } elseif (stringContains($user->role, 'application control officer')) {
-            $dashboard = $this->getApplicationOfficerDashboard();
-        } else {
-            $dashboard = [];
-        }
+        $dashboard = match (true) {
+            stringContains($user->role, 'admin') => $this->getAdminDashboard(),
+            stringContains($user->role, 'regional admin') => $this->getRegionalAdminDashboard($user),
+            stringContains($user->role, 'application control officer') => $this->getApplicationOfficerDashboard($user),
+            stringContains($user->role, 'channel partner') => $this->getChannelPartnerDashboard($user),
+            stringContains($user->role, 'editor') => $this->getEditorDashboard($user),
+            default => [],
+        };
 
         return $this->successJsonResponse('Dashboard data retrieved successfully', $dashboard);
     }
 
     protected function getAdminDashboard(): array
     {
-
         $totalChannelPartners = User::where('role', 'channel partner')->count();
         $totalEditors = User::where('role', 'editor')->count();
 
-
         $totalCourses = CourseDetails::count();
-
 
         $applicationsByStatus = ApplicationList::select('status', \DB::raw('count(*) as count'))
             ->groupBy('status')
@@ -66,7 +58,6 @@ class DashboardController extends Controller
             ],
         ];
     }
-
 
     protected function getChannelPartnerDashboard(User $user): array
     {
@@ -112,7 +103,6 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
-
         $dashboard['total'] = array_sum($dashboard);
 
         return [
@@ -120,23 +110,55 @@ class DashboardController extends Controller
         ];
     }
 
-    public function getApplicationOfficerDashboard(): array
+    protected function getRegionalAdminDashboard(User $user): array
     {
-        // Get channel partners associated with this officer using the scope
-        $channelPartners = User::filterByRole()->where('role', 'channel partner')->get();
+        $applicationOfficers = User::where('parent_id', $user->id)
+                                   ->where('role', 'application control officer')
+                                   ->get();
 
         $dashboard = [
-            'applications_by_status' => [
-                'total_channel_partners' => $channelPartners->count(),
-                'total_applications' => 0,
-            ],
+            'total_application_officers' => $applicationOfficers->count(),
+            'total_channel_partners' => 0,
+            'applications_by_status' => $this->initializeApplicationStatusCounts(),
             'state_wise_data' => [],
         ];
 
-        // Initialize all possible statuses
-        foreach (ApplicationList::$statusTexts as $statusCode => $statusText) {
-            $dashboard['applications_by_status'][strtolower(str_replace(' ', '_', $statusText))] = 0;
+        foreach ($applicationOfficers as $officer) {
+            $officerDashboard = $this->getApplicationOfficerDashboard($officer);
+
+            $dashboard['total_channel_partners'] += $officerDashboard['applications_by_status']['total_channel_partners'];
+
+            foreach ($officerDashboard['applications_by_status'] as $status => $count) {
+                if ($status !== 'total_channel_partners') {
+                    $dashboard['applications_by_status'][$status] += $count;
+                }
+            }
+
+            foreach ($officerDashboard['state_wise_data'] as $state => $data) {
+                if (!isset($dashboard['state_wise_data'][$state])) {
+                    $dashboard['state_wise_data'][$state] = $data;
+                } else {
+                    $dashboard['state_wise_data'][$state]['channel_partners'] += $data['channel_partners'];
+                    $dashboard['state_wise_data'][$state]['total_applications'] += $data['total_applications'];
+                }
+            }
         }
+
+        return $dashboard;
+    }
+
+    protected function getApplicationOfficerDashboard(User $user): array
+    {
+        $channelPartners = User::where('parent_id', $user->id)
+                               ->where('role', 'channel partner')
+                               ->get();
+
+        $dashboard = [
+            'applications_by_status' => $this->initializeApplicationStatusCounts(),
+            'state_wise_data' => [],
+        ];
+
+        $dashboard['applications_by_status']['total_channel_partners'] = $channelPartners->count();
 
         foreach ($channelPartners as $partner) {
             $partnerApplications = $partner->applications;
@@ -146,7 +168,6 @@ class DashboardController extends Controller
                 $dashboard['applications_by_status']['total_applications']++;
             }
 
-            // Group by state
             $state = $partner->state ?? 'Unknown';
             if (!isset($dashboard['state_wise_data'][$state])) {
                 $dashboard['state_wise_data'][$state] = [
@@ -160,16 +181,29 @@ class DashboardController extends Controller
 
         return $dashboard;
     }
+
+    private function initializeApplicationStatusCounts(): array
+    {
+        $statusCounts = [
+            'total_applications' => 0,
+            'total_channel_partners' => 0,
+        ];
+
+        foreach (ApplicationList::$statusTexts as $statusCode => $statusText) {
+            $statusCounts[strtolower(str_replace(' ', '_', $statusText))] = 0;
+        }
+
+        return $statusCounts;
+    }
+
     protected function getEditorDashboard(User $user): array
     {
-        // Count total courses for the editor
         $totalCourses = $user->courses()->count();
 
         return [
             'applications_by_status' => [
                 'total_data_entry' => $totalCourses,
             ]
-
         ];
     }
 }
