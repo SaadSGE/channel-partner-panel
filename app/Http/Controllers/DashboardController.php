@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\ApplicationList;
 use App\Models\CourseDetails;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -16,7 +17,7 @@ class DashboardController extends Controller
 
         $dashboard = match (true) {
             stringContains($user->role, 'admin') => $this->getAdminDashboard(),
-            stringContains($user->role, 'regional admin') => $this->getRegionalAdminDashboard($user),
+            stringContains($user->role, 'regional head') => $this->getRegionalAdminDashboard($user),
             stringContains($user->role, 'application control officer') => $this->getApplicationOfficerDashboard($user),
             stringContains($user->role, 'channel partner') => $this->getChannelPartnerDashboard($user),
             stringContains($user->role, 'editor') => $this->getEditorDashboard($user),
@@ -112,33 +113,26 @@ class DashboardController extends Controller
 
     protected function getRegionalAdminDashboard(User $user): array
     {
-        $applicationOfficers = User::where('parent_id', $user->id)
-                                   ->get();
+        $applicationOfficers = User::where('parent_id', $user->id)->get();
 
         $dashboard = [
-            'total_application_officers' => $applicationOfficers->count(),
-            'total_channel_partners' => 0,
-            'applications_by_status' => $this->initializeApplicationStatusCounts(),
-            'state_wise_data' => [],
+            'applications_by_status' => [
+                'total_application_officers' => $applicationOfficers->count(),
+                'total_channel_partners' => 0,
+            ],
         ];
+
+        // Merge the initialized status counts
+        $dashboard['applications_by_status'] += $this->initializeApplicationStatusCounts();
 
         foreach ($applicationOfficers as $officer) {
             $officerDashboard = $this->getApplicationOfficerDashboard($officer);
 
-            $dashboard['total_channel_partners'] += $officerDashboard['applications_by_status']['total_channel_partners'];
+            $dashboard['applications_by_status']['total_channel_partners'] += $officerDashboard['applications_by_status']['total_channel_partners'];
 
             foreach ($officerDashboard['applications_by_status'] as $status => $count) {
-                if ($status !== 'total_channel_partners') {
+                if (!in_array($status, ['total_channel_partners', 'total_application_officers'])) {
                     $dashboard['applications_by_status'][$status] += $count;
-                }
-            }
-
-            foreach ($officerDashboard['state_wise_data'] as $state => $data) {
-                if (!isset($dashboard['state_wise_data'][$state])) {
-                    $dashboard['state_wise_data'][$state] = $data;
-                } else {
-                    $dashboard['state_wise_data'][$state]['channel_partners'] += $data['channel_partners'];
-                    $dashboard['state_wise_data'][$state]['total_applications'] += $data['total_applications'];
                 }
             }
         }
@@ -185,7 +179,6 @@ class DashboardController extends Controller
     {
         $statusCounts = [
             'total_applications' => 0,
-            'total_channel_partners' => 0,
         ];
 
         foreach (ApplicationList::$statusTexts as $statusCode => $statusText) {

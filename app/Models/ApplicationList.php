@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 
 class ApplicationList extends Model
 {
@@ -107,7 +108,6 @@ class ApplicationList extends Model
         return $this->belongsTo(User::class);
     }
 
-
     protected static function boot()
     {
         parent::boot();
@@ -131,5 +131,32 @@ class ApplicationList extends Model
     public function universityCommunications()
     {
         return $this->hasMany(UniversityCommunication::class, 'application_id');
+    }
+
+    public function scopeVisibleToUser($query, User $user): void
+    {
+        if (stringContains($user->role, 'admin')) {
+            return; // Admins can see all applications
+        }
+
+        if (stringContains($user->role, 'channel partner')) {
+            $query->where('created_by', $user->id);
+        } elseif (stringContains($user->role, 'application control officer')) {
+            $query->whereIn('created_by', function ($subquery) use ($user) {
+                $subquery->select('id')
+                         ->from('users')
+                         ->where('parent_id', $user->id)
+                         ->orWhere('id', $user->id);
+            });
+        } elseif (stringContains($user->role, 'regional head')) {
+            $query->whereIn('created_by', function ($subquery) use ($user) {
+                $subquery->select('users.id')
+                         ->from('users')
+                         ->join('users as application_officers', 'application_officers.parent_id', '=', 'users.id')
+                         ->where('users.parent_id', $user->id)
+                         ->orWhere('users.id', $user->id)
+                         ->orWhere('application_officers.id', $user->id);
+            });
+        }
     }
 }

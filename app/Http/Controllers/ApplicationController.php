@@ -35,38 +35,18 @@ class ApplicationController extends Controller
      */
     public function index(Request $request)
     {
-        $searchQuery = strtoupper(strtolower(trim($request->query('searchQuery'))));
-        $perPage = (int) $request->query('perPage') ?: 10;
-        $id = (int) $request->query('id') ?: null;
-        $sortBy = (string) $request->query('sortBy');
-        $orderBy = (string) $request->query('orderBy');
-        $status = $request->query('status');
-        $university = $request->query('university');
-        $channelPartner = $request->query('channelPartner');
-        $applicationOfficer = $request->query('applicationOfficer');
-        $studentEmail = $request->query('studentEmail');
-        $dateFrom = $request->query('dateFrom');
-        $dateTo = $request->query('dateTo');
-
         $user = auth('api')->user();
-        $userId = $user->id;
-        $userRole = $user->role;
+        $perPage = (int) $request->query('perPage', 10);
+        $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
+        $sortBy = $request->query('sortBy', 'created_at');
+        $orderBy = $request->query('orderBy', 'desc');
 
-        // Base query
-        $query = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user.parent:id,first_name,last_name,email']);
+        $query = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user.parent:id,first_name,last_name,email'])
+            ->visibleToUser($user);
 
-        // Role-based filtering
-        $query->when($userRole === 'channel partner', function ($q) use ($userId) {
-            return $q->where('created_by', $userId);
-        })->when($userRole !== 'admin' && $userRole !== 'channel partner', function ($q) use ($userId) {
-            return $q->whereHas('user', function ($q) use ($userId) {
-                $q->where('parent_id', $userId);
-            });
-        });
-
-        // Additional filters
-        $query->when($id, function ($q) use ($id) {
-            return $q->where('created_by', $id);
+        // Apply filters
+        $query->when($request->filled('id'), function ($q) use ($request) {
+            return $q->where('created_by', $request->query('id'));
         })->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
                 $q->where('application_id', 'LIKE', "%$searchQuery%")
@@ -84,35 +64,28 @@ class ApplicationController extends Controller
                         $q->where('name', 'LIKE', "%$searchQuery%");
                     });
             });
-        });
-
-        // Apply other filters
-        $query->when($status !== null, function ($q) use ($status) {
-            return $q->where('status', $status);
-        })->when($university, function ($q) use ($university) {
-            return $q->where('university_id', $university);
-        })->when($channelPartner, function ($q) use ($channelPartner) {
-            return $q->where('created_by', $channelPartner);
-        })->when($applicationOfficer, function ($q) use ($applicationOfficer) {
-            return $q->whereHas('user', function ($q) use ($applicationOfficer) {
-                $q->where('parent_id', $applicationOfficer);
+        })->when($request->filled('status'), function ($q) use ($request) {
+            return $q->where('status', $request->query('status'));
+        })->when($request->filled('university'), function ($q) use ($request) {
+            return $q->where('university_id', $request->query('university'));
+        })->when($request->filled('channelPartner'), function ($q) use ($request) {
+            return $q->where('created_by', $request->query('channelPartner'));
+        })->when($request->filled('applicationOfficer'), function ($q) use ($request) {
+            return $q->whereHas('user', function ($q) use ($request) {
+                $q->where('parent_id', $request->query('applicationOfficer'));
             });
-        })->when($studentEmail, function ($q) use ($studentEmail) {
-            return $q->whereHas('student', function ($q) use ($studentEmail) {
-                $q->where('email', 'LIKE', "%$studentEmail%");
+        })->when($request->filled('studentEmail'), function ($q) use ($request) {
+            return $q->whereHas('student', function ($q) use ($request) {
+                $q->where('email', 'LIKE', "%{$request->query('studentEmail')}%");
             });
-        })->when($dateFrom, function ($q) use ($dateFrom) {
-            return $q->whereDate('created_at', '>=', $dateFrom);
-        })->when($dateTo, function ($q) use ($dateTo) {
-            return $q->whereDate('created_at', '<=', $dateTo);
+        })->when($request->filled('dateFrom'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '>=', $request->query('dateFrom'));
+        })->when($request->filled('dateTo'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '<=', $request->query('dateTo'));
         });
 
         // Sorting
-        $query->when($sortBy, function ($q) use ($sortBy, $orderBy) {
-            return $q->orderBy($sortBy, $orderBy ?: 'asc');
-        }, function ($q) {
-            return $q->latest('created_at');
-        });
+        $query->orderBy($sortBy, $orderBy);
 
         // Pagination
         $applications = $query->paginate($perPage);
