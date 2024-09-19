@@ -118,7 +118,9 @@ class DashboardController extends Controller
         return [
             'applications_by_status' => $dashboard
         ];
-    }public function getApplicationOfficerDashboard(): array
+    }
+
+    public function getApplicationOfficerDashboard(): array
     {
         // Get channel partners associated with this officer using the scope
         $channelPartners = User::filterByRole()->where('role', 'channel partner')->get();
@@ -127,28 +129,20 @@ class DashboardController extends Controller
             'applications_by_status' => [
                 'total_channel_partners' => $channelPartners->count(),
                 'total_applications' => 0,
-                'application_processing' => 0,
-                'application_submitted' => 0,
-                'pending_docs' => 0,
-                'offer_issue_conditional' => 0,
-                'offer_issue_unconditional' => 0,
-                'need_payment' => 0,
-                'cas_issued' => 0,
-                'additional_doc_needed' => 0,
-                'refund_required' => 0,
-                'application_rejected' => 0,
-                'session_expired' => 0,
-                'doc_received' => 0,
-                'partial_payment' => 0,
             ],
             'state_wise_data' => [],
         ];
 
+        // Initialize all possible statuses
+        foreach (ApplicationList::$statusTexts as $statusCode => $statusText) {
+            $dashboard['applications_by_status'][strtolower(str_replace(' ', '_', $statusText))] = 0;
+        }
+
         foreach ($channelPartners as $partner) {
-            // Count applications by status
             $partnerApplications = $partner->applications;
             foreach ($partnerApplications as $application) {
-                $dashboard['applications_by_status'][$application->status]++;
+                $statusKey = strtolower(str_replace(' ', '_', ApplicationList::$statusTexts[$application->status]));
+                $dashboard['applications_by_status'][$statusKey]++;
                 $dashboard['applications_by_status']['total_applications']++;
             }
 
