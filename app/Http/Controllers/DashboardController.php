@@ -113,7 +113,6 @@ class DashboardController extends Controller
     protected function getRegionalAdminDashboard(User $user): array
     {
         $applicationOfficers = User::where('parent_id', $user->id)
-                                   ->where('role', 'application control officer')
                                    ->get();
 
         $dashboard = [
