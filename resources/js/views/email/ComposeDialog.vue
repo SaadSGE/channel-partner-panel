@@ -19,7 +19,7 @@ const emailStore = useEmailStore();
 
 const users = computed(() => userStore.allUsers); // Computed property for all users
 const roles = ref([]); // Store roles
-
+const isAdmin = ref(getUserRole() === 'admin');
 // Fetch all users and roles when the component is mounted
 onMounted(async () => {
   await userStore.fetcAllhUser();
@@ -99,7 +99,7 @@ const sendEmail = async () => {
     </VCardItem>
 
     <!-- Roles Checkboxes -->
-    <div class="px-1 pe-6 py-1">
+    <div class="px-1 pe-6 py-1" v-if="isAdmin">
       <VCheckbox
         v-for="role in roles"
         :key="role.id"
@@ -159,7 +159,8 @@ const sendEmail = async () => {
 .v-card.email-compose-dialog {
   z-index: 910 !important;
   overflow: auto;
-  height: 500px;
+  block-size: 500px;
+
   @include mixins.elevation(18);
 
   .v-field--prepended {
