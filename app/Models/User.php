@@ -80,6 +80,7 @@ class User extends Authenticatable
                 return $this->getChildrenApplicationsCount();
         }
     }
+    //test comment
 
     private function getChildrenApplicationsCount(): int
     {
