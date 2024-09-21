@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -18,7 +19,7 @@ class User extends Authenticatable
 
     protected $guarded = [];
 
-    protected $appends = ['full_name', 'record_count', 'dashboard','name_with_email','company_name_with_email'];
+    protected $appends = ['full_name', 'record_count','name_with_email','company_name_with_email'];
 
     protected $hidden = [
         'password',
@@ -73,13 +74,23 @@ class User extends Authenticatable
     public function getRecordCountAttribute(): int
     {
         switch ($this->role) {
-            case 'channel partner':
-                return $this->applications()->count();
             case 'editor':
                 return $this->courses()->count();
             default:
-                return 0;
+                return $this->getChildrenApplicationsCount();
         }
+    }
+
+    private function getChildrenApplicationsCount(): int
+    {
+        $childIds = $this->fetch_children;
+        return ApplicationList::whereIn('created_by', $childIds)->count();
+    }
+
+    private function getChildrenCoursesCount(): int
+    {
+        $childIds = $this->fetch_children;
+        return CourseDetails::whereIn('created_by', $childIds)->count();
     }
 
     protected function getChannelPartnerDashboard(): array
@@ -144,17 +155,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function getDashboardAttribute()
-    {
-        switch ($this->role) {
-            case 'channel partner':
-                return $this->getChannelPartnerDashboard();
-            case 'editor':
-                return $this->getEditorDashboard();
-            default:
-                return null;
-        }
-    }
+
 
     public function parent()
     {
@@ -178,4 +179,20 @@ class User extends Authenticatable
 
         return $query; // Default to returning all users if no authenticated user (optional, depending on your use case)
     }
+
+    public function getFetchChildrenAttribute(): array
+    {
+        $childIds = DB::table('user_children')
+            ->where('user_id', $this->id)
+            ->value('child_ids');
+
+        if (!$childIds) {
+            return [];
+        }
+
+        $childIdArray = explode(',', $childIds);
+        return $childIdArray;
+
+    }
+
 }

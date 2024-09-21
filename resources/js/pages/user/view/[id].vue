@@ -14,7 +14,6 @@ import { containsString } from '@/@core/utils/helpers.js';
 import UserActivityLog from "@/components/ActivityLog/UserActivityLog.vue";
 import ApplicationList from "@/pages/application/index.vue";
 import UserBioPanel from "@/pages/user/UserBioPanel.vue";
-
 import { format } from 'date-fns';
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -49,7 +48,27 @@ const tabs = [
 const applicationLists = ref();
 const store = useUserStore();
 const storeApplication = useApplicationListStore();
-const userData = ref([]);
+const userData = ref(
+  {
+    dashboard: {
+      applications_by_status: {
+        application_processing: 0,
+        application_submitted: 0,
+        pending_docs: 0,
+        offer_issue_conditional: 0,
+        offer_issue_unconditional: 0,
+        need_payment: 0,
+        cas_issued: 0,
+        additional_doc_needed: 0,
+        refund_required: 0,
+        application_rejected: 0,
+        session_expired: 0,
+        doc_received: 0,
+        partial_payment: 0,
+      },
+    },
+  }
+);
 const searchQuery = ref("");
 const isLoading = ref(false);
 
@@ -72,9 +91,8 @@ const activityLogHeaders = [
 
 onMounted(async () => {
   userData.value = await store.fetchUser(route.params.id);
+
   currentDocuments.value = userData.value.documents || [];
-  await getRecord();
-  await fetchActivityLogs();
 });
 
 const downloadFile = (fileUrl) => {
@@ -185,7 +203,6 @@ const fetchUsers = async () => {
       route.params.id
     );
     users.value = response.data;
-    console.log(users.value);
     totalUsers.value = response.total;
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -273,7 +290,7 @@ const handleActivityLogUpdate = (options) => {
           cols="12"
           md="5"
           lg="4"
-          v-for="(value, key) in userData.dashboard"
+          v-for="(value, key) in userData.dashboard.applications_by_status"
           :key="key"
         >
           <VCard>
@@ -292,9 +309,12 @@ const handleActivityLogUpdate = (options) => {
       </VRow>
     </VCol>
   </VRow>
+  <VCard class="mt-5" v-if="!containsString(userData.role,'editor')">
+  <ApplicationList :userId="route.params.id"/>
+  </VCard>
 
   <VCard class="mt-5" v-if="containsString(userData.role,'channel partner')">
-    <ApplicationList :userId="route.params.id"/>
+
     <VCardTitle>Documents</VCardTitle>
     <VCardText>
       <VCard

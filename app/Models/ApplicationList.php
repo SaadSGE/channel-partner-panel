@@ -133,30 +133,25 @@ class ApplicationList extends Model
         return $this->hasMany(UniversityCommunication::class, 'application_id');
     }
 
-    public function scopeVisibleToUser($query, User $user): void
+    public function scopeVisibleToUser($query, User $user, $id = null): void
     {
-        if (stringContains($user->role, 'admin')) {
-            return; // Admins can see all applications
-        }
+        if ($user->hasRole('admin')) {
+            if ($id) {
+                \Log::info($id);
+                $user = User::find($id);
+                $childIds = $user->fetch_children;
+                $userIds = array_merge([$user->id], $childIds);
+                $query->whereIn('created_by', $userIds);
+            }
+            // Don't modify the query for admins
+        } else {
+            if ($id) {
+                $user = User::find($id);
+            }
+            $childIds = $user->fetch_children;
+            $userIds = array_merge([$user->id], $childIds);
+            $query->whereIn('created_by', $userIds);
 
-        if (stringContains($user->role, 'channel partner')) {
-            $query->where('created_by', $user->id);
-        } elseif (stringContains($user->role, 'application control officer')) {
-            $query->whereIn('created_by', function ($subquery) use ($user) {
-                $subquery->select('id')
-                         ->from('users')
-                         ->where('parent_id', $user->id)
-                         ->orWhere('id', $user->id);
-            });
-        } elseif (stringContains($user->role, 'regional head')) {
-            $query->whereIn('created_by', function ($subquery) use ($user) {
-                $subquery->select('users.id')
-                         ->from('users')
-                         ->join('users as application_officers', 'application_officers.parent_id', '=', 'users.id')
-                         ->where('users.parent_id', $user->id)
-                         ->orWhere('users.id', $user->id)
-                         ->orWhere('application_officers.id', $user->id);
-            });
         }
     }
 }

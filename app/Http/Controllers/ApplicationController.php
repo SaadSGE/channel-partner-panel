@@ -41,13 +41,13 @@ class ApplicationController extends Controller
         $sortBy = $request->query('sortBy', 'created_at');
         $orderBy = $request->query('orderBy', 'desc');
 
+        $id = $request->query('id');
         $query = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user.parent:id,first_name,last_name,email'])
-            ->visibleToUser($user);
+            ->visibleToUser($user, $id);
 
-        // Apply filters
-        $query->when($request->filled('id'), function ($q) use ($request) {
-            return $q->where('created_by', $request->query('id'));
-        })->when($searchQuery, function ($q) use ($searchQuery) {
+
+
+        $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
                 $q->where('application_id', 'LIKE', "%$searchQuery%")
                     ->orWhereHas('student', function ($q) use ($searchQuery) {

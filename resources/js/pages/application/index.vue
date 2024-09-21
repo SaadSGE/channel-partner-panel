@@ -215,7 +215,7 @@ const resolveStatusName = (status) => {
 
 <template>
   <div>
-    <AppCardActions title="New Application" :loading="isLoading" no-actions>
+    <AppCardActions title="Application List" :loading="isLoading" no-actions>
       <!-- New Filters Section -->
       <VCardText>
         <VRow>

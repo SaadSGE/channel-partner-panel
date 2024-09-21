@@ -198,4 +198,16 @@ class DashboardController extends Controller
             ]
         ];
     }
+
+    public function getUserDashboard(User $user): array
+    {
+        return match (true) {
+            stringContains($user->role, 'admin') => $this->getAdminDashboard(),
+            stringContains($user->role, 'regional head') => $this->getRegionalAdminDashboard($user),
+            stringContains($user->role, 'application control officer') => $this->getApplicationOfficerDashboard($user),
+            stringContains($user->role, 'channel partner') => $this->getChannelPartnerDashboard($user),
+            stringContains($user->role, 'editor') => $this->getEditorDashboard($user),
+            default => [],
+        };
+    }
 }

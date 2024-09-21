@@ -78,9 +78,18 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
         try {
             $user = User::with('documents')->findOrFail($id);
+
+            // Create an instance of DashboardController
+            $dashboardController = new DashboardController();
+
+            // Get the dashboard data using the new public method
+            $dashboard = $dashboardController->getUserDashboard($user);
+
+            // Add the dashboard data to the user object
+            $user->dashboard = $dashboard;
+
             return $this->successJsonResponse('User data found', $user);
         } catch (\Throwable $th) {
             \Log::error($th);
