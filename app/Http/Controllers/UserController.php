@@ -43,18 +43,16 @@ class UserController extends Controller
             })
             ->when($parentId, function ($query, $parentId) {
                 return $query->where('parent_id', $parentId);
-            })
-            ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
-                return $query->orderBy($sortBy, $sortDesc ? 'DESC' : 'ASC');
-            }, function ($query) {
-                return $query->latest('created_at');
             });
+
 
         if ($fetchAll) {
             $users = $query->get();
             $totalRows = $users->count();
         } else {
-            $queryResult = $query->paginate($perPage)->toArray();
+            //query latest created_at
+
+            $queryResult = $query->orderBy('created_at', 'DESC')->paginate($perPage)->toArray();
             $users = $queryResult['data'];
             $totalRows = $queryResult['total'];
         }

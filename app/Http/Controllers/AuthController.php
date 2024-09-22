@@ -19,113 +19,113 @@ class AuthController extends Controller
 {
     public function register(Request $request, FileUploadService $fileUploadService)
     {
-
         try {
-            // Validate the request data
-            $validatedData = $request->validate([
-                'firstName' => 'required|string',
-                'lastName' => 'required|string',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8|same:confirmPassword',
-                'confirmPassword' => 'required|string|min:8',
-                'mobileNumber' => 'nullable|string',
-                'whatsappNumber' => 'nullable|string',
-                'companyName' => 'nullable|string',
-                'website' => 'nullable',
-                'address' => 'nullable|string',
-                'city' => 'nullable|string',
-                'postCode' => 'nullable|string',
-                'country' => 'nullable|string',
-                'role' => 'nullable|string',
-                'recruitCountries' => 'nullable|array',
-                'recruitCountries.*' => 'string',
-                'createForm' => 'nullable',
-                'agreement' => 'nullable',
-                'commission_structure' => 'nullable',
-            ]);
+            $validatedData = $this->validateRegistrationData($request);
 
-            // Determine the role based on the form type
-            $role = $request->createForm === 'admin' ? $validatedData['role'] : 'channel partner';
-            if (strtolower($role) == 'probable channel partner') {
-                $status = 0;
-            } else {
-                $status = 1;
-            }
-            // Handle file uploads
-            $agreementPath = null;
-            $commissionStructurePath = null;
+            $role = $this->determineUserRole($request, $validatedData);
+            $status = $this->determineUserStatus($request, $role);
+            $userDetail = $this->createUser($validatedData, $role, $status);
 
-            if ($request->hasFile('agreement')) {
+            $this->handleFileUploads($request, $fileUploadService, $userDetail);
 
-                $agreementPath = $fileUploadService->upload(
-                    'channelPartnerPanel/channelPartnerDocument/' . $validatedData['email'].' /agreements',
-                    $request->file('agreement')
-                );
-            }
-
-            if ($request->hasFile('commission_structure')) {
-                $commissionStructurePath = $fileUploadService->upload(
-                    'channelPartnerPanel/channelPartnerDocument/' . $validatedData['email'].' /commission_structures',
-                    $request->file('commission_structure')
-                );
-            }
-
-
-            // Create a new User instance
-            $userDetail = new User([
-                'first_name' => $validatedData['firstName'] ?? null,
-                'last_name' => $validatedData['lastName'] ?? null,
-                'email' => $validatedData['email'] ?? null,
-                'mobile_number' => $validatedData['mobileNumber'] ?? null,
-                'whatsapp_number' => $validatedData['whatsappNumber'] ?? null,
-                'company_name' => $validatedData['companyName'] ?? null,
-                'website' => $validatedData['website'] ?? null,
-                'address' => $validatedData['address'] ?? null,
-                'city' => $validatedData['city'] ?? null,
-                'post_code' => $validatedData['postCode'] ?? null,
-                'country' => $validatedData['country'] ?? null,
-                'role' => $role,
-                'status' => $status,
-                'recruit_countries' => isset($validatedData['recruitCountries']) ? json_encode($validatedData['recruitCountries']) : null,
-                'password' => bcrypt($validatedData['password']),
-            ]);
-
-            // Save the user details
-            $userDetail->save();
-
-            // Save the uploaded documents in a separate table or update the User model if you have file columns
-            if ($agreementPath) {
-
-                $userDetail->documents()->create([
-                    'document_type' => 'agreement',
-                    'document_path' => $agreementPath,
-                ]);
-            }
-
-            if ($commissionStructurePath) {
-                $userDetail->documents()->create([
-                    'document_type' => 'commission_structure',
-                    'document_path' => $commissionStructurePath,
-                ]);
-            }
-
-            // Assign role to the user
-            $assignedRole = Role::where('name', $role)->first();
-            $userDetail->assignRole($assignedRole);
-
-            if (strtolower($role) != 'probable channel partner') {
-                Notification::route('mail', $userDetail->email)->notify(new \App\Notifications\WelcomeNotification($userDetail));
-
-                // Notify the admin
-                $admin = User::where('role', 'admin')->first();
-                $admin->notify(new NewUserRegistrationNotification($userDetail));
-            }
+            $this->assignRoleAndNotify($userDetail, $role);
 
             return $this->successJsonResponse('User Registration Successful', $userDetail);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->handleValidationErrors($e);
         } catch (\Throwable $th) {
             return $this->exceptionJsonResponse($th);
+        }
+    }
+
+    private function validateRegistrationData(Request $request)
+    {
+        return $request->validate([
+            'firstName' => 'required|string',
+            'lastName' => 'required|string',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|same:confirmPassword',
+            'confirmPassword' => 'required|string|min:8',
+            'mobileNumber' => 'nullable|string',
+            'whatsappNumber' => 'nullable|string',
+            'companyName' => 'nullable|string',
+            'website' => 'nullable',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string',
+            'postCode' => 'nullable|string',
+            'country' => 'nullable|string',
+            'role' => 'nullable|string',
+            'recruitCountries' => 'nullable|array',
+            'recruitCountries.*' => 'string',
+            'createForm' => 'nullable',
+            'agreement' => 'nullable',
+            'commission_structure' => 'nullable',
+        ]);
+    }
+
+    private function determineUserRole(Request $request, array $validatedData)
+    {
+        return $request->createForm === 'admin' ? $validatedData['role'] : 'channel partner';
+    }
+
+    private function determineUserStatus(Request $request, string $role)
+    {
+
+        if ($request->createForm === 'admin' && strtolower($role) != 'probable channel partner') {
+            return 1;
+        }
+        return 0;
+    }
+
+    private function createUser(array $data, string $role, int $status)
+    {
+        $userData = [
+            'first_name' => $data['firstName'] ?? null,
+            'last_name' => $data['lastName'] ?? null,
+            'email' => $data['email'] ?? null,
+            'mobile_number' => $data['mobileNumber'] ?? null,
+            'whatsapp_number' => $data['whatsappNumber'] ?? null,
+            'company_name' => $data['companyName'] ?? null,
+            'website' => $data['website'] ?? null,
+            'address' => $data['address'] ?? null,
+            'city' => $data['city'] ?? null,
+            'post_code' => $data['postCode'] ?? null,
+            'country' => $data['country'] ?? null,
+            'role' => $role,
+            'status' => $status,
+            'recruit_countries' => isset($data['recruitCountries']) ? json_encode($data['recruitCountries']) : null,
+            'password' => bcrypt($data['password']),
+        ];
+
+        return User::create($userData);
+    }
+
+    private function handleFileUploads(Request $request, FileUploadService $fileUploadService, User $user)
+    {
+        $files = ['agreement', 'commission_structure'];
+        foreach ($files as $file) {
+            if ($request->hasFile($file)) {
+                $path = $fileUploadService->upload(
+                    "channelPartnerPanel/channelPartnerDocument/{$user->email}/{$file}s",
+                    $request->file($file)
+                );
+                $user->documents()->create([
+                    'document_type' => $file,
+                    'document_path' => $path,
+                ]);
+            }
+        }
+    }
+
+    private function assignRoleAndNotify(User $user, string $role)
+    {
+        $assignedRole = Role::where('name', $role)->first();
+        $user->assignRole($assignedRole);
+
+        if (strtolower($role) != 'probable channel partner') {
+            Notification::route('mail', $user->email)->notify(new \App\Notifications\WelcomeNotification($user));
+            $admin = User::where('role', 'admin')->first();
+            $admin->notify(new NewUserRegistrationNotification($user));
         }
     }
 
