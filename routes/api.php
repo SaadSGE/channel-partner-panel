@@ -67,7 +67,10 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/user/login-activity', [AuthController::class, 'getLoginActivity']);
     Route::get('/users/{user}/activity-logs', [UserController::class, 'getActivityLogs']);
     Route::get('/applications/{id}/activity-logs', [ApplicationController::class, 'getActivityLogs']);
+    Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
 });
+
+
 
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');

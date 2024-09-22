@@ -54,6 +54,16 @@ const onSubmit = () => {
 
         const { accessToken, userData, abilities } = res;
 
+        if (userData.status === 0) {
+          Swal.fire({
+            icon: "error",
+            title: "Account Inactive",
+            text: "Your account is currently inactive. Please contact the administrator for assistance.",
+            confirmButtonText: "OK",
+          });
+          return;
+        }
+
         useCookie("userAbilityRules").value = abilities;
         ability.update(abilities);
         userData.main_role = userData.role;
@@ -68,7 +78,6 @@ const onSubmit = () => {
           else{
             router.replace(route.query.to ? String(route.query.to) : "/");
           }
-
         });
       } catch (err) {
         Swal.fire({
@@ -77,7 +86,6 @@ const onSubmit = () => {
           text: "Credential not match",
           confirmButtonText: "OK",
         });
-        // Handle and display error messages
         console.error("Login error:", err);
       }
     }

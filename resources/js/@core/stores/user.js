@@ -218,6 +218,21 @@ export const useUserStore = defineStore( {
           : ['An unexpected error occurred'];
         throw error;
       }
+    },
+    async updateUserStatus(userId, status) {
+      try {
+        const response = await $api(`/users/${userId}/status`, {
+          method: 'PUT',
+          body: JSON.stringify({ status }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        return response;
+      } catch (error) {
+        console.error("Error updating user status:", error);
+        throw error;
+      }
     }
   },
 });

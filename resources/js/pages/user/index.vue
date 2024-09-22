@@ -147,8 +147,31 @@ const headers = [
     : []),
 
   { title: "Record Count", key: "record_count" },
+
+  ...(isAdmin.value
+    ? [ { title: "Status", key: "status", sortable: false }]
+    : []),
   { title: "Actions", key: "actions", sortable: false },
 ];
+
+const updateUserStatus = async (user) => {
+  user.statusLoading = true;
+  try {
+    const response = await userStore.updateUserStatus(user.id, user.status);
+    if (response.status) {
+      Swal.fire("Success!", "User status updated successfully!", "success");
+    } else {
+      Swal.fire("Error!", "Failed to update user status.", "error");
+      user.status = user.status === 1 ? 0 : 1; // Revert the switch if the update failed
+    }
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    Swal.fire("Error!", "Failed to update user status.", "error");
+    user.status = user.status === 1 ? 0 : 1; // Revert the switch if the update failed
+  } finally {
+    user.statusLoading = false;
+  }
+};
 
 onMounted(async () => {
   await roleStore.getAllRoles();
@@ -319,6 +342,15 @@ watch([searchQuery, selectedRole, selectedParent], () => {
             </VMenu>
           </VBtn>
         </template>
+        <template #item.status="{ item }">
+            <VSwitch
+            v-model="item.status"
+            :true-value="1"
+              :false-value="0"
+              @change="updateUserStatus(item)"
+              :loading="item.statusLoading"
+            />
+          </template>
 
         <!-- pagination -->
         <template #bottom>

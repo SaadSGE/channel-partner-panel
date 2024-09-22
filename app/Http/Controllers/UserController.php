@@ -387,4 +387,37 @@ class UserController extends Controller
 
         return $this->successJsonResponse('Activity logs retrieved successfully', $activityLogs);
     }
+
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $oldStatus = $user->status;
+            $user->status = $request->input('status');
+            $user->save();
+
+            activity()
+                ->performedOn($user)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'old_status' => $oldStatus,
+                    'new_status' => $user->status,
+                ])
+                ->log('user_status_update');
+
+            if ($user->status == 0) {
+
+                $user->tokens()->delete(); // Revoke all tokens for the user
+            }
+
+            return $this->successJsonResponse('User status updated successfully', $user);
+        } catch (\Throwable $th) {
+            \Log::error($th);
+            return $this->exceptionJsonResponse('Failed to update user status', $th);
+        }
+    }
+
+
 }
