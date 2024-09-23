@@ -128,110 +128,138 @@ class ApplicationController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // public function store(Request $request)
+    // {
+    //     try {
+    //         // Use $request->validate() for automatic validation handling
+    //         $validatedData = $request->validate([
+
+    //             'country_id' => 'required',
+    //             'intake_id' => 'required',
+    //             'university_id' => 'required',
+    //             'course_details_id' => 'required',
+    //             'student_passport_no' => 'required|string|unique:students,passport_no',
+    //             'date_of_birth' => 'required|date',
+    //             'student_first_name' => 'required|string',
+    //             'student_last_name' => 'required|string',
+    //             'student_whatsapp_number' => 'nullable|string',
+    //             'counsellor_number' => 'nullable|string',
+    //             'student_email' => 'nullable|string',
+    //             'counsellor_email' => 'nullable|string|email',
+    //             'student_address' => 'nullable|string',
+    //             'student_city' => 'nullable|string',
+    //             'student_country' => 'nullable|string',
+    //             'student_region_state' => 'nullable|string',
+    //             'gender' => 'required|in:male,female',
+    //             'visa_refusal' => 'required|in:yes,no',
+    //             'document_paths' => 'nullable|array',
+    //         ]);
+
+    //         DB::beginTransaction();
+
+    //         $userId = auth('api')->user()->id;
+    //         $student = Student::create([
+    //             'student_id' => Str::random(10),
+    //             'first_name' => $validatedData['student_first_name'],
+    //             'last_name' => $validatedData['student_last_name'],
+    //             'passport_no' => $validatedData['student_passport_no'],
+    //             'date_of_birth' => $validatedData['date_of_birth'],
+    //             'whatsapp_number' => $validatedData['student_whatsapp_number'],
+    //             'email' => $validatedData['student_email'],
+    //             'address' => $validatedData['student_address'],
+    //             'city' => $validatedData['student_city'],
+    //             'country' => $validatedData['student_country'],
+    //             'region' => $validatedData['student_region_state'],
+    //             'state' => $validatedData['student_region_state'],
+    //             'gender' => $validatedData['gender'],
+    //             'visa_refusal' => $validatedData['visa_refusal'],
+    //         ]);
+
+    //         $randomNumber = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
+    //         $paddedStudentId = str_pad($student->id, 5, '0', STR_PAD_LEFT);
+    //         $applicationId = $randomNumber . $paddedStudentId;
+    //         // Find the course_id from course_details_id
+    //         $courseDetails = CourseDetails::findOrFail($validatedData['course_details_id']);
+    //         $courseId = $courseDetails->course_id;
+    //         \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
+    //         $application = ApplicationList::create([
+    //             'application_id' => $applicationId,
+    //             'course_id' => $courseId,
+    //             'country_id' => $validatedData['country_id'],
+    //             'intake_id' => $validatedData['intake_id'],
+    //             'university_id' => $validatedData['university_id'],
+    //             'course_details_id' => $validatedData['course_details_id'],
+    //             'user_id' => $userId,
+    //             'student_id' => $student->id,
+    //             'counsellor_number' => $validatedData['counsellor_number'],
+    //             'counsellor_email' => $validatedData['counsellor_email'],
+    //             'status' => 0,
+    //         ]);
+
+    //         if (!empty($validatedData['document_paths'])) {
+    //             foreach ($validatedData['document_paths'] as $path) {
+    //                 $filename = basename($path['path']);
+    //                 $newPath = 'channelPartnerPanel/studentDocument/' . $student->email. '/' . $student->email . '_' . $filename;
+    //                 Storage::disk('do_spaces')->move($path['path'], $newPath);
+    //                 StudentDocument::create([
+    //                     'student_id' => $student->id,
+    //                     'application_id' => $application->id,
+    //                     'path' => $newPath,
+    //                 ]);
+    //             }
+    //         }
+    //         GenerateStudentDocumentsZip::dispatch($student);
+    //         $usersToNotify = User::where('role', 'admin')
+    //             ->orWhere('id', auth('api')->user()->parent_id)
+    //             ->get();
+
+    //         Notification::send($usersToNotify, new NewApplicationNotification($application));
+
+    //         DB::commit();
+
+    //         $university = University::findOrFail($application->university_id);
+    //         $intake = Intake::findOrFail($application->intake_id);
+
+    //         activity()
+    //             ->performedOn($application)
+    //             ->causedBy(auth()->user())
+    //             ->withProperties([
+    //                 'ip' => $request->ip(),
+    //                 'user_agent' => $request->userAgent(),
+    //                 'application_id' => $application->application_id,
+    //                 'student_email' => $student->email,
+    //                 'university_name' => $university->name,
+    //                 'intake_name' => $intake->name,
+    //             ])
+    //             ->log('application_submit');
+
+    //         return $this->successJsonResponse('Application created successfully', $application, '', 201);
+    //     } catch (\Illuminate\Validation\ValidationException $e) {
+    //         return $this->handleValidationErrors($e);
+    //     } catch (\Throwable $th) {
+    //         DB::rollBack();
+    //         \Log::error($th);
+    //         return $this->exceptionJsonResponse('Failed to create application', $th);
+    //     }
+    // }
+
     public function store(Request $request)
     {
         try {
-            // Use $request->validate() for automatic validation handling
-            $validatedData = $request->validate([
-
-                'country_id' => 'required',
-                'intake_id' => 'required',
-                'university_id' => 'required',
-                'course_details_id' => 'required',
-                'student_passport_no' => 'required|string|unique:students,passport_no',
-                'date_of_birth' => 'required|date',
-                'student_first_name' => 'required|string',
-                'student_last_name' => 'required|string',
-                'student_whatsapp_number' => 'nullable|string',
-                'counsellor_number' => 'nullable|string',
-                'student_email' => 'nullable|string',
-                'counsellor_email' => 'nullable|string|email',
-                'student_address' => 'nullable|string',
-                'student_city' => 'nullable|string',
-                'student_country' => 'nullable|string',
-                'student_region_state' => 'nullable|string',
-                'gender' => 'required|in:male,female',
-                'visa_refusal' => 'required|in:yes,no',
-                'document_paths' => 'nullable|array',
-            ]);
+            $validatedData = $this->validateApplicationData($request);
 
             DB::beginTransaction();
 
-            $userId = auth('api')->user()->id;
-            $student = Student::create([
-                'student_id' => Str::random(10),
-                'first_name' => $validatedData['student_first_name'],
-                'last_name' => $validatedData['student_last_name'],
-                'passport_no' => $validatedData['student_passport_no'],
-                'date_of_birth' => $validatedData['date_of_birth'],
-                'whatsapp_number' => $validatedData['student_whatsapp_number'],
-                'email' => $validatedData['student_email'],
-                'address' => $validatedData['student_address'],
-                'city' => $validatedData['student_city'],
-                'country' => $validatedData['student_country'],
-                'region' => $validatedData['student_region_state'],
-                'state' => $validatedData['student_region_state'],
-                'gender' => $validatedData['gender'],
-                'visa_refusal' => $validatedData['visa_refusal'],
-            ]);
+            $student = $this->createStudent($validatedData);
+            $application = $this->createApplication($student, $validatedData);
 
-            $randomNumber = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
-            $paddedStudentId = str_pad($student->id, 5, '0', STR_PAD_LEFT);
-            $applicationId = $randomNumber . $paddedStudentId;
-            // Find the course_id from course_details_id
-            $courseDetails = CourseDetails::findOrFail($validatedData['course_details_id']);
-            $courseId = $courseDetails->course_id;
-            \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
-            $application = ApplicationList::create([
-                'application_id' => $applicationId,
-                'course_id' => $courseId,
-                'country_id' => $validatedData['country_id'],
-                'intake_id' => $validatedData['intake_id'],
-                'university_id' => $validatedData['university_id'],
-                'course_details_id' => $validatedData['course_details_id'],
-                'user_id' => $userId,
-                'student_id' => $student->id,
-                'counsellor_number' => $validatedData['counsellor_number'],
-                'counsellor_email' => $validatedData['counsellor_email'],
-                'status' => 0,
-            ]);
+            $this->handleDocumentUploads($validatedData, $student, $application);
 
-            if (!empty($validatedData['document_paths'])) {
-                foreach ($validatedData['document_paths'] as $path) {
-                    $filename = basename($path['path']);
-                    $newPath = 'channelPartnerPanel/studentDocument/' . $student->email. '/' . $student->email . '_' . $filename;
-                    Storage::disk('do_spaces')->move($path['path'], $newPath);
-                    StudentDocument::create([
-                        'student_id' => $student->id,
-                        'application_id' => $application->id,
-                        'path' => $newPath,
-                    ]);
-                }
-            }
-            GenerateStudentDocumentsZip::dispatch($student);
-            $usersToNotify = User::where('role', 'admin')
-                ->orWhere('id', auth('api')->user()->parent_id)
-                ->get();
+            $this->notifyRelevantUsers($application);
 
-            Notification::send($usersToNotify, new NewApplicationNotification($application));
+            $this->logApplicationActivity($request, $application, $student);
 
             DB::commit();
-
-            $university = University::findOrFail($application->university_id);
-            $intake = Intake::findOrFail($application->intake_id);
-
-            activity()
-                ->performedOn($application)
-                ->causedBy(auth()->user())
-                ->withProperties([
-                    'ip' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                    'application_id' => $application->application_id,
-                    'student_email' => $student->email,
-                    'university_name' => $university->name,
-                    'intake_name' => $intake->name,
-                ])
-                ->log('application_submit');
 
             return $this->successJsonResponse('Application created successfully', $application, '', 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -242,8 +270,6 @@ class ApplicationController extends Controller
             return $this->exceptionJsonResponse('Failed to create application', $th);
         }
     }
-
-
 
     /**
      * Display the specified resource.
@@ -589,6 +615,128 @@ class ApplicationController extends Controller
         });
 
         return $this->successJsonResponse('Activity logs retrieved successfully', $activityLogs);
+    }
+
+
+    private function validateApplicationData(Request $request)
+    {
+        return $request->validate([
+            'country_id' => 'required',
+            'intake_id' => 'required',
+            'university_id' => 'required',
+            'course_details_id' => 'required',
+            'student_passport_no' => 'required|string|unique:students,passport_no',
+            'date_of_birth' => 'required|date',
+            'student_first_name' => 'required|string',
+            'student_last_name' => 'required|string',
+            'student_whatsapp_number' => 'nullable|string',
+            'counsellor_number' => 'nullable|string',
+            'student_email' => 'nullable|string',
+            'counsellor_email' => 'nullable|string|email',
+            'student_address' => 'nullable|string',
+            'student_city' => 'nullable|string',
+            'student_country' => 'nullable|string',
+            'student_region_state' => 'nullable|string',
+            'gender' => 'required|in:male,female',
+            'visa_refusal' => 'required|in:yes,no',
+            'document_paths' => 'nullable|array',
+        ]);
+    }
+
+    private function createStudent(array $data)
+    {
+        return Student::create([
+            'student_id' => Str::random(10),
+            'first_name' => $data['student_first_name'],
+            'last_name' => $data['student_last_name'],
+            'passport_no' => $data['student_passport_no'],
+            'date_of_birth' => $data['date_of_birth'],
+            'whatsapp_number' => $data['student_whatsapp_number'],
+            'email' => $data['student_email'],
+            'address' => $data['student_address'],
+            'city' => $data['student_city'],
+            'country' => $data['student_country'],
+            'region' => $data['student_region_state'],
+            'state' => $data['student_region_state'],
+            'gender' => $data['gender'],
+            'visa_refusal' => $data['visa_refusal'],
+        ]);
+    }
+
+    private function createApplication(Student $student, array $data)
+    {
+        $applicationId = $this->generateApplicationId($student);
+        $courseDetails = CourseDetails::findOrFail($data['course_details_id']);
+
+        \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        return ApplicationList::create([
+            'application_id' => $applicationId,
+            'course_id' => $courseDetails->course_id,
+            'country_id' => $data['country_id'],
+            'intake_id' => $data['intake_id'],
+            'university_id' => $data['university_id'],
+            'course_details_id' => $data['course_details_id'],
+            'user_id' => auth('api')->id(),
+            'student_id' => $student->id,
+            'counsellor_number' => $data['counsellor_number'],
+            'counsellor_email' => $data['counsellor_email'],
+            'status' => 0,
+        ]);
+    }
+
+    private function generateApplicationId(Student $student)
+    {
+        $randomNumber = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
+        $paddedStudentId = str_pad($student->id, 5, '0', STR_PAD_LEFT);
+        return $randomNumber . $paddedStudentId;
+    }
+
+    private function handleDocumentUploads(array $data, Student $student, ApplicationList $application)
+    {
+        if (!empty($data['document_paths'])) {
+            foreach ($data['document_paths'] as $path) {
+                $filename = basename($path['path']);
+                $newPath = "channelPartnerPanel/studentDocument/{$student->email}/{$student->email}_{$filename}";
+                Storage::disk('do_spaces')->move($path['path'], $newPath);
+                StudentDocument::create([
+                    'student_id' => $student->id,
+                    'application_id' => $application->id,
+                    'path' => $newPath,
+                ]);
+            }
+        }
+        GenerateStudentDocumentsZip::dispatch($student);
+    }
+
+    private function notifyRelevantUsers(ApplicationList $application)
+    {
+        $usersToNotify = User::where('role', 'admin')
+            ->orWhere('id', auth('api')->user()->parent_id)
+            ->get();
+
+
+
+        Notification::send($usersToNotify, new NewApplicationNotification($application));
+    }
+
+    private function logApplicationActivity(Request $request, ApplicationList $application, Student $student)
+    {
+        $university = University::findOrFail($application->university_id);
+        $intake = Intake::findOrFail($application->intake_id);
+
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $application->application_id,
+                'student_email' => $student->email,
+                'university_name' => $university->name,
+                'intake_name' => $intake->name,
+            ])
+            ->log('application_submit');
     }
 
 
