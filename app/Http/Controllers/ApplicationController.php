@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\Models\Activity;
 use App\Models\University;
 use App\Models\Intake;
+use App\Notifications\EmailNotification;
+use App\Services\EmailService;
 
 class ApplicationController extends Controller
 {
@@ -96,154 +98,8 @@ class ApplicationController extends Controller
         return $this->successJsonResponse("Application Information found!", $applications->items(), $applications->total());
     }
 
-    private function logIndexActivity(Request $request, int $totalResults)
-    {
-        $activityType = 'application_index_view';
-        $properties = [
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'total_results' => $totalResults,
-        ];
 
-        // Check if any filter or search is applied
-        $filterParams = ['status', 'university', 'channelPartner', 'applicationOfficer', 'studentEmail', 'dateFrom', 'dateTo'];
-        $appliedFilters = array_filter($request->only($filterParams));
-
-        if (!empty($appliedFilters)) {
-            $activityType = 'application_filter';
-            $properties['filters'] = $appliedFilters;
-        }
-
-        if ($request->filled('searchQuery')) {
-            $activityType = 'application_search';
-            $properties['search_query'] = $request->query('searchQuery');
-        }
-
-        activity()
-            ->causedBy(Auth::user())
-            ->withProperties($properties)
-            ->log($activityType);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    // public function store(Request $request)
-    // {
-    //     try {
-    //         // Use $request->validate() for automatic validation handling
-    //         $validatedData = $request->validate([
-
-    //             'country_id' => 'required',
-    //             'intake_id' => 'required',
-    //             'university_id' => 'required',
-    //             'course_details_id' => 'required',
-    //             'student_passport_no' => 'required|string|unique:students,passport_no',
-    //             'date_of_birth' => 'required|date',
-    //             'student_first_name' => 'required|string',
-    //             'student_last_name' => 'required|string',
-    //             'student_whatsapp_number' => 'nullable|string',
-    //             'counsellor_number' => 'nullable|string',
-    //             'student_email' => 'nullable|string',
-    //             'counsellor_email' => 'nullable|string|email',
-    //             'student_address' => 'nullable|string',
-    //             'student_city' => 'nullable|string',
-    //             'student_country' => 'nullable|string',
-    //             'student_region_state' => 'nullable|string',
-    //             'gender' => 'required|in:male,female',
-    //             'visa_refusal' => 'required|in:yes,no',
-    //             'document_paths' => 'nullable|array',
-    //         ]);
-
-    //         DB::beginTransaction();
-
-    //         $userId = auth('api')->user()->id;
-    //         $student = Student::create([
-    //             'student_id' => Str::random(10),
-    //             'first_name' => $validatedData['student_first_name'],
-    //             'last_name' => $validatedData['student_last_name'],
-    //             'passport_no' => $validatedData['student_passport_no'],
-    //             'date_of_birth' => $validatedData['date_of_birth'],
-    //             'whatsapp_number' => $validatedData['student_whatsapp_number'],
-    //             'email' => $validatedData['student_email'],
-    //             'address' => $validatedData['student_address'],
-    //             'city' => $validatedData['student_city'],
-    //             'country' => $validatedData['student_country'],
-    //             'region' => $validatedData['student_region_state'],
-    //             'state' => $validatedData['student_region_state'],
-    //             'gender' => $validatedData['gender'],
-    //             'visa_refusal' => $validatedData['visa_refusal'],
-    //         ]);
-
-    //         $randomNumber = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
-    //         $paddedStudentId = str_pad($student->id, 5, '0', STR_PAD_LEFT);
-    //         $applicationId = $randomNumber . $paddedStudentId;
-    //         // Find the course_id from course_details_id
-    //         $courseDetails = CourseDetails::findOrFail($validatedData['course_details_id']);
-    //         $courseId = $courseDetails->course_id;
-    //         \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
-    //         $application = ApplicationList::create([
-    //             'application_id' => $applicationId,
-    //             'course_id' => $courseId,
-    //             'country_id' => $validatedData['country_id'],
-    //             'intake_id' => $validatedData['intake_id'],
-    //             'university_id' => $validatedData['university_id'],
-    //             'course_details_id' => $validatedData['course_details_id'],
-    //             'user_id' => $userId,
-    //             'student_id' => $student->id,
-    //             'counsellor_number' => $validatedData['counsellor_number'],
-    //             'counsellor_email' => $validatedData['counsellor_email'],
-    //             'status' => 0,
-    //         ]);
-
-    //         if (!empty($validatedData['document_paths'])) {
-    //             foreach ($validatedData['document_paths'] as $path) {
-    //                 $filename = basename($path['path']);
-    //                 $newPath = 'channelPartnerPanel/studentDocument/' . $student->email. '/' . $student->email . '_' . $filename;
-    //                 Storage::disk('do_spaces')->move($path['path'], $newPath);
-    //                 StudentDocument::create([
-    //                     'student_id' => $student->id,
-    //                     'application_id' => $application->id,
-    //                     'path' => $newPath,
-    //                 ]);
-    //             }
-    //         }
-    //         GenerateStudentDocumentsZip::dispatch($student);
-    //         $usersToNotify = User::where('role', 'admin')
-    //             ->orWhere('id', auth('api')->user()->parent_id)
-    //             ->get();
-
-    //         Notification::send($usersToNotify, new NewApplicationNotification($application));
-
-    //         DB::commit();
-
-    //         $university = University::findOrFail($application->university_id);
-    //         $intake = Intake::findOrFail($application->intake_id);
-
-    //         activity()
-    //             ->performedOn($application)
-    //             ->causedBy(auth()->user())
-    //             ->withProperties([
-    //                 'ip' => $request->ip(),
-    //                 'user_agent' => $request->userAgent(),
-    //                 'application_id' => $application->application_id,
-    //                 'student_email' => $student->email,
-    //                 'university_name' => $university->name,
-    //                 'intake_name' => $intake->name,
-    //             ])
-    //             ->log('application_submit');
-
-    //         return $this->successJsonResponse('Application created successfully', $application, '', 201);
-    //     } catch (\Illuminate\Validation\ValidationException $e) {
-    //         return $this->handleValidationErrors($e);
-    //     } catch (\Throwable $th) {
-    //         DB::rollBack();
-    //         \Log::error($th);
-    //         return $this->exceptionJsonResponse('Failed to create application', $th);
-    //     }
-    // }
-
-    public function store(Request $request)
+    public function store(Request $request, EmailService $emailService)
     {
         try {
             $validatedData = $this->validateApplicationData($request);
@@ -255,7 +111,7 @@ class ApplicationController extends Controller
 
             $this->handleDocumentUploads($validatedData, $student, $application);
 
-            $this->notifyRelevantUsers($application);
+            $this->notifyRelevantUsers($application, $emailService);
 
             $this->logApplicationActivity($request, $application, $student);
 
@@ -293,9 +149,7 @@ class ApplicationController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    /**
- * Remove the specified resource from storage.
- */
+
     public function destroy(string $id)
     {
         try {
@@ -418,7 +272,7 @@ class ApplicationController extends Controller
         return $this->successJsonResponse('Status foound', $statuses);
     }
 
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, $id, EmailService $emailService)
     {
         $validatedData = $request->validate([
             'status' => 'required',
@@ -457,8 +311,8 @@ class ApplicationController extends Controller
                     'user_agent' => $request->userAgent(),
                     'application_id' => $application->application_id,
                     'student_email' => $application->student->email,
-                    'university_name' => 'University of Hertfordshire',
-                    'intake_name' => 'January 2025',
+                    'university_name' => $application->university->name,
+                    'intake_name' => $application->intake->name,
                     'old_status' => $oldStatus,
                     'new_status' => $application->status_text, // Using the accessor for new status text
                     'comment' => $validatedData['comment'],
@@ -469,10 +323,24 @@ class ApplicationController extends Controller
 
             DB::commit();
 
+            // Fetch the application creator and admin users
             $userToNotify = $application->user;
             $adminUsers = User::where('role', 'admin')->get();
 
-            Notification::send($adminUsers->push($userToNotify), new StatusChangedNotification($application));
+            // Prepare the notification details
+            $additionalDetails = [
+                'old_status' => $oldStatus,
+                'comment' => $validatedData['comment'],
+                'document_uploaded' => $path ? true : false,
+                'status_history_id' => $statusHistory->id,
+            ];
+
+            $recipients = $adminUsers->push($userToNotify);
+            $senderId = auth('api')->user()->id;
+            $senderName = auth('api')->user()->full_name;
+            $senderEmail = auth('api')->user()->email;
+
+            $emailService->sendApplicationNotification('status_update', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
 
             return $this->successJsonResponse('Status updated successfully', $application, '', 200);
         } catch (\Throwable $th) {
@@ -499,7 +367,7 @@ class ApplicationController extends Controller
         }
     }
 
-    public function addComment(Request $request, $id)
+    public function addComment(Request $request, $id, EmailService $emailService)
     {
         $request->validate([
             'comment' => 'required|string',
@@ -528,6 +396,22 @@ class ApplicationController extends Controller
             ])
             ->log('comment_added');
 
+        // Fetch the application creator and admin users
+        $creator = $application->user;
+        $adminUsers = User::where('role', 'admin')->get();
+
+        // Prepare the notification details
+        $additionalDetails = [
+            'comment' => $comment->comment,
+        ];
+
+        $recipients = $adminUsers->push($creator);
+        $senderId = auth('api')->user()->id;
+        $senderName = auth('api')->user()->full_name;
+        $senderEmail = auth('api')->user()->email;
+
+        $emailService->sendApplicationNotification('comment_added', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
+
         return response()->json(['message' => 'Comment added successfully', 'comment' => $comment], 201);
     }
 
@@ -537,7 +421,7 @@ class ApplicationController extends Controller
         return response()->json($communications);
     }
 
-    public function addUniversityCommunication(Request $request, $id)
+    public function addUniversityCommunication(Request $request, $id, EmailService $emailService)
     {
         $request->validate([
             'subject' => 'required|string',
@@ -567,6 +451,23 @@ class ApplicationController extends Controller
                 'communication_id' => $communication->id,
             ])
             ->log('university_communication_added');
+
+        // Fetch the application creator and admin users
+        $creator = $application->user;
+        $adminUsers = User::where('role', 'admin')->get();
+
+        // Prepare the notification details
+        $additionalDetails = [
+            'subject' => $communication->subject,
+            'message' => $communication->message,
+        ];
+
+        $recipients = $adminUsers->push($creator);
+        $senderId = auth('api')->user()->id;
+        $senderName = auth('api')->user()->full_name;
+        $senderEmail = auth('api')->user()->email;
+
+        $emailService->sendApplicationNotification('university_communication_added', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
 
         return response()->json(['message' => 'Communication added successfully', 'communication' => $communication], 201);
     }
@@ -709,17 +610,36 @@ class ApplicationController extends Controller
         GenerateStudentDocumentsZip::dispatch($student);
     }
 
-    private function notifyRelevantUsers(ApplicationList $application)
+
+
+    private function notifyRelevantUsers(ApplicationList $application, EmailService $emailService)
     {
+        $currentUser = auth('api')->user();
+        $parentIds = $currentUser->fetchParent();
+
         $usersToNotify = User::where('role', 'admin')
-            ->orWhere('id', auth('api')->user()->parent_id)
+            ->orWhereIn('id', $parentIds)
             ->get();
 
+        // Prepare the notification details
+        $additionalDetails = [
+            'application_id' => $application->application_id,
+            'student_name' => $application->student->full_name,
+            'student_email' => $application->student->email,
+            'university_name' => $application->university->name,
+            'intake_name' => $application->intake->name,
+            'course_name' => $application->courseDetails->course->name,
+            'channel_partner_name' => $currentUser->full_name,
+            'channel_partner_email' => $currentUser->email,
+        ];
 
+        $recipients = $usersToNotify;
+        $senderId = $currentUser->id;
+        $senderName = $currentUser->full_name;
+        $senderEmail = $currentUser->email;
 
-        Notification::send($usersToNotify, new NewApplicationNotification($application));
+        $emailService->sendApplicationNotification('new_application', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
     }
-
     private function logApplicationActivity(Request $request, ApplicationList $application, Student $student)
     {
         $university = University::findOrFail($application->university_id);
@@ -738,6 +658,36 @@ class ApplicationController extends Controller
             ])
             ->log('application_submit');
     }
+
+    private function logIndexActivity(Request $request, int $totalResults)
+    {
+        $activityType = 'application_index_view';
+        $properties = [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'total_results' => $totalResults,
+        ];
+
+        // Check if any filter or search is applied
+        $filterParams = ['status', 'university', 'channelPartner', 'applicationOfficer', 'studentEmail', 'dateFrom', 'dateTo'];
+        $appliedFilters = array_filter($request->only($filterParams));
+
+        if (!empty($appliedFilters)) {
+            $activityType = 'application_filter';
+            $properties['filters'] = $appliedFilters;
+        }
+
+        if ($request->filled('searchQuery')) {
+            $activityType = 'application_search';
+            $properties['search_query'] = $request->query('searchQuery');
+        }
+
+        activity()
+            ->causedBy(Auth::user())
+            ->withProperties($properties)
+            ->log($activityType);
+    }
+
 
 
 

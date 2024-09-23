@@ -196,4 +196,13 @@ class User extends Authenticatable
 
     }
 
+    public function fetchParent()
+    {
+        $parentIds = DB::table('user_parents')
+            ->where('user_id', $this->id)
+            ->value('parent_ids');
+
+        return $parentIds ? explode(',', $parentIds) : [];
+    }
+
 }
