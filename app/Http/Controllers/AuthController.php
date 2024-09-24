@@ -74,7 +74,7 @@ class AuthController extends Controller
         if ($request->createForm === 'admin' && strtolower($role) != 'probable channel partner') {
             return 1;
         }
-        return 0;
+        return 1;
     }
 
     private function createUser(array $data, string $role, int $status)
