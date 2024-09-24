@@ -15,6 +15,9 @@ definePage({
 });
 
 // Store and Reactive State
+const tableHeight = computed(() => {
+  return `calc(100vh - 200px)`; // Adjust this value as needed
+});
 const userStore = useUserStore();
 const roleStore = useRolePermissionStore();
 const isAddNewUserDrawerVisible = ref(false);
@@ -301,6 +304,7 @@ watch([searchQuery, selectedRole, selectedParent], () => {
         :headers="headers"
         class="text-no-wrap"
         show-select
+        :height="tableHeight"
         @update:options="updateOptions"
       >
         <template #item.actions="{ item }">

@@ -12,7 +12,7 @@ import { useUserStore } from '@/@core/stores/user';
 
 
 import Swal from 'sweetalert2';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Store and Router
@@ -211,10 +211,15 @@ const resolveStatusName = (status) => {
   };
   return statusNames[status] || 'Unknown Status';
 };
+
+// Add this computed property
+const tableHeight = computed(() => {
+  return `calc(100vh - 200px)`; // Adjust this value as needed
+});
 </script>
 
 <template>
-  <div>
+  <div class="application-list-container">
     <AppCardActions title="Application List" :loading="isLoading" no-actions>
       <!-- New Filters Section -->
       <VCardText>
@@ -315,7 +320,8 @@ const resolveStatusName = (status) => {
         :items="applicationLists"
         :items-length="totalApplications"
         :headers="headers"
-        class="text-no-wrap color-black"
+        class="text-no-wrap color-black application-table"
+        :height="tableHeight"
         @update:options="updateOptions"
       >
         <template #item.student.name="{ item }">
@@ -390,8 +396,15 @@ td {
   word-wrap: break-word;
 }
 
-.v-table__wrapper {
-  max-block-size: 35rem !important;
+.application-list-container {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+}
+
+.application-table {
+  overflow: auto;
+  flex: 1;
 }
 </style>
 

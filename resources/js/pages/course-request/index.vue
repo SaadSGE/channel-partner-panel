@@ -11,6 +11,9 @@ definePage({
   },
 });
 
+const tableHeight = computed(() => {
+  return `calc(100vh - 200px)`; // Adjust this value as needed
+});
 const recordStore = useRecordStore();
 const router = useRouter();
 const commonFunctionStore = commonFunction();
@@ -216,6 +219,7 @@ const headersRecord = [
       :items="records"
       item-value="total"
       class="text-no-wrap text-sm rounded-0"
+      :height="tableHeight"
       @update:options="updateOptions"
     >
       <template #item.academic_requirement="{ item }">

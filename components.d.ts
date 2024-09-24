@@ -17,6 +17,7 @@ declare module 'vue' {
     AppCardActions: typeof import('./resources/js/@core/components/cards/AppCardActions.vue')['default']
     AppCardCode: typeof import('./resources/js/@core/components/cards/AppCardCode.vue')['default']
     AppCombobox: typeof import('./resources/js/@core/components/app-form-elements/AppCombobox.vue')['default']
+    AppDataTable: typeof import('./resources/js/components/AppDataTable.vue')['default']
     AppDateTimePicker: typeof import('./resources/js/@core/components/app-form-elements/AppDateTimePicker.vue')['default']
     AppDrawerHeaderSection: typeof import('./resources/js/@core/components/AppDrawerHeaderSection.vue')['default']
     ApplicationActivityLog: typeof import('./resources/js/components/ActivityLog/ApplicationActivityLog.vue')['default']
