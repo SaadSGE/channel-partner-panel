@@ -369,6 +369,7 @@ declare module 'vue' {
     EnableOneTimePasswordDialog: typeof import('./resources/js/components/dialogs/EnableOneTimePasswordDialog.vue')['default']
     ErrorHeader: typeof import('./resources/js/components/ErrorHeader.vue')['default']
     FilePound: typeof import('./resources/js/@core/components/FilePound.vue')['default']
+    Filters: typeof import('./resources/js/@core/components/Filters.vue')['default']
     I18n: typeof import('./resources/js/@core/components/I18n.vue')['default']
     MoreBtn: typeof import('./resources/js/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./resources/js/@core/components/Notifications.vue')['default']

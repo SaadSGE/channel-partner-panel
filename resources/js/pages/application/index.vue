@@ -6,9 +6,10 @@ definePage({
   },
 });
 
+import Filters from '@/@core/components/Filters.vue';
 import { useApplicationListStore } from '@/@core/stores/applicationList';
-import { commonFunction } from '@/@core/stores/commonFunction';
-import { useUserStore } from '@/@core/stores/user';
+
+
 
 
 import Swal from 'sweetalert2';
@@ -17,7 +18,7 @@ import { useRouter } from 'vue-router';
 
 // Store and Router
 const store = useApplicationListStore();
-const userStore = useUserStore();
+
 const router = useRouter();
 const isAdmin = ref(getUserRole() === 'admin');
 
@@ -37,26 +38,10 @@ const selectedStudentEmail = ref('');
 const dateFrom = ref(null);
 const dateTo = ref(null);
 const isLoading = ref(false);
-const universities = ref([]);
-const channelPartners = ref([]);
-const applicationOfficers = ref([]);
+
 const applicationStore = useApplicationListStore();
-const commonsFunctionStore = commonFunction();
-const statuses = ref([
-  { id: 0, name: 'Application Processing' },
-  { id: 1, name: 'Application Submitted' },
-  { id: 2, name: 'Pending Docs' },
-  { id: 3, name: 'Offer Issue Conditional' },
-  { id: 4, name: 'Offer Issue Unconditional' },
-  { id: 5, name: 'Need Payment' },
-  { id: 6, name: 'CAS Issued' },
-  { id: 7, name: 'Additional Doc Needed' },
-  { id: 8, name: 'Refund Required' },
-  { id: 9, name: 'Application Rejected' },
-  { id: 10, name: 'Session Expired' },
-  { id: 11, name: 'Doc Received' },
-  { id: 12, name: 'Partial Payment' },
-]);
+
+
 
 const props = defineProps({
   userId: {
@@ -127,32 +112,7 @@ const deleteItem = async (itemId) => {
 };
 
 // Fetch filter options
-const fetchFilterOptions = async () => {
-  try {
 
-    const universityList = await commonsFunctionStore.getUniversities();
-
-    universities.value = universityList.data.map(university => ({
-      id: university.id,
-      name: university.name
-    }));
-
-    const channelPartnersResponse = await userStore.fetchUsers(1, '', 'channel partner', '', true);
-    channelPartners.value = channelPartnersResponse.data.map(user => ({
-      id: user.id,
-      name: user.company_name_with_email
-    }));
-
-    const applicationOfficersResponse = await userStore.fetchUsers(1, '', 'application control officer', '', true);
-    applicationOfficers.value = applicationOfficersResponse.data.map(user => ({
-      id: user.id,
-      name: user.name_with_email
-    }));
-
-  } catch (error) {
-    console.error('Error fetching filter options:', error);
-  }
-};
 
 // Watchers
 watch([
@@ -170,7 +130,7 @@ watch([
 
 // Mounted Hook
 onMounted(() => {
-  fetchFilterOptions();
+
   fetchApplications();
 });
 
@@ -219,82 +179,54 @@ const resolveStatusName = (status) => {
       <!-- New Filters Section -->
       <VCardText>
         <VRow>
-          <VCol cols="12" md="3">
-            <AppAutocomplete
-              v-model="selectedStatus"
-              :items="statuses"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Status"
-              placeholder="Select Status"
-              clearable
-            />
-          </VCol>
-          <VCol v-if="isAdmin"  cols="12" md="3">
-            <AppAutocomplete
-              v-model="selectedChannelPartner"
-              :items="channelPartners"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Channel Partner"
-              placeholder="Select Channel Partner"
-              clearable
-            />
-          </VCol>
-          <VCol cols="12" md="3">
-            <AppAutocomplete
-              v-model="selectedUniversity"
-              :items="universities"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="University"
-              placeholder="Select University"
-              clearable
-            />
-          </VCol>
-          <VCol v-if="isAdmin" cols="12" md="3">
-            <AppAutocomplete
-              v-model="selectedApplicationOfficer"
-              :items="applicationOfficers"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Application Officer"
-              placeholder="Select Application Officer"
-              clearable
-            />
-          </VCol>
 
-          <VCol cols="12" md="3">
-            <AppDateTimePicker
-              v-model="dateFrom"
-              label="From Date"
-              placeholder="Select From Date"
-            />
-          </VCol>
-          <VCol cols="12" md="3">
-            <AppDateTimePicker
-              v-model="dateTo"
-              label="To Date"
-              placeholder="Select To Date"
-            />
-          </VCol>
+
+          <Filters :filters="[
+            {
+              name: 'selectedStatus',
+              isAdmin: false
+            },
+            {
+              name: 'selectedChannelPartner',
+              isAdmin: true
+            },
+            {
+              name: 'selectedUniversity',
+              isAdmin: false
+            },
+            {
+              name: 'selectedApplicationOfficer',
+              isAdmin: true
+            },
+            {
+              name: 'dateFrom',
+              isAdmin: false
+            },
+            {
+              name: 'dateTo',
+              isAdmin: false
+            }
+          ]" v-model:selectedStatus="selectedStatus" v-model:selectedChannelPartner="selectedChannelPartner"
+            v-model:selectedUniversity="selectedUniversity"
+            v-model:selectedApplicationOfficer="selectedApplicationOfficer" v-model:dateFrom="dateFrom"
+            v-model:dateTo="dateTo" />
+
+
+
+
+
         </VRow>
       </VCardText>
       <!-- Search and Pagination -->
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-3 d-flex gap-3">
-          <AppSelect
-            :model-value="itemsPerPage"
-            :items="[
-              { value: 10, title: '10' },
-              { value: 25, title: '25' },
-              { value: 50, title: '50' },
-              { value: 100, title: 100 },
-              { value: -1, title: 'All' },
-            ]"
-            style="inline-size: 6.25rem;"
-            @update:model-value="itemsPerPage = parseInt($event, 10)"
-          />
+          <AppSelect :model-value="itemsPerPage" :items="[
+            { value: 10, title: '10' },
+            { value: 25, title: '25' },
+            { value: 50, title: '50' },
+            { value: 100, title: 100 },
+            { value: -1, title: 'All' },
+          ]" style="inline-size: 6.25rem;" @update:model-value="itemsPerPage = parseInt($event, 10)" />
         </div>
         <VSpacer />
 
@@ -309,15 +241,9 @@ const resolveStatusName = (status) => {
 
 
       <!-- Data Table -->
-      <VDataTableServer
-        v-model:items-per-page="itemsPerPage"
-        v-model:page="page"
-        :items="applicationLists"
-        :items-length="totalApplications"
-        :headers="headers"
-        class="text-no-wrap color-black"
-        @update:options="updateOptions"
-      >
+      <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="applicationLists"
+        :items-length="totalApplications" :headers="headers" class="text-no-wrap color-black"
+        @update:options="updateOptions">
         <template #item.student.name="{ item }">
           <p>{{ item.student.first_name }} {{ item.student.last_name }}</p>
         </template>
@@ -339,12 +265,8 @@ const resolveStatusName = (status) => {
           </div>
         </template>
         <template #item.status="{ item }">
-          <VChip
-            :color="resolveStatusColor(item.status)"
-            :class="`text-${resolveStatusColor(item.status)}`"
-            size="small"
-            class="font-weight-medium"
-          >
+          <VChip :color="resolveStatusColor(item.status)" :class="`text-${resolveStatusColor(item.status)}`"
+            size="small" class="font-weight-medium">
             {{ resolveStatusName(item.status) }}
           </VChip>
         </template>
@@ -353,7 +275,7 @@ const resolveStatusName = (status) => {
             <IconBtn @click="viewApplicationDetail(item.id)">
               <VIcon icon="tabler-eye" />
             </IconBtn>
-            <IconBtn @click="deleteItem(item.id)" v-if="$can('delete','application')">
+            <IconBtn @click="deleteItem(item.id)" v-if="$can('delete', 'application')">
               <VIcon icon="tabler-trash" />
             </IconBtn>
           </div>
@@ -361,11 +283,7 @@ const resolveStatusName = (status) => {
 
         <!-- pagination -->
         <template #bottom>
-          <TablePagination
-            v-model:page="page"
-            :items-per-page="itemsPerPage"
-            :total-items="totalApplications"
-          />
+          <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalApplications" />
         </template>
       </VDataTableServer>
     </AppCardActions>
@@ -382,10 +300,11 @@ const resolveStatusName = (status) => {
   color: black;
 }
 
-.v-data-table > .v-data-table__wrapper > table > thead > tr > th,
+.v-data-table>.v-data-table__wrapper>table>thead>tr>th,
 td {
   overflow: auto;
-  max-inline-size: 30rem; /* Adjust the max-width as needed */
+  max-inline-size: 30rem;
+  /* Adjust the max-width as needed */
   white-space: nowrap;
   word-wrap: break-word;
 }
@@ -394,4 +313,3 @@ td {
   max-block-size: 35rem !important;
 }
 </style>
-
