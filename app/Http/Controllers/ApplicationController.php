@@ -102,17 +102,21 @@ class ApplicationController extends Controller
     public function store(Request $request, EmailService $emailService)
     {
         try {
-            $validatedData = $this->validateApplicationData($request);
-
             DB::beginTransaction();
 
-            $student = $this->createStudent($validatedData);
-            $application = $this->createApplication($student, $validatedData);
-
-            $this->handleDocumentUploads($validatedData, $student, $application);
+            if ($request->filled('student_id')) {
+                // Handle existing student application
+                $student = Student::findOrFail($request->student_id);
+                $application = $this->createApplicationForExistingStudent($student, $request);
+            } else {
+                // Handle new student application
+                $validatedData = $this->validateApplicationData($request);
+                $student = $this->createStudent($validatedData);
+                $application = $this->createApplication($student, $validatedData);
+                $this->handleDocumentUploads($validatedData, $student, $application);
+            }
 
             $this->notifyRelevantUsers($application, $emailService);
-
             $this->logApplicationActivity($request, $application, $student);
 
             DB::commit();
@@ -582,6 +586,24 @@ class ApplicationController extends Controller
             'student_id' => $student->id,
             'counsellor_number' => $data['counsellor_number'],
             'counsellor_email' => $data['counsellor_email'],
+            'status' => 0,
+        ]);
+    }
+    private function createApplicationForExistingStudent(Student $student, Request $request)
+    {
+        $applicationId = $this->generateApplicationId($student);
+        $courseDetails = CourseDetails::findOrFail($request->course_details_id);
+        return ApplicationList::create([
+            'application_id' => $applicationId,
+            'course_id' => $courseDetails->course_id,
+            'country_id' => $request->country_id,
+            'intake_id' => $request->intake_id,
+            'university_id' => $request->university_id,
+            'course_details_id' => $request->course_details_id,
+            'user_id' => auth('api')->id(),
+            'student_id' => $student->id,
+            'counsellor_number' => $request->counsellor_number,
+            'counsellor_email' => $request->counsellor_email,
             'status' => 0,
         ]);
     }

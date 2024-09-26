@@ -9,7 +9,7 @@ class Student extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    protected $appends = ['full_name'];
+    protected $appends = ['full_name', 'student_name_with_email'];
     public function document()
     {
         return $this->hasMany(StudentDocument::class, 'student_id');
@@ -23,6 +23,11 @@ class Student extends Model
     {
         return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/".$value;
 
+    }
+
+    public function getStudentNameWithEmailAttribute(): string
+    {
+        return "{$this->first_name} {$this->last_name} <{$this->email}>";
     }
 
 }

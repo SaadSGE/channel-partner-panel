@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\AIController;
+use App\Http\Controllers\StudentController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -68,6 +69,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/users/{user}/activity-logs', [UserController::class, 'getActivityLogs']);
     Route::get('/applications/{id}/activity-logs', [ApplicationController::class, 'getActivityLogs']);
     Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
+    Route::get('/students/search', [StudentController::class, 'search']);
 });
 
 

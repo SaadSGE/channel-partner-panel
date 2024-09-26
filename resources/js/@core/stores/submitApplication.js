@@ -28,7 +28,7 @@ export const useApplicationStore = defineStore( {
         throw error;
       }
     },
-    async submitApplication(studentData, courseId, intakeId, universityId, countryId, courseDetailsId, filePaths) {
+    async submitApplication(studentData, courseId, intakeId, universityId, countryId, courseDetailsId, filePaths,studentId=null) {
       try {
         const response = await $api('/application', {
           method: 'POST',
@@ -40,6 +40,7 @@ export const useApplicationStore = defineStore( {
             country_id: countryId,
             course_details_id: courseDetailsId,
             document_paths: filePaths,
+            student_id: studentId,
           }),
           headers: {
             'Content-Type': 'application/json',
