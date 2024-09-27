@@ -7,7 +7,7 @@ export const useStudentStore = defineStore({
     errors: []
   }),
   actions: {
-    async search(query) {
+    async search(query = null) {
       try {
         const response = await $api('/api/students/search', {
           method: 'GET',

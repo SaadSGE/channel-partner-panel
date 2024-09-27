@@ -9,7 +9,6 @@
         item-value="id"
         label="Search Existing Student"
         placeholder="Start typing to search..."
-        @update:search="searchStudents"
       >
       </AppAutocomplete>
       <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
@@ -131,6 +130,10 @@ const server = {
   },
 };
 
+//on mounted fetch all students
+onMounted(async () => {
+  students.value = await studentStore.search();
+});
 const removeFile = (fileId) => {
   fileStore.removeFile(fileId);
 };

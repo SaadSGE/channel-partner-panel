@@ -10,6 +10,13 @@ class Student extends Model
     use HasFactory;
     protected $guarded = [];
     protected $appends = ['full_name', 'student_name_with_email'];
+
+    // Add this relationship
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function document()
     {
         return $this->hasMany(StudentDocument::class, 'student_id');
@@ -30,4 +37,14 @@ class Student extends Model
         return "{$this->first_name} {$this->last_name} <{$this->email}>";
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (auth('api')->check()) {
+                $model->created_by = auth('api')->id();
+            }
+        });
+    }
 }
