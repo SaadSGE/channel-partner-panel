@@ -179,42 +179,14 @@ const resolveStatusName = (status) => {
       <!-- New Filters Section -->
       <VCardText>
         <VRow>
-
-
-          <Filters :filters="[
-            {
-              name: 'selectedStatus',
-              isAdmin: false
-            },
-            {
-              name: 'selectedChannelPartner',
-              isAdmin: true
-            },
-            {
-              name: 'selectedUniversity',
-              isAdmin: false
-            },
-            {
-              name: 'selectedApplicationOfficer',
-              isAdmin: true
-            },
-            {
-              name: 'dateFrom',
-              isAdmin: false
-            },
-            {
-              name: 'dateTo',
-              isAdmin: false
-            }
-          ]" v-model:selectedStatus="selectedStatus" v-model:selectedChannelPartner="selectedChannelPartner"
-            v-model:selectedUniversity="selectedUniversity"
-            v-model:selectedApplicationOfficer="selectedApplicationOfficer" v-model:dateFrom="dateFrom"
-            v-model:dateTo="dateTo" />
-
-
-
-
-
+          <Filters :selected-status="selectedStatus" @update-status="selectedStatus = $event"
+            :selected-channel-partner="selectedChannelPartner" @update-channel-partner="selectedChannelPartner = $event"
+            :selected-university="selectedUniversity" @update-university="selectedUniversity = $event"
+            :selected-application-officer="selectedApplicationOfficer"
+            @update-application-officer="selectedApplicationOfficer = $event" :selected-date-from="dateFrom"
+            @update-date-from="dateFrom = $event" :selected-date-to="dateTo" @update-date-to="dateTo = $event">
+            :isAdmin = "isAdmin"
+          </Filters>
         </VRow>
       </VCardText>
       <!-- Search and Pagination -->
