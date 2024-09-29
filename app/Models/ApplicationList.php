@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ApplicationList extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $guarded = [];
 

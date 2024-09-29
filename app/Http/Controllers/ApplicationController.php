@@ -47,7 +47,10 @@ class ApplicationController extends Controller
         $query = ApplicationList::with(['course', 'country', 'intake', 'university', 'courseDetails', 'student', 'user.parent:id,first_name,last_name,email'])
             ->visibleToUser($user, $id);
 
-
+        // Add this line to exclude soft-deleted applications
+        if (!$request->query('withTrashed', false)) {
+            $query->whereNull('deleted_at');
+        }
 
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
@@ -161,7 +164,7 @@ class ApplicationController extends Controller
 
             $application = ApplicationList::findOrFail($id);
 
-            // Log the application deletion activity before actually deleting it
+            // Log the application deletion activity before soft deleting it
             activity()
                 ->performedOn($application)
                 ->causedBy(Auth::user())
@@ -173,16 +176,16 @@ class ApplicationController extends Controller
                     'university_name' => $application->university->name,
                     'intake_name' => $application->intake->name,
                 ])
-                ->log('application_deleted');
+                ->log('application_soft_deleted');
 
-            $application->delete();
+            $application->delete(); // This now performs a soft delete
 
             DB::commit();
 
-            return $this->successJsonResponse('Application deleted successfully');
+            return $this->successJsonResponse('Application soft deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to delete application', ['error' => $e->getMessage(), 'id' => $id]);
+            Log::error('Failed to soft delete application', ['error' => $e->getMessage(), 'id' => $id]);
 
             // Log the failed deletion attempt
             activity()
@@ -193,9 +196,9 @@ class ApplicationController extends Controller
                     'attempted_application_id' => $id,
                     'error_message' => $e->getMessage(),
                 ])
-                ->log('application_deletion_failed');
+                ->log('application_soft_deletion_failed');
 
-            return $this->exceptionJsonResponse('Failed to delete application', $e);
+            return $this->exceptionJsonResponse('Failed to soft delete application', $e);
         }
     }
 
@@ -713,6 +716,29 @@ class ApplicationController extends Controller
             ->causedBy(Auth::user())
             ->withProperties($properties)
             ->log($activityType);
+    }
+
+    public function restore(string $id)
+    {
+        try {
+            $application = ApplicationList::withTrashed()->findOrFail($id);
+            $application->restore();
+
+            activity()
+                ->performedOn($application)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'application_id' => $application->application_id,
+                ])
+                ->log('application_restored');
+
+            return $this->successJsonResponse('Application restored successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to restore application', ['error' => $e->getMessage(), 'id' => $id]);
+            return $this->exceptionJsonResponse('Failed to restore application', $e);
+        }
     }
 
 
