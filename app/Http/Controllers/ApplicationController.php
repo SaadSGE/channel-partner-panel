@@ -400,8 +400,12 @@ class ApplicationController extends Controller
             ])
             ->log('comment_added');
 
-        // Fetch the application creator and admin users
-        $creator = $application->user;
+
+        if ($application->user->role == 'channel partner') {
+            $creator = $application->user->parent;
+        } else {
+            $creator = $application->user;
+        }
         $adminUsers = User::where('role', 'admin')->get();
 
         // Prepare the notification details
