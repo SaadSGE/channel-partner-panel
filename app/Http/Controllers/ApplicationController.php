@@ -593,6 +593,7 @@ class ApplicationController extends Controller
     {
         $applicationId = $this->generateApplicationId($student);
         $courseDetails = CourseDetails::findOrFail($request->course_details_id);
+        \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
         return ApplicationList::create([
             'application_id' => $applicationId,
             'course_id' => $courseDetails->course_id,
