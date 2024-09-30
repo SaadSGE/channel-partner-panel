@@ -417,5 +417,10 @@ class UserController extends Controller
         }
     }
 
+    public function fetchEditors()
+    {
+        $editors = User::where('role', 'editor')->get(['id', 'first_name', 'last_name', 'email']);
 
+        return $this->successJsonResponse('Editors fetched successfully', $editors);
+    }
 }
