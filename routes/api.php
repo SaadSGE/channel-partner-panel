@@ -71,9 +71,10 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
     Route::get('/students/search', [StudentController::class, 'search']);
     Route::get('/fetch-editor', [UserController::class, 'fetchEditors']);
+    Route::get('/fetch-editor', [UserController::class, 'fetchEditors']);
 });
 
-Route::get('/fetch-editor', [UserController::class, 'fetchEditors']);
+
 
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');
