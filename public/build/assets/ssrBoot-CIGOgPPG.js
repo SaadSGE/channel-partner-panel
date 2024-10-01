@@ -1,0 +1,1 @@
+import{as as s,H as t,a5 as e,au as n}from"./main-ofHzgIAY.js";function u(){const o=s(!1);return t(()=>{window.requestAnimationFrame(()=>{o.value=!0})}),{ssrBootStyles:e(()=>o.value?void 0:{transition:"none !important"}),isBooted:n(o)}}export{u};
