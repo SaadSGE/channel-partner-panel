@@ -385,6 +385,7 @@ declare module 'vue' {
     Shortcuts: typeof import('./resources/js/@core/components/Shortcuts.vue')['default']
     ShowMore: typeof import('./resources/js/@core/components/ShowMore.vue')['default']
     TablePagination: typeof import('./resources/js/@core/components/TablePagination.vue')['default']
+    TestReverbEvent: typeof import('./resources/js/components/TestReverbEvent.vue')['default']
     TheCustomizer: typeof import('./resources/js/@core/components/TheCustomizer.vue')['default']
     ThemeSwitcher: typeof import('./resources/js/@core/components/ThemeSwitcher.vue')['default']
     TimelineBasic: typeof import('./resources/js/views/demos/components/timeline/TimelineBasic.vue')['default']
