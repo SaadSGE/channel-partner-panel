@@ -17,8 +17,10 @@ class EmailService
      * @param int $senderId
      * @param string $senderName
      * @param string $senderEmail
+     * @param string $notification_text
+     * @param string $notification_route
      */
-    public function sendNotification(array $details, $recipients, string $subject, string $body, int $senderId, string $senderName, string $senderEmail)
+    public function sendNotification(array $details, $recipients, string $subject, string $body, int $senderId, string $senderName, string $senderEmail, string $notification_text, string $notification_route)
     {
         $details = array_merge($details, [
             'subject' => $subject,
@@ -28,6 +30,8 @@ class EmailService
             'sender_name' => $senderName,
             'sender_email' => $senderEmail,
             'notification_type' => 'email',
+            'notification_text' => $notification_text,
+            'notification_route' => $notification_route,
         ]);
 
         // Send email notification
@@ -54,7 +58,8 @@ class EmailService
     {
         $subject = '';
         $body = '';
-
+        $notification_text = '';
+        $notification_route = '';
         switch ($eventType) {
             case 'status_update':
                 $subject = 'Application Status Changed';
@@ -70,6 +75,8 @@ class EmailService
                     . "<strong>Old Status:</strong> {$additionalDetails['old_status']}<br>"
                     . "<strong>New Status:</strong> {$application->status_text}<br>"
                     . "<strong>Comment:</strong> " . nl2br(e($additionalDetails['comment'])) . "<br>";
+                $notification_text = "Status update for application {$application->application_id}";
+                $notification_route = 'application/details/' . $application->application_id;
                 break;
 
             case 'comment_added':
@@ -80,6 +87,8 @@ class EmailService
                     . "<strong>Student Email:</strong> {$application->student->email}<br>"
                     . "<strong>University Name:</strong> {$application->university->name}<br>"
                     . "<strong>Intake Name:</strong> {$application->intake->name}<br>";
+                $notification_text = "New comment added to application {$application->application_id}";
+                $notification_route = 'application/details/' . $application->application_id;
                 break;
 
             case 'university_communication_added':
@@ -91,6 +100,8 @@ class EmailService
                     . "<strong>Student Email:</strong> {$application->student->email}<br>"
                     . "<strong>University Name:</strong> {$application->university->name}<br>"
                     . "<strong>Intake Name:</strong> {$application->intake->name}<br>";
+                $notification_text = "New university communication for application {$application->application_id}";
+                $notification_route = 'application/details/' . $application->application_id;
                 break;
 
             case 'new_application':
@@ -100,9 +111,13 @@ class EmailService
                     . "<strong>Student Email:</strong> {$application->student->email}<br>"
                     . "<strong>University Name:</strong> {$application->university->name}<br>"
                     . "<strong>Intake Name:</strong> {$application->intake->name}<br>";
+                $notification_text = "New application submitted: {$application->application_id}";
+                $notification_route = 'application/details/' . $application->application_id;
                 break;
         }
 
-        $this->sendNotification($additionalDetails, $recipients, $subject, $body, $senderId, $senderName, $senderEmail);
+
+
+        $this->sendNotification($additionalDetails, $recipients, $subject, $body, $senderId, $senderName, $senderEmail, $notification_text, $notification_route);
     }
 }

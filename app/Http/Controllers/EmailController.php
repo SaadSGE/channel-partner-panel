@@ -38,8 +38,11 @@ class EmailController extends Controller
                 'recipients' => $emails,
                 'sender_id' => $request->user()->id,
                 'sender_name' => $request->user()->full_name,
-                 'sender_email' => $request->user()->email,
+                'sender_email' => $request->user()->email,
                 'notification_type' => 'email',
+                'notification_route' => 'email',
+
+
             ];
 
 
@@ -47,12 +50,14 @@ class EmailController extends Controller
                 ->notify(new EmailNotification($details));
 
             $details['send_via'] = 'database';
+            $details['notification_text'] = 'A new email has received';
             Notification::send($users, new EmailNotification($details));
 
 
             $request->user()->notify(new EmailNotification(array_merge($details, [
                 'send_via' => 'database',
                 'sender_id' => $request->user()->id,
+                'notification_text' => null,
             ])));
 
             return $this->successJsonResponse('Email Sent Successfully');

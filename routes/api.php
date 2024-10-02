@@ -18,6 +18,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\AIController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -72,6 +73,11 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/students/search', [StudentController::class, 'search']);
     Route::get('/fetch-editor', [UserController::class, 'fetchEditors']);
     Route::get('/fetch-editor', [UserController::class, 'fetchEditors']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+
 });
 
 

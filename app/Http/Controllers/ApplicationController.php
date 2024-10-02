@@ -139,7 +139,7 @@ class ApplicationController extends Controller
      */
     public function show(int $id)
     {
-        $applicationDetails = ApplicationList::with(['course','country','intake','university','courseDetails','student.document','comments.user','universityCommunications.user'])->where('id', $id)->first();
+        $applicationDetails = ApplicationList::with(['course','country','intake','university','courseDetails','student.document','comments.user','universityCommunications.user'])->where('application_id', $id)->first();
         if ($applicationDetails) {
             return $this->successJsonResponse("Application Information found!", $applicationDetails);
         }
@@ -161,8 +161,11 @@ class ApplicationController extends Controller
     {
         try {
             DB::beginTransaction();
-
-            $application = ApplicationList::findOrFail($id);
+            //findorfail by application id
+            $application = ApplicationList::where('application_id', $id)->first();
+            if (!$application) {
+                return $this->exceptionJsonResponse('Application not found', null, 404);
+            }
 
             // Log the application deletion activity before soft deleting it
             activity()
@@ -205,7 +208,10 @@ class ApplicationController extends Controller
     public function updateApplicationFile(Request $request)
     {
         $applicationId = (int)$request->application_id;
-        $application = ApplicationList::findOrFail($applicationId);
+        $application = ApplicationList::where('application_id', $applicationId)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
         $student = $application->student;
         $uploadedDocuments = [];
 
@@ -216,7 +222,7 @@ class ApplicationController extends Controller
                 Storage::disk('do_spaces')->move($path['path'], $newPath);
                 $document = StudentDocument::create([
                     'student_id' => $student->id,
-                    'application_id' => $applicationId,
+                    'application_id' => $application->id,
                     'path' => $newPath
                 ]);
                 $uploadedDocuments[] = $filename;
@@ -228,7 +234,7 @@ class ApplicationController extends Controller
                     ->withProperties([
                         'ip' => $request->ip(),
                         'user_agent' => $request->userAgent(),
-                        'application_id' => $applicationId,
+                        'application_id' => $application->application_id,
                         'student_email' => $student->email,
                         'university_name' => $application->university->name,
                         'intake_name' => $application->intake->name,
@@ -248,7 +254,7 @@ class ApplicationController extends Controller
             ->withProperties([
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
-                'application_id' => $applicationId,
+                'application_id' => $application->application_id,
                 'student_email' => $student->email,
                 'university_name' => $application->university->name,
                 'intake_name' => $application->intake->name,
@@ -262,7 +268,11 @@ class ApplicationController extends Controller
     public function applicationStatuses(Request $request)
     {
         $applicationId = $request->id;
-        $applicationStatuses = ApplicationStatusHistory::where('application_id', $applicationId)->latest()->get();
+        $application = ApplicationList::where('application_id', $applicationId)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
+        $applicationStatuses = ApplicationStatusHistory::where('application_id', $application->id)->latest()->get();
 
         return $this->successJsonResponse('Status found successfully', $applicationStatuses);
 
@@ -290,7 +300,11 @@ class ApplicationController extends Controller
         DB::beginTransaction();
 
         try {
-            $application = ApplicationList::findOrFail($id);
+            //findorfail by application id
+            $application = ApplicationList::where('application_id', $id)->first();
+            if (!$application) {
+                return $this->exceptionJsonResponse('Application not found', null, 404);
+            }
             $oldStatus = $application->status_text; // Using the accessor for status text
             $application->status = $validatedData['status'];
             $application->save();
@@ -380,10 +394,13 @@ class ApplicationController extends Controller
             'comment' => 'required|string',
         ]);
 
-        $application = ApplicationList::findOrFail($id);
+        $application = ApplicationList::where('application_id', $id)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
 
         $comment = new ApplicationCommentHistory();
-        $comment->application_id = $id;
+        $comment->application_id = $application->id;
         $comment->comment = $request->comment;
         $comment->status = 0;
         $comment->save();
@@ -428,7 +445,11 @@ class ApplicationController extends Controller
 
     public function getUniversityCommunications($id)
     {
-        $communications = UniversityCommunication::where('application_id', $id)->with('user')->get();
+        $application = ApplicationList::where('application_id', $id)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
+        $communications = UniversityCommunication::where('application_id', $application->id)->with('user')->get();
         return response()->json($communications);
     }
 
@@ -439,10 +460,13 @@ class ApplicationController extends Controller
             'message' => 'required|string',
         ]);
 
-        $application = ApplicationList::findOrFail($id);
+        $application = ApplicationList::where('application_id', $id)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
 
         $communication = new UniversityCommunication();
-        $communication->application_id = $id;
+        $communication->application_id = $application->id;
         $communication->subject = $request->subject;
         $communication->message = $request->message;
         $communication->created_by = auth('api')->user()->id;
@@ -491,7 +515,10 @@ class ApplicationController extends Controller
         $activityType = $request->input('activity_type');
         $searchQuery = $request->input('search');
 
-        $application = ApplicationList::findOrFail($id);
+        $application = ApplicationList::where('application_id', $id)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
 
         $activityLogs = Activity::where(function ($query) use ($application) {
             $query->where('subject_type', ApplicationList::class)
