@@ -188,8 +188,8 @@ const tableHeight = computed(() => {
             :selected-channel-partner="selectedChannelPartner" @update-channel-partner="selectedChannelPartner = $event"
             :selected-university="selectedUniversity" @update-university="selectedUniversity = $event"
             :selected-application-officer="selectedApplicationOfficer"
-            @update-application-officer="selectedApplicationOfficer = $event" :selected-date-from="dateFrom"
-            @update-date-from="dateFrom = $event" :selected-date-to="dateTo" @update-date-to="dateTo = $event">
+            @update-application-officer="selectedApplicationOfficer = $event" :date-from="dateFrom"
+            @update-date-from="dateFrom = $event" :date-to="dateTo" @update-date-to="dateTo = $event">
             :isAdmin = "isAdmin"
           </Filters>
         </VRow>

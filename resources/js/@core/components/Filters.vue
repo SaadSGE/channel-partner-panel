@@ -1,6 +1,9 @@
 <script setup>
 import { defineEmits, onMounted, ref } from 'vue';
 import { commonFunction } from '../stores/commonFunction';
+
+import { editor } from '../stores/editor';
+import { useRolePermissionStore } from '../stores/rolePermission';
 import { useUserStore } from '../stores/user';
 const statuses = ref([
   { id: 0, name: 'Application Processing' },
@@ -18,13 +21,23 @@ const statuses = ref([
   { id: 12, name: 'Partial Payment' },
 ]);
 
+
+const countries = ref([]);
+const intakes = ref([]);
+const roles = ref([]);
+
 const universities = ref([]);
 const channelPartners = ref([]);
 const applicationOfficers = ref([]);
 
-const userStore = useUserStore();
-const commonsFunctionStore = commonFunction();
+const isLoading = ref(false);
+const selectedRole = ref();
+const selectedParent = ref(null);
+const roleStore = useRolePermissionStore();
 
+const userStore = useUserStore();
+const commonFunctionStore = commonFunction();
+const editorStore = editor();
 
 
 const isAdmin = ref(getUserRole() === 'admin');
@@ -35,19 +48,19 @@ const props = defineProps({
     default: false,
   },
   selectedStatus: {
-    type: Object,
+    type: Number,
     Required: false,
   },
   selectedChannelPartner: {
-    type: Object,
+    type: Number,
     Required: false,
   },
   selectedUniversity: {
-    type: Object,
+    type: Number,
     Required: false,
   },
   selectedApplicationOfficer: {
-    type: Object,
+    type: Number,
     Required: false,
   },
   dateFrom: {
@@ -57,18 +70,55 @@ const props = defineProps({
   dateTo: {
     type: Number,
     Required: false,
+  },
+  selectedCountry: {
+    type: Number,
+    Required: false,
+  },
+  selectedIntake: {
+    type: Number,
+    Required: false,
+  },
+  selectedUniversity2: {
+    type: Number,
+    Required: false,
+  },
+  selectedCourseName: {
+    type: Number,
+    Required: false,
+  },
+  selectedRole: {
+    type: Number,
+    Required: false,
+  },
+  selectedParent: {
+    type: Number,
+    Required: false,
+  },
+  selectedEditor: {
+    type: Number,
+    Required: false,
   }
+
+
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-date-from', 'update-date-to']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-date-from', 'update-date-to', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedChannelPartner = ref(props.selectedChannelPartner);
 const localSelectedUniversity = ref(props.selectedUniversity);
 const localSelectedApplicationOfficer = ref(props.selectedApplicationOfficer);
-const localDateFrom = ref(props.dateFrom)
-const localDateTo = ref(props.dateTo)
+const localDateFrom = ref(props.dateFrom);
+const localDateTo = ref(props.dateTo);
+const localSelectedCountry = ref(props.selectedCountry);
+const localSelectedIntake = ref(props.selectedIntake);
+const localSelectedUniversity2 = ref(props.selectedUniversity2);
+const localSelectedCourseName = ref(props.selectedCourseName);
+const localSelectedRole = ref(props.selectedRole);
+const localSelectedParent = ref(props.selectedParent);
+const localSelectedEditor = ref(props.selectedEditor);
 
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
@@ -88,12 +138,35 @@ watch(localDateFrom, (newValue) => {
 watch(localDateTo, (newValue) => {
   emit('update-date-to', newValue);
 });
+watch(localSelectedCountry, (newValue) => {
+  emit('update-country', newValue);
+});
+watch(localSelectedIntake, (newValue) => {
+  emit('update-intake', newValue);
+});
+watch(localSelectedUniversity2, (newValue) => {
+  emit('update-university2', newValue);
+});
+watch(localSelectedCourseName, (newValue) => {
+  emit('update-courseName', newValue);
+});
+watch(localSelectedRole, (newValue) => {
+  emit('update-role', newValue);
+});
+watch(localSelectedParent, (newValue) => {
+  emit('update-parent', newValue);
+});
+watch(localSelectedEditor, (newValue) => {
+  console.log("Selected editor:", newValue)
+  emit('update-editor', newValue);
+});
+
 
 
 const fetchFilterOptions = async () => {
   try {
 
-    const universityList = await commonsFunctionStore.getUniversities();
+    const universityList = await commonFunctionStore.getUniversities();
 
     universities.value = universityList.data.map(university => ({
       id: university.id,
@@ -121,31 +194,112 @@ onMounted(() => {
   fetchFilterOptions();
 
 });
+
+onMounted(async () => {
+
+  await loadFilterOptions();
+  await editorStore.getEditors();
+});
+
+const loadFilterOptions = async () => {
+  if (commonFunctionStore.countries.length === 0) await commonFunctionStore.getCountries();
+  if (commonFunctionStore.intakes.length === 0) await commonFunctionStore.getIntakes();
+  if (commonFunctionStore.universities.length === 0) await commonFunctionStore.getUniversities();
+
+  countries.value = commonFunctionStore.countries;
+  intakes.value = commonFunctionStore.intakes;
+  universities.value = commonFunctionStore.universities;
+};
+
+
+const fetchUsers = async () => {
+  isLoading.value = true;
+  try {
+    const response = await userStore.fetchUsers(
+
+      selectedRole.value,
+      selectedParent.value
+    );
+
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+
+onMounted(async () => {
+  await roleStore.getAllRoles();
+  roles.value = roleStore.roles;
+  await userStore.fetchParentUsers(); // Fetch parent users on mount from the Pinia store
+  fetchUsers(); // Fetch the main user list
+});
 </script>
 
 
 <template>
-  <VCol cols="12" md="3">
+  <!-- Application history -->
+
+  <VCol cols="12" md="3" v-if="props.selectedStatus !== undefined">
     <AppAutocomplete v-model="localSelectedStatus" :items="statuses" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Status" placeholder="Select Status" clearable />
   </VCol>
-  <VCol v-if="isAdmin" cols="12" md="3">
+  <VCol v-if="isAdmin && props.selectedChannelPartner !== undefined" cols="12" md="3">
     <AppAutocomplete v-model="localSelectedChannelPartner" :items="channelPartners" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Channel Partner" placeholder="Select Channel Partner" clearable />
   </VCol>
-  <VCol cols="12" md="3">
+  <VCol cols="12" md="3" v-if="props.selectedUniversity !== undefined">
     <AppAutocomplete v-model="localSelectedUniversity" :items="universities" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="University" placeholder="Select University" clearable />
   </VCol>
-  <VCol v-if="isAdmin" cols="12" md="3">
+  <VCol v-if="isAdmin && props.selectedApplicationOfficer !== undefined" cols="12" md="3">
     <AppAutocomplete v-model="localSelectedApplicationOfficer" :items="applicationOfficers"
       :item-title="(item) => item.name" :item-value="(item) => item.id" label="Application Officer"
       placeholder="Select Application Officer" clearable />
   </VCol>
-  <VCol cols="12" md="3">
+  <VCol cols="12" md="3" v-if="props.dateFrom !== undefined">
     <AppDateTimePicker v-model="localDateFrom" label="From Date" placeholder="Select From Date" />
   </VCol>
-  <VCol cols="12" md="3">
+  <VCol cols="12" md="3" v-if="props.dateTo !== undefined">
     <AppDateTimePicker v-model="localDateTo" label="To Date" placeholder="Select To Date" />
+  </VCol>
+
+  <!-- course -->
+
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedCountry !== undefined">
+    <AppAutocomplete v-model="localSelectedCountry" :items="countries" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Filter by Country" placeholder="Select Country" clearable />
+  </VCol>
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedIntake !== undefined">
+    <AppAutocomplete v-model="localSelectedIntake" :items="intakes" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Filter by Intake" placeholder="Select Intake" clearable />
+  </VCol>
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedUniversity2 !== undefined">
+    <AppAutocomplete v-model="localSelectedUniversity2" :items="universities" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Filter by University" placeholder="Select University" clearable />
+  </VCol>
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedCourseName !== undefined">
+    <AppTextField v-model="localSelectedCourseName" label="Filter by Course Name" placeholder="Enter Course Name"
+      clearable />
+  </VCol>
+
+  <!-- user -->
+
+  <VCol cols="12" sm="4" v-if="props.selectedRole !== undefined">
+    <AppSelect v-model="localSelectedRole" placeholder="Select role" :items="roles" clearable clear-icon="tabler-x"
+      :item-title="(item) => item.role" :item-value="(item) => item.role" />
+  </VCol>
+
+  <VCol cols="12" sm="4" v-if="props.selectedParent !== undefined">
+    <AppAutocomplete v-model="localSelectedParent" placeholder="Select Parent" :items="userStore.parentUsers" clearable
+      clear-icon="tabler-x" :item-title="(item) => item.full_name" :item-value="(item) => item.id" />
+  </VCol>
+
+  <!--All record  -->
+
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedEditor !== undefined">
+    <AppAutocomplete v-model="localSelectedEditor" :items="editorStore.editors" :item-title="(item) => item.full_name"
+      :item-value="(item) => item.id" label="Editor" placeholder="Select Editor" clearable />
   </VCol>
 </template>

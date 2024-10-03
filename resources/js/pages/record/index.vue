@@ -1,4 +1,3 @@
-
 <script lang="js" setup>
 definePage({
   meta: {
@@ -6,8 +5,11 @@ definePage({
     subject: 'record',
   },
 })
+import Filters from "@/@core/components/Filters.vue";
 import ShowMore from "@/@core/components/ShowMore.vue";
+import { useApplicationListStore } from "@/@core/stores/applicationList";
 import { commonFunction } from "@/@core/stores/commonFunction";
+import { editor } from "@/@core/stores/editor";
 import { useRecordStore } from "@/@core/stores/recordStore";
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import Swal from 'sweetalert2';
@@ -17,7 +19,8 @@ import { VForm } from 'vuetify/components/VForm';
 const router = useRouter();
 const commonFunctionStore = commonFunction();
 const recordStore = useRecordStore();
-
+const store = useApplicationListStore();
+const editorStore = editor();
 // Reactive state
 const country = ref("");
 const passportCountry = ref("");
@@ -48,6 +51,20 @@ const refForm = ref(null);
 const refFormEdit = ref(null);
 const showAppllicationForm = ref(true);
 const showCourseDetails = ref(false);
+const dateFrom = ref(null);
+const dateTo = ref(null);
+const applicationLists = ref([]);
+const totalApplications = ref(0);
+const editors = ref()
+
+
+const search = ref('');
+const selectedStatus = ref(null);
+
+const selectedChannelPartner = ref(null);
+const selectedApplicationOfficer = ref(null);
+const selectedStudentEmail = ref('');
+const selectedEditor = ref(null);
 
 const passportCountries = [
   "Bangladesh",
@@ -89,7 +106,7 @@ const filteredCourseDetails = computed(() => {
 });
 
 // Methods
-const getRecord = async (page=1) => {
+const getRecord = async (page = 1) => {
   isLoading.value = true;
   const fetchRecord = await recordStore.fetchRecord(
     page,
@@ -104,7 +121,7 @@ const getRecord = async (page=1) => {
   isLoading.value = false;
 };
 
-const resetForm = async() => {
+const resetForm = async () => {
   country.value = '';
   intake.value = '';
   courseType.value = '';
@@ -242,9 +259,9 @@ const deleteItem = async (item) => {
 };
 
 
-const isLoading  = ref(false)
+const isLoading = ref(false)
 const searchQuery = ref('')
-const updateOptions = (event) =>{
+const updateOptions = (event) => {
   getRecord(event.page)
 }
 
@@ -254,7 +271,7 @@ watch([searchQuery, selectedCountry, selectedIntake, selectedUniversity, selecte
 });
 
 onMounted(async () => {
-  isLoading.value =  true
+  isLoading.value = true
   if (commonFunctionStore.countries.length === 0) await commonFunctionStore.getCountries();
   if (commonFunctionStore.courses.length === 0) await commonFunctionStore.getCourses();
   if (commonFunctionStore.intakes.length === 0) await commonFunctionStore.getIntakes();
@@ -266,8 +283,79 @@ onMounted(async () => {
   intakes.value = commonFunctionStore.intakes;
   universities.value = commonFunctionStore.universities;
   await getRecord();
-  isLoading.value =  false
+  isLoading.value = false
 });
+const props = defineProps({
+  userId: {
+    type: String,
+    default: null,
+  }
+});
+const fetchApplications = async () => {
+  isLoading.value = true;
+  try {
+    const response = await store.getApplicationList(
+
+      props.userId,
+      page.value,
+      itemsPerPage.value,
+      search.value,
+      sortBy.value,
+      orderBy.value,
+      selectedStatus.value,
+      selectedUniversity.value,
+      selectedChannelPartner.value,
+      selectedApplicationOfficer.value,
+      selectedStudentEmail.value,
+      dateFrom.value,
+      dateTo.value
+    );
+    applicationLists.value = response.data;
+    totalApplications.value = response.total;
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+watch([
+  dateFrom,
+  dateTo
+], () => {
+  fetchApplications();
+});
+
+onMounted(() => {
+
+  fetchApplications();
+});
+
+onMounted(async () => {
+  await loadEditors();
+});
+
+const loadEditors = async () => {
+  if (editorStore.editors.length === 0) await editorStore.getEditors();
+
+
+  editors.value = editorStore.editors;
+
+};
+
+const handleEditorChange = async (newEditor) => {
+  selectedEditor.value = newEditor;
+
+  // Make your AJAX request here when the editor is updated
+  if (newEditor) {
+    try {
+      const response = await $api('/fetch-editor', { method: 'GET' })(newEditor);
+      console.log("AJAX request successful", response);
+    } catch (error) {
+      console.error("Error during AJAX request:", error);
+    }
+  }
+};
 </script>
 
 <template>
@@ -276,122 +364,65 @@ onMounted(async () => {
       <template #append>
         <!-- 👉 Before actions slot -->
         <div>
-          <IconBtn
-            v-if="
-              (!(actionRemove || actionRefresh) || actionCollapsed) &&
-              !noActions
-            "
-            @click="triggerCollapse"
-          >
-            <VIcon
-              size="20"
-              icon="tabler-chevron-up"
-              :style="{
-                transform: isContentCollapsed ? 'rotate(-180deg)' : undefined,
-              }"
-
-            />
+          <IconBtn v-if="
+            (!(actionRemove || actionRefresh) || actionCollapsed) &&
+            !noActions
+          " @click="triggerCollapse">
+            <VIcon size="20" icon="tabler-chevron-up" :style="{
+              transform: isContentCollapsed ? 'rotate(-180deg)' : undefined,
+            }" />
           </IconBtn>
         </div>
       </template>
 
-      <VForm
-        ref="refForm"
-        @submit.prevent="() => {}"
-        class="form-padding"
-        v-show="!isContentCollapsed"
-      >
+      <VForm ref="refForm" @submit.prevent="() => { }" class="form-padding" v-show="!isContentCollapsed">
         <VRow>
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="country"
-              :items="countries"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Country to Apply"
-              placeholder="Select Country"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="country" :items="countries" :item-title="(item) => item.name"
+              :item-value="(item) => item.id" label="Country to Apply" placeholder="Select Country"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="intake"
-              :items="intakes"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Intake"
-              placeholder="Select Intake"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="intake" :items="intakes" :item-title="(item) => item.name"
+              :item-value="(item) => item.id" label="Intake" placeholder="Select Intake" :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="courseType"
-              :items="courseTypes"
-              label="Course Type"
-              placeholder="Select Course Type"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="courseType" :items="courseTypes" label="Course Type"
+              placeholder="Select Course Type" :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="university"
-              :items="universities"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="University"
-              placeholder="Select University"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="university" :items="universities" :item-title="(item) => item.name"
+              :item-value="(item) => item.id" label="University" placeholder="Select University"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <!-- University -->
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="course"
-              label="Course Name."
-              placeholder="BSC in Machine Learning"
-              :rules="[requiredValidator]"
-            />
+            <AppTextField v-model="course" label="Course Name." placeholder="BSC in Machine Learning"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <!-- Course -->
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="tutionFee"
-              label="Tuttion Fee (Mention euro or dollar)"
-              placeholder="1000 euro"
-              :rules="[requiredValidator]"
-            />
+            <AppTextField v-model="tutionFee" label="Tuttion Fee (Mention euro or dollar)" placeholder="1000 euro"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="courseDuration"
-              label="Course Duration (Mention years)"
-              placeholder="2 years"
-              :rules="[requiredValidator]"
-            />
+            <AppTextField v-model="courseDuration" label="Course Duration (Mention years)" placeholder="2 years"
+              :rules="[requiredValidator]" />
           </VCol>
           <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">Academic Requirement</VLabel>
-            <QuillEditor
-              theme="snow"
-              v-model:content="academicRequirementEditor"
-              content-type="html"
-            />
+            <QuillEditor theme="snow" v-model:content="academicRequirementEditor" content-type="html" />
           </VCol>
 
           <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">English Requirement</VLabel>
-            <QuillEditor
-              theme="snow"
-              v-model:content="englishRequirementEditor"
-              content-type="html"
-            />
+            <QuillEditor theme="snow" v-model:content="englishRequirementEditor" content-type="html" />
           </VCol>
 
 
@@ -411,98 +442,54 @@ onMounted(async () => {
           <VIcon icon="tabler-x" />
         </IconBtn>
       </VCardTitle>
-      <VForm ref="refFormEdit" @submit.prevent="() => {}" class="form-padding">
+      <VForm ref="refFormEdit" @submit.prevent="() => { }" class="form-padding">
         <VRow>
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="country"
-              :items="countries"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Country to Apply"
-              placeholder="Select Country"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="country" :items="countries" :item-title="(item) => item.name"
+              :item-value="(item) => item.id" label="Country to Apply" placeholder="Select Country"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="intake"
-              :items="intakes"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Intake"
-              placeholder="Select Intake"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="intake" :items="intakes" :item-title="(item) => item.name"
+              :item-value="(item) => item.id" label="Intake" placeholder="Select Intake" :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="courseType"
-              :items="courseTypes"
-              label="Course Type"
-              placeholder="Select Course Type"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="courseType" :items="courseTypes" label="Course Type"
+              placeholder="Select Course Type" :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="university"
-              :items="universities"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="University"
-              placeholder="Select University"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="university" :items="universities" :item-title="(item) => item.name"
+              :item-value="(item) => item.id" label="University" placeholder="Select University"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <!-- University -->
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="course"
-              label="Course Name."
-              placeholder="BSC in Machine Learning"
-              :rules="[requiredValidator]"
-            />
+            <AppTextField v-model="course" label="Course Name." placeholder="BSC in Machine Learning"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <!-- Course -->
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="tutionFee"
-              label="Tuttion Fee (Mention euro or dollar)"
-              placeholder="1000 euro"
-              :rules="[requiredValidator]"
-            />
+            <AppTextField v-model="tutionFee" label="Tuttion Fee (Mention euro or dollar)" placeholder="1000 euro"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="courseDuration"
-              label="Course Duration (Mention years)"
-              placeholder="2 years"
-              :rules="[requiredValidator]"
-            />
+            <AppTextField v-model="courseDuration" label="Course Duration (Mention years)" placeholder="2 years"
+              :rules="[requiredValidator]" />
           </VCol>
           <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">Academic Requirement</VLabel>
-            <QuillEditor
-              theme="snow"
-              v-model:content="academicRequirementEditor"
-              content-type="html"
-            />
+            <QuillEditor theme="snow" v-model:content="academicRequirementEditor" content-type="html" />
           </VCol>
 
           <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">English Requirement</VLabel>
-            <QuillEditor
-              theme="snow"
-              v-model:content="englishRequirementEditor"
-              content-type="html"
-            />
+            <QuillEditor theme="snow" v-model:content="englishRequirementEditor" content-type="html" />
           </VCol>
 
           <!-- Submit and Reset Buttons -->
@@ -518,76 +505,30 @@ onMounted(async () => {
     <AppCardActions title="Course Details" class="mt-2" :loading="isLoading" no-actions>
       <VCardText>
         <VRow>
-          <VCol cols="12" sm="6" md="3">
-            <AppAutocomplete
-              v-model="selectedCountry"
-              :items="countries"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Filter by Country"
-              placeholder="Select Country"
-              clearable
-            />
-          </VCol>
-          <VCol cols="12" sm="6" md="3">
-            <AppAutocomplete
-              v-model="selectedIntake"
-              :items="intakes"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Filter by Intake"
-              placeholder="Select Intake"
-              clearable
-            />
-          </VCol>
-          <VCol cols="12" sm="6" md="3">
-            <AppAutocomplete
-              v-model="selectedUniversity"
-              :items="universities"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Filter by University"
-              placeholder="Select University"
-              clearable
-            />
-          </VCol>
-          <VCol cols="12" sm="6" md="3">
-            <AppTextField
-              v-model="selectedCourseName"
-              label="Filter by Course Name"
-              placeholder="Enter Course Name"
-              clearable
-            />
-          </VCol>
+
+          <Filters :selected-country="selectedCountry" @update-country="selectedCountry = $event"
+            :selected-intake="selectedIntake" @update-intake="selectedIntake = $event"
+            :selected-university2="selectedUniversity" @update-university2="selectedUniversity = $event"
+            :selected-courseName="selectedCourseName" @update-courseName="selectedCourseName = $event"
+            :date-from="dateFrom" @update-date-from="dateFrom = $event" :date-to="dateTo"
+            @update-date-to="dateTo = $event" :selected-editor="selectedEditor" @update-editor="handleEditorChange">
+          </Filters>
+
+
         </VRow>
         <div class="d-flex justify-space-between flex-wrap gap-6 mt-5">
           <div>
-            <AppTextField
-              v-model="searchQuery"
-              style="max-inline-size: 200px; min-inline-size: 200px;"
-              placeholder="Search Record"
-            />
+            <AppTextField v-model="searchQuery" style="max-inline-size: 200px; min-inline-size: 200px;"
+              placeholder="Search Record" />
           </div>
           <div class="d-flex flex-row gap-4 align-center flex-wrap">
-            <AppSelect
-              v-model="itemsPerPage"
-              :items="[10, 25, 50, 100]"
-              style="inline-size: 6.25rem;"
-            />
+            <AppSelect v-model="itemsPerPage" :items="[10, 25, 50, 100]" style="inline-size: 6.25rem;" />
           </div>
         </div>
       </VCardText>
-      <VDataTableServer
-        v-model:items-per-page="itemsPerPage"
-        v-model:page="page"
-        :loading="isLoading"
-        :items-length="total"
-        :headers="headers"
-        :items="records"
-        item-value="total"
-        class="text-no-wrap text-sm rounded-0"
-        @update:options="updateOptions"
-      >
+      <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :loading="isLoading"
+        :items-length="total" :headers="headers" :items="records" item-value="total"
+        class="text-no-wrap text-sm rounded-0" @update:options="updateOptions">
         <template #item.academic_requirement="{ item }">
           <ShowMore :text="item.academic_requirement" :lines="3" />
         </template>
@@ -595,11 +536,7 @@ onMounted(async () => {
           <ShowMore :text="item.english_requirement" :lines="3" />
         </template>
         <template #bottom>
-          <TablePagination
-            v-model:page="page"
-            :items-per-page="itemsPerPage"
-            :total-items="total"
-          />
+          <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="total" />
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
@@ -631,10 +568,11 @@ onMounted(async () => {
   max-block-size: 250px;
 }
 
-.v-data-table > .v-data-table__wrapper > table > thead > tr > th,
+.v-data-table>.v-data-table__wrapper>table>thead>tr>th,
 td {
   overflow: auto;
-  max-inline-size: 30rem; /* Adjust the max-width as needed */
+  max-inline-size: 30rem;
+  /* Adjust the max-width as needed */
   white-space: nowrap;
   word-wrap: break-word;
 }
