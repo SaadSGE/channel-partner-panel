@@ -156,4 +156,17 @@ class ApplicationList extends Model
 
         }
     }
+
+    // Add this relationship
+    public function applicationOfficerAssignments()
+    {
+        return $this->hasMany(ApplicationOfficerAssignment::class, 'application_id');
+    }
+
+    public function applicationOfficers()
+    {
+        return $this->belongsToMany(User::class, 'application_officer_assignments', 'application_id', 'user_id')
+                    ->withPivot('status')
+                    ->withTimestamps();
+    }
 }

@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
 
 export const useActivityLogStore = defineStore({
   id: 'activityLog',
@@ -29,36 +29,38 @@ export const useActivityLogStore = defineStore({
             date_from: this.dateFrom,
             date_to: this.dateTo,
           },
-        });
-        this.activityLogs = response.data.data;
-        this.totalLogs = response.data.total;
-        return response;
+        })
+
+        this.activityLogs = response.data.data
+        this.totalLogs = response.data.total
+        
+        return response
       } catch (error) {
-        console.error('Error fetching user activity logs:', error);
-        throw error;
+        console.error('Error fetching user activity logs:', error)
+        throw error
       }
     },
     setPage(page) {
-      this.currentPage = page;
+      this.currentPage = page
     },
     setPerPage(perPage) {
-      this.perPage = perPage;
+      this.perPage = perPage
     },
     setSorting(sortBy, sortOrder) {
-      this.sortBy = sortBy;
-      this.sortOrder = sortOrder;
+      this.sortBy = sortBy
+      this.sortOrder = sortOrder
     },
     setActivityType(activityType) {
-      this.activityType = activityType;
+      this.activityType = activityType
     },
     setSearchQuery(query) { // Add this action
-      this.searchQuery = query;
+      this.searchQuery = query
     },
     setDateFrom(date) {
-      this.dateFrom = date;
+      this.dateFrom = date
     },
     setDateTo(date) {
-      this.dateTo = date;
+      this.dateTo = date
     },
     async fetchApplicationActivityLogs(applicationId) {
       try {
@@ -72,14 +74,16 @@ export const useActivityLogStore = defineStore({
             activity_type: this.activityType,
             search: this.searchQuery,
           },
-        });
-        this.activityLogs = response.data.data;
-        this.totalLogs = response.data.total;
-        return response;
+        })
+
+        this.activityLogs = response.data.data
+        this.totalLogs = response.data.total
+        
+        return response
       } catch (error) {
-        console.error('Error fetching application activity logs:', error);
-        throw error;
+        console.error('Error fetching application activity logs:', error)
+        throw error
       }
     },
   },
-});
+})

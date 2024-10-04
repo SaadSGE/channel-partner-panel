@@ -77,10 +77,11 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
     Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+    Route::post('applications/{id}/assign-officer', [ApplicationController::class, 'assignApplicationOfficer']);
+    Route::get('applications/{id}/officers', [ApplicationController::class, 'getApplicationOfficers']);
+    Route::get('/fetch-application-officers', [UserController::class, 'fetchApplicationOfficers']);
 
 });
-
-
 
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');

@@ -20,6 +20,7 @@ declare module 'vue' {
     AppDateTimePicker: typeof import('./resources/js/@core/components/app-form-elements/AppDateTimePicker.vue')['default']
     AppDrawerHeaderSection: typeof import('./resources/js/@core/components/AppDrawerHeaderSection.vue')['default']
     ApplicationActivityLog: typeof import('./resources/js/components/ActivityLog/ApplicationActivityLog.vue')['default']
+    ApplicationOfficerAssignments: typeof import('./resources/js/components/ApplicationOfficerAssignments.vue')['default']
     AppLoadingIndicator: typeof import('./resources/js/components/AppLoadingIndicator.vue')['default']
     AppPricing: typeof import('./resources/js/components/AppPricing.vue')['default']
     AppSearchHeader: typeof import('./resources/js/components/AppSearchHeader.vue')['default']

@@ -423,4 +423,11 @@ class UserController extends Controller
 
         return $this->successJsonResponse('Editors fetched successfully', $editors);
     }
+
+    public function fetchApplicationOfficers()
+    {
+        $applicationOfficers = User::where('role', 'application officer')->get(['id', 'first_name', 'last_name', 'email']);
+
+        return $this->successJsonResponse('Application officers fetched successfully', $applicationOfficers);
+    }
 }

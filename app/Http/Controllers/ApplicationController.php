@@ -29,6 +29,7 @@ use App\Models\University;
 use App\Models\Intake;
 use App\Notifications\EmailNotification;
 use App\Services\EmailService;
+use App\Models\ApplicationOfficerAssignment;
 
 class ApplicationController extends Controller
 {
@@ -766,6 +767,37 @@ class ApplicationController extends Controller
             Log::error('Failed to restore application', ['error' => $e->getMessage(), 'id' => $id]);
             return $this->exceptionJsonResponse('Failed to restore application', $e);
         }
+    }
+
+    public function assignApplicationOfficer(Request $request, $id)
+    {
+        $application = ApplicationList::where('application_id', $id)->firstOrFail();
+        $user = User::findOrFail($request->user_id);
+
+        if ($user->role !== 'Application Officer') {
+            return $this->errorJsonResponse('Selected user is not an application officer', [], 400);
+        }
+
+        $pendingAssignment = $application->applicationOfficerAssignments()->where('status', 'pending')->first();
+        if ($pendingAssignment) {
+            return $this->errorJsonResponse('There is already a pending assignment for this application', [], 400);
+        }
+
+        $assignment = ApplicationOfficerAssignment::create([
+            'application_id' => $application->id,
+            'user_id' => $user->id,
+            'status' => 'pending',
+            'created_by' => auth()->id(),
+        ]);
+
+        return $this->successJsonResponse('Application officer assigned successfully', $assignment->load('user'));
+    }
+
+    public function getApplicationOfficers($id)
+    {
+        $application = ApplicationList::where('application_id', $id)->firstOrFail();
+        $assignments = $application->applicationOfficerAssignments()->with('user')->get();
+        return $this->successJsonResponse('Application officers retrieved successfully', $assignments);
     }
 
 

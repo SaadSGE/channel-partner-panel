@@ -1,7 +1,7 @@
 // src/stores/applicationStore.js
 import {
-  defineStore
-} from 'pinia';
+  defineStore,
+} from 'pinia'
 
 export const useApplicationListStore = defineStore({
   id: "application-list",
@@ -15,6 +15,8 @@ export const useApplicationListStore = defineStore({
     allStatuses: [],
     comments: [],
     universityCommunications: [],
+    applicationOfficers: [],
+    applicationOfficerOptions: [],
   }),
   actions: {
     async getApplicationList(
@@ -30,10 +32,10 @@ export const useApplicationListStore = defineStore({
       applicationOfficer = null,
       studentEmail = '',
       dateFrom = null,
-      dateTo = null
+      dateTo = null,
     ) {
       try {
-        const response = await $api('/application', {
+        return await $api('/application', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -51,14 +53,13 @@ export const useApplicationListStore = defineStore({
             applicationOfficer,
             studentEmail,
             dateFrom,
-            dateTo
-          }
-        });
-        return response;
+            dateTo,
+          },
+        })
       } catch (error) {
-        console.error('Error getting application list:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        throw error;
+        console.error('Error getting application list:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
       }
     },
 
@@ -70,18 +71,21 @@ export const useApplicationListStore = defineStore({
           headers: {
             'Content-Type': 'application/json',
           },
-        });
-        this.applicationData = response.data;
+        })
+
+        this.applicationData = response.data
+
         // Assuming response.data.student.document is an array of objects with a `path` property
-        this.documents = response.data.student.document.map(doc => doc.path);
-        this.students = response.data.student;
-        this.comments = response.data.comments;
-        this.universityCommunications = response.data.university_communications;
-        return response.data;
+        this.documents = response.data.student.document.map(doc => doc.path)
+        this.students = response.data.student
+        this.comments = response.data.comments
+        this.universityCommunications = response.data.university_communications
+
+        return response.data
       } catch (error) {
-        console.error('Error getting application details:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        throw error;
+        console.error('Error getting application details:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
       }
     },
 
@@ -90,12 +94,13 @@ export const useApplicationListStore = defineStore({
       try {
         await $api(`/application/${id}`, {
           method: 'DELETE',
-        });
+        })
+
         // Refresh the application list after deletion
-        await this.getApplicationList();
+        await this.getApplicationList()
       } catch (error) {
-        console.error('Error deleting application:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        console.error('Error deleting application:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
       }
     },
 
@@ -106,12 +111,13 @@ export const useApplicationListStore = defineStore({
           headers: {
             'Content-Type': 'application/json',
           },
-        });
-        this.statuses = response.data;
+        })
+
+        this.statuses = response.data
       } catch (error) {
-        console.error('Error getting application list:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        throw error;
+        console.error('Error getting application list:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
       }
     },
     async getApplicationAllStatuses() {
@@ -121,12 +127,13 @@ export const useApplicationListStore = defineStore({
           headers: {
             'Content-Type': 'application/json',
           },
-        });
-        this.allStatuses = response.data;
+        })
+
+        this.allStatuses = response.data
       } catch (error) {
-        console.error('Error getting application list:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        throw error;
+        console.error('Error getting application list:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
       }
     },
     async updateStatus(id, formData) {
@@ -136,12 +143,14 @@ export const useApplicationListStore = defineStore({
           method: 'POST',
           body: formData,
 
-        });
-        return response.data;
+        })
+
+
+        return response.data
       } catch (error) {
-        console.error('Error updating status:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        throw error;
+        console.error('Error updating status:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
       }
     },
     async addComment(id, comment) {
@@ -149,14 +158,16 @@ export const useApplicationListStore = defineStore({
         const response = await $api(`/application/${id}/comment`, {
           method: 'POST',
           body: JSON.stringify({
-            comment
+            comment,
           }),
-        });
-        return response.data;
+        })
+
+
+        return response.data
       } catch (error) {
-        console.error('Error adding comment:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        throw error;
+        console.error('Error adding comment:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
       }
     },
     async getUniversityCommunications(id) {
@@ -166,33 +177,80 @@ export const useApplicationListStore = defineStore({
           headers: {
             'Content-Type': 'application/json',
           },
-        });
-        this.universityCommunications = response.data;
+        })
+
+        this.universityCommunications = response.data
       } catch (error) {
-        console.error('Error getting university communications:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        throw error;
+        console.error('Error getting university communications:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
       }
     },
     async addUniversityCommunication(id, {
       subject,
-      message
+      message,
     }) {
       try {
         const response = await $api(`/application/${id}/university-communication`, {
           method: 'POST',
           body: JSON.stringify({
             subject,
-            message
+            message,
           }),
-        });
-        return response.data;
+        })
+
+
+        return response.data
       } catch (error) {
-        console.error('Error adding university communication:', error);
-        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        throw error;
+        console.error('Error adding university communication:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
+      }
+    },
+    async assignApplicationOfficer(applicationId, userId) {
+      try {
+        const response = await $api(`/applications/${applicationId}/assign-officer`, {
+          method: 'POST',
+          body: JSON.stringify({ user_id: userId }),
+        })
+
+        await this.fetchApplicationOfficers(applicationId)
+
+        return response.data
+      } catch (error) {
+        console.log(error)
+        handleErrorResponse(error)
+
       }
     },
 
+    async fetchApplicationOfficers(applicationId) {
+      try {
+        const response = await $api(`/applications/${applicationId}/officers`, {
+          method: 'GET',
+        })
+
+        this.applicationOfficers = response.data
+
+        return response.data
+      } catch (error) {
+        throw error.response?.data?.message || 'An error occurred while fetching application officers.'
+      }
+    },
+
+    async loadAllApplicationOfficers() {
+      try {
+        const response = await $api('/fetch-application-officers', {
+          method: 'GET',
+        })
+
+        this.applicationOfficerOptions = response.data
+
+        return response.data
+      } catch (error) {
+        console.error('Error loading application officers:', error)
+        throw error.response?.data?.message || 'An error occurred while loading application officers.'
+      }
+    },
   },
-});
+})
