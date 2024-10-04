@@ -83,6 +83,7 @@ const toggleReadUnread = (read, id) => {
             <template v-for="(notification, index) in props.notifications" :key="notification.id">
               <VDivider v-if="index > 0" />
               <VListItem link lines="one" min-height="66px" class="list-item-hover-class"
+                :class="{ 'unread-notification': !notification.read }"
                 @click="$emit('click:notification', notification)">
                 <!-- Slot: Prepend -->
                 <!-- Handles Avatar: Image, Icon, Text -->
@@ -110,9 +111,6 @@ const toggleReadUnread = (read, id) => {
                     <VIcon size="10" icon="tabler-circle-filled" :color="!notification.read ? 'primary' : '#a8aaae'"
                       :class="`${notification.read ? 'visible-in-hover' : ''}`" class="mb-2"
                       @click.stop="toggleReadUnread(notification.read, notification.id)" />
-
-                    <VIcon size="20" icon="tabler-x" class="visible-in-hover"
-                      @click="$emit('remove', notification.id)" />
                   </div>
                 </div>
               </VListItem>
@@ -161,6 +159,10 @@ const toggleReadUnread = (read, id) => {
     border-radius: 0 !important;
     margin: 0 !important;
     padding-block: 0.75rem !important;
+
+    &.unread-notification {
+      background-color: rgba(var(--v-theme-primary), 0.05);
+    }
   }
 }
 
