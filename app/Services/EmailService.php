@@ -76,7 +76,7 @@ class EmailService
                     . "<strong>New Status:</strong> {$application->status_text}<br>"
                     . "<strong>Comment:</strong> " . nl2br(e($additionalDetails['comment'])) . "<br>";
                 $notification_text = "Status update for application {$application->application_id}";
-                $notification_route = 'application/details/' . $application->application_id;
+                $notification_route = 'application-details';
                 break;
 
             case 'comment_added':
@@ -88,7 +88,7 @@ class EmailService
                     . "<strong>University Name:</strong> {$application->university->name}<br>"
                     . "<strong>Intake Name:</strong> {$application->intake->name}<br>";
                 $notification_text = "New comment added to application {$application->application_id}";
-                $notification_route = 'application/details/' . $application->application_id;
+                $notification_route = 'application-details';
                 break;
 
             case 'university_communication_added':
@@ -101,7 +101,7 @@ class EmailService
                     . "<strong>University Name:</strong> {$application->university->name}<br>"
                     . "<strong>Intake Name:</strong> {$application->intake->name}<br>";
                 $notification_text = "New university communication for application {$application->application_id}";
-                $notification_route = 'application/details/' . $application->application_id;
+                $notification_route = 'application-details';
                 break;
 
             case 'new_application':
@@ -112,7 +112,7 @@ class EmailService
                     . "<strong>University Name:</strong> {$application->university->name}<br>"
                     . "<strong>Intake Name:</strong> {$application->intake->name}<br>";
                 $notification_text = "New application submitted: {$application->application_id}";
-                $notification_route = 'application/details/' . $application->application_id;
+                $notification_route = 'application-details';
                 break;
         }
 

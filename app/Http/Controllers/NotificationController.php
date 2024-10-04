@@ -29,7 +29,9 @@ class NotificationController extends Controller
                     'notification_type' => $notification->data['notification_type'] ?? '',
                     'sender_name' => $notification->data['sender_name'] ?? '',
                     'sender_email' => $notification->data['sender_email'] ?? '',
+
                     'notification_route' => $notification->data['notification_route'] ?? '',
+                    'application_id' => $notification->data['application_id'] ?? '',
                 ];
             });
 

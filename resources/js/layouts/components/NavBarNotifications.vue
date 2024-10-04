@@ -28,15 +28,13 @@ const handleNotificationClick = notification => {
     markRead(notification.id)
   }
   if (notification.notification_route) {
-    // Check if the current route is already an application details page
-    const isApplicationDetailsPage = router.currentRoute.value.path.startsWith('/application/details/')
-
-    if (isApplicationDetailsPage) {
-      // If we're already on an application details page, use push with replace: true
-      router.push({ path: notification.notification_route, replace: true })
+    const currentRouteName = router.currentRoute.value.name
+    if (currentRouteName === notification.notification_route) {
+      // If on the same route, just reload the page
+      router.go(0)
     } else {
-      // Otherwise, push a new route
-      router.push(notification.notification_route)
+      // If routes are different, navigate without forcing a reload
+      router.push({ name: notification.notification_route, params: { id: notification.application_id } })
     }
   }
 }

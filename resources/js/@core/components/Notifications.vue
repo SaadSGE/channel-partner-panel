@@ -53,7 +53,7 @@ const toggleReadUnread = (read, id) => {
       <VIcon size="28" icon="tabler-bell" />
     </VBadge>
 
-    <VMenu activator="parent" width="380px" :location="props.location" offset="12px" :close-on-content-click="false">
+    <VMenu activator="parent" width="380px" :location="props.location" offset="12px" :close-on-content-click="true">
       <VCard class="d-flex flex-column">
         <!-- 👉 Header -->
         <VCardItem class="notification-section">
