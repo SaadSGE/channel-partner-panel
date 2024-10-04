@@ -12,7 +12,7 @@ import ApplicationOfficerAssignments from '@/components/ApplicationOfficerAssign
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Document from "./details-document.vue";
 
 const isAdmin = ref(getUserRole() === 'admin')
@@ -92,6 +92,12 @@ const studentData = ref({
 
 const documents = ref([])
 const allStatuses = ref([])
+
+const router = useRouter();
+
+const goBack = () => {
+  router.back();
+};
 
 onMounted(async () => {
   await refreshData()
@@ -176,7 +182,13 @@ const handleAddUniversityComm = async () => {
 
 <template>
   <VCard>
-    <VCardTitle>Application Details</VCardTitle>
+    <VCardTitle class="d-flex justify-space-between align-center">
+      <div>Application Details</div>
+      <VBtn color="primary" @click="goBack">
+        <VIcon icon="tabler-arrow-left" class="mr-2" />
+        Back
+      </VBtn>
+    </VCardTitle>
     <VCardText>
       <!-- Modal for changing status -->
       <VDialog v-model="showModal" max-width="500px">

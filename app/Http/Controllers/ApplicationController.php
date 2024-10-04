@@ -775,12 +775,20 @@ class ApplicationController extends Controller
         $user = User::findOrFail($request->user_id);
 
         if ($user->role !== 'Application Officer') {
-            return $this->errorJsonResponse('Selected user is not an application officer', [], 400);
+            return $this->errorJsonResponse('Selected user is not an application officer', [], 409);
         }
+        //check if status is accpeted or pending
+        //return separate error message for each status
 
         $pendingAssignment = $application->applicationOfficerAssignments()->where('status', 'pending')->first();
+        $acceptedAssignment = $application->applicationOfficerAssignments()->where('status', 'accepted')->first();
+
         if ($pendingAssignment) {
-            return $this->errorJsonResponse('There is already a pending assignment for this application', [], 400);
+            return $this->errorJsonResponse('There is already a pending assignment for this application', [], 409);
+        }
+
+        if ($acceptedAssignment) {
+            return $this->errorJsonResponse('This application has already been accepted by an application officer', [], 409);
         }
 
         $assignment = ApplicationOfficerAssignment::create([
@@ -798,6 +806,111 @@ class ApplicationController extends Controller
         $application = ApplicationList::where('application_id', $id)->firstOrFail();
         $assignments = $application->applicationOfficerAssignments()->with('user')->get();
         return $this->successJsonResponse('Application officers retrieved successfully', $assignments);
+    }
+
+    public function getApplicationRequests(Request $request)
+    {
+        $user = auth('api')->user();
+        $perPage = (int) $request->query('perPage', 10);
+        $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
+        $sortBy = $request->query('sortBy', 'created_at');
+        $orderBy = $request->query('orderBy', 'desc');
+
+        $query = ApplicationList::with(['student', 'intake', 'university', 'course', 'applicationOfficerAssignments','user.parent'])
+            ->whereHas('applicationOfficerAssignments', function ($query) use ($user) {
+                $query->where('user_id', $user->id)->where('status', 'pending');
+            });
+
+        $query->when($searchQuery, function ($q) use ($searchQuery) {
+            return $q->where(function ($q) use ($searchQuery) {
+                $q->where('application_id', 'LIKE', "%$searchQuery%")
+                    ->orWhereHas('student', function ($q) use ($searchQuery) {
+                        $q->where('first_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('last_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('university', function ($q) use ($searchQuery) {
+                        $q->where('name', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('course', function ($q) use ($searchQuery) {
+                        $q->where('name', 'LIKE', "%$searchQuery%");
+                    });
+            });
+        })->when($request->filled('status'), function ($q) use ($request) {
+            return $q->where('status', $request->query('status'));
+        })->when($request->filled('university'), function ($q) use ($request) {
+            return $q->where('university_id', $request->query('university'));
+        })->when($request->filled('dateFrom'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '>=', $request->query('dateFrom'));
+        })->when($request->filled('dateTo'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '<=', $request->query('dateTo'));
+        });
+
+        // Sorting
+        $query->orderBy($sortBy, $orderBy);
+
+        // Pagination
+        $applicationRequests = $query->paginate($perPage);
+
+        // Log the activity
+        $this->logApplicationRequestsActivity($request, $applicationRequests->total());
+
+        return $this->successJsonResponse("Application requests found!", $applicationRequests->items(), $applicationRequests->total());
+    }
+
+    private function logApplicationRequestsActivity(Request $request, int $totalResults)
+    {
+        $activityType = 'application_requests_view';
+        $properties = [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'total_results' => $totalResults,
+        ];
+
+        // Check if any filter or search is applied
+        $filterParams = ['status', 'university', 'dateFrom', 'dateTo'];
+        $appliedFilters = array_filter($request->only($filterParams));
+
+        if (!empty($appliedFilters)) {
+            $activityType = 'application_requests_filter';
+            $properties['filters'] = $appliedFilters;
+        }
+
+        if ($request->filled('searchQuery')) {
+            $activityType = 'application_requests_search';
+            $properties['search_query'] = $request->query('searchQuery');
+        }
+
+        activity()
+            ->causedBy(Auth::user())
+            ->withProperties($properties)
+            ->log($activityType);
+    }
+
+    public function acceptApplicationRequest($id)
+    {
+        $user = auth()->user();
+        $assignment = ApplicationOfficerAssignment::where('application_id', $id)
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $assignment->update(['status' => 'accepted']);
+
+        return $this->successJsonResponse('Application request accepted successfully');
+    }
+
+    public function rejectApplicationRequest($id)
+    {
+        $user = auth()->user();
+        $assignment = ApplicationOfficerAssignment::where('application_id', $id)
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $assignment->update(['status' => 'rejected']);
+
+        return $this->successJsonResponse('Application request rejected successfully');
     }
 
 

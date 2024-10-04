@@ -139,21 +139,30 @@ class ApplicationList extends Model
     {
         if ($user->hasRole('admin')) {
             if ($id) {
-                \Log::info($id);
-                $user = User::find($id);
-                $childIds = $user->fetch_children;
-                $userIds = array_merge([$user->id], $childIds);
+                $selectedUser = User::find($id);
+                $childIds = $selectedUser ? $selectedUser->fetch_children : [];
+                $userIds = array_merge([$id], $childIds);
                 $query->whereIn('created_by', $userIds);
             }
-            // Don't modify the query for admins
+            // For admins, don't add any further restrictions if no $id is provided
         } else {
             if ($id) {
-                $user = User::find($id);
+                $selectedUser = User::find($id);
+            } else {
+                $selectedUser = $user;
             }
-            $childIds = $user->fetch_children;
-            $userIds = array_merge([$user->id], $childIds);
-            $query->whereIn('created_by', $userIds);
 
+            $childIds = $selectedUser ? $selectedUser->fetch_children : [];
+            $userIds = array_merge([$selectedUser->id], $childIds);
+
+            $query->where(function ($q) use ($userIds, $user) {
+                if (!empty($userIds)) {
+                    $q->whereIn('created_by', $userIds);
+                }
+                $q->orWhereHas('applicationOfficerAssignments', function ($subQ) use ($user) {
+                    $subQ->where('user_id', $user->id)->where('status', 'accepted');
+                });
+            });
         }
     }
 

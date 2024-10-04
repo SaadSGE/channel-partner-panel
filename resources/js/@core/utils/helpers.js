@@ -30,79 +30,84 @@ export const isToday = date => {
 
 export const containsString = (fullString, stringToContain) => {
   if (!fullString || !stringToContain) return false
+
   return fullString.toLowerCase().includes(stringToContain.toLowerCase())
 }
 
 export const getUserRole = () => {
-  const userData = useCookie('userData').value;
+  const userData = useCookie('userData').value
 
-  if (!userData) return null;
+  if (!userData) return null
 
   try {
 
-    return userData.main_role || null; // Return the role, or null if not found
+    return userData.main_role || null // Return the role, or null if not found
   } catch (error) {
-    console.error('Error parsing userData cookie:', error);
-    return null;
+    console.error('Error parsing userData cookie:', error)
+
+    return null
   }
-};
+}
 
 
-export const formatKey = (key) => {
+export const formatKey = key => {
   return key
     .replace(/_/g, " ") // Replace underscores with spaces
-    .replace(/\b\w/g, (l) => l.toUpperCase()); // Capitalize the first letter of each word
+    .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize the first letter of each word
 }
+
 // 👉 Handle error response
-export const handleErrorResponse = (error) => {
-  let firstErrorMessage = 'An unexpected error occurred';
+export const handleErrorResponse = error => {
+  let firstErrorMessage = 'An unexpected error occurred'
 
-  if (error.response && error.response._data) {
-    const { status, message, data } = error.response._data;
+  if (error.response?.data || error.response?._data) {
+    const { status, message, data } = error.response._data || error.response.data
 
-    // Check if the response indicates a validation error
-    if (!status) {
-      // If `data` is an array, extract the first error message
-      if (Array.isArray(data) && data.length > 0) {
+    // Immediately throw an error if status 409 is encountered
+    if (!status && error.response.status === 409) {
+      throw new Error(message || 'An unexpected conflict occurred')
+    }
 
-        firstErrorMessage = data[0];
-      }
+    if (Array.isArray(data) && data.length > 0) {
+      firstErrorMessage = data[0]
     } else {
-
-      // If it's a different kind of error, use the provided message or a generic one
-      firstErrorMessage = message || 'An unexpected error occurred';
+      firstErrorMessage = message || 'An unexpected error occurred'
     }
   }
 
-  // Log the error response data for debugging
-  if (error.response) {
-    console.error('Error responses data:', error.response._data);
-  }
+  console.error('Error response data:', error.response?._data)
+
+  throw new Error(firstErrorMessage)
+}
 
 
-  // Re-throw the first error message as a new Error
-  throw new Error(firstErrorMessage);
-};
-
-// Application Status Mapping with colors
+// Application Status Mapping with colors and names
 export const applicationStatuses = {
-  0: { text: 'Application Processing', color: 'warning' },
-  1: { text: 'Application Submitted', color: 'info' },
+  0: { text: 'Application Processing', color: 'primary' },
+  1: { text: 'Application Submitted', color: 'success' },
   2: { text: 'Pending Docs', color: 'warning' },
-  3: { text: 'Offer Issue Conditional', color: 'success' },
-  4: { text: 'Offer Issue Unconditional', color: 'success' },
-  5: { text: 'Need Payment', color: 'error' },
+  3: { text: 'Offer Issue Conditional', color: 'info' },
+  4: { text: 'Offer Issue Unconditional', color: 'info' },
+  5: { text: 'Need Payment', color: 'warning' },
   6: { text: 'CAS Issued', color: 'success' },
   7: { text: 'Additional Doc Needed', color: 'warning' },
-  8: { text: 'Refund Required', color: 'error' },
-  9: { text: 'Application Rejected', color: 'error' },
-  10: { text: 'Session Expired', color: 'error' },
+  8: { text: 'Refund Required', color: 'danger' },
+  9: { text: 'Application Rejected', color: 'danger' },
+  10: { text: 'Session Expired', color: 'secondary' },
   11: { text: 'Doc Received', color: 'success' },
   12: { text: 'Partial Payment', color: 'warning' },
-};
+}
+
+export const resolveStatusColor = status => {
+  return applicationStatuses[status]?.color || 'secondary'
+}
+
+export const resolveStatusName = status => {
+  return applicationStatuses[status]?.text || 'Unknown Status'
+}
 
 // Get status info (text and color) from status code
-export const getApplicationStatusInfo = (statusCode) => {
-  return applicationStatuses[statusCode] || { text: 'Unknown Status', color: 'default' };
-};
+export const getApplicationStatusInfo = statusCode => {
+  return applicationStatuses[statusCode] || { text: 'Unknown Status', color: 'default' }
+}
 

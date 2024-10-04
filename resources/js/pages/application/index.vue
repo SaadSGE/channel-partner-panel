@@ -15,10 +15,7 @@ definePage({
 
 import Filters from '@/@core/components/Filters.vue';
 import { useApplicationListStore } from '@/@core/stores/applicationList';
-
-
-
-
+import { getUserRole, resolveStatusColor, resolveStatusName } from '@/@core/utils/helpers';
 import Swal from 'sweetalert2';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -141,7 +138,7 @@ const headers = ref([
   { title: 'Student Name', key: 'student.name' },
   { title: 'Student Email', key: 'student.email' },
   ...(isAdmin.value
-    ? [{ title: 'Application Officer', key: 'user.parent.email' }]
+    ? [{ title: 'Application Control Officer', key: 'user.parent.email' }]
     : []),
   { title: 'Channel Partner', key: 'user.email' },
   { title: 'University/Course Details', key: 'university.name' },
@@ -149,33 +146,6 @@ const headers = ref([
   { title: 'Date Added', key: 'created_at' },
   { title: 'Action', key: 'action', sortable: false },
 ])
-
-// Status Color Resolvers
-const resolveStatusColor = status => {
-  const statusColors = {
-    0: 'primary', 1: 'success', 2: 'warning', 3: 'info',
-    4: 'info', 5: 'warning', 6: 'success', 7: 'warning',
-    8: 'danger', 9: 'danger', 10: 'secondary', 11: 'success',
-    12: 'warning',
-  }
-
-
-  return statusColors[status] || 'secondary'
-}
-
-const resolveStatusName = status => {
-  const statusNames = {
-    0: 'Application Processing', 1: 'Application Submitted',
-    2: 'Pending Docs', 3: 'Offer Issue Conditional',
-    4: 'Offer Issue Unconditional', 5: 'Need Payment',
-    6: 'CAS Issued', 7: 'Additional Doc Needed',
-    8: 'Refund Required', 9: 'Application Rejected',
-    10: 'Session Expired', 11: 'Doc Received', 12: 'Partial Payment',
-  }
-
-
-  return statusNames[status] || 'Unknown Status'
-}
 
 // Add this computed property
 const tableHeight = computed(() => {

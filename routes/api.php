@@ -81,6 +81,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('applications/{id}/officers', [ApplicationController::class, 'getApplicationOfficers']);
     Route::get('/fetch-application-officers', [UserController::class, 'fetchApplicationOfficers']);
 
+    Route::get('/application-requests', [ApplicationController::class, 'getApplicationRequests']);
+    Route::post('/application-requests/{id}/accept', [ApplicationController::class, 'acceptApplicationRequest']);
+    Route::post('/application-requests/{id}/reject', [ApplicationController::class, 'rejectApplicationRequest']);
 });
 
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);

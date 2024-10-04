@@ -8,7 +8,7 @@
             item-value="id" label="Select Application Officer" placeholder="Search and select an officer" clearable />
         </VCol>
         <VCol cols="12" md="6" class="d-flex align-center">
-          <VBtn color="primary" :disabled="!selectedOfficer" @click="assignApplicationOfficer">
+          <VBtn class="mt-6" color="primary" :disabled="!selectedOfficer" @click="assignApplicationOfficer">
             Assign Officer
           </VBtn>
         </VCol>
@@ -27,7 +27,12 @@
               <tr v-for="officer in filteredOfficers" :key="officer.id">
                 <td>{{ officer.user.full_name }}</td>
                 <td>{{ officer.user.email }}</td>
-                <td>{{ officer.status }}</td>
+                <td>
+                  <VChip :color="getStatusColor(officer.status)"
+                    :text-color="getTextColor(getStatusColor(officer.status))" size="small" label>
+                    {{ getStatusText(officer.status) }}
+                  </VChip>
+                </td>
               </tr>
             </tbody>
           </VTable>
@@ -117,7 +122,7 @@ const assignApplicationOfficer = async () => {
     }
   } catch (error) {
 
-
+    console.log(error)
     Swal.fire({
       icon: 'error',
       title: 'Assignment Failed',
@@ -139,4 +144,40 @@ onMounted(async () => {
 })
 
 watch(() => props.applicationId, fetchAssignedOfficers)
+
+const getStatusColor = (status) => {
+  const colors = {
+    accepted: 'success',
+    rejected: 'error',
+    pending: 'warning',
+  }
+  return colors[status.toLowerCase()] || 'secondary'
+}
+
+const getStatusText = (status) => {
+  const texts = {
+    accepted: 'Accepted',
+    rejected: 'Rejected',
+    pending: 'Pending',
+  }
+  return texts[status.toLowerCase()] || status
+}
+
+const getTextColor = (bgColor) => {
+  const colors = {
+    'success': 'white',
+    'error': 'white',
+    'warning': 'black',
+    'secondary': 'white',
+  }
+  return colors[bgColor] || 'white'
+}
 </script>
+
+<style scoped>
+.v-table {
+  td {
+    padding: 0.5rem;
+  }
+}
+</style>

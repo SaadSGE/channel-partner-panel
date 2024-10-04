@@ -2,6 +2,7 @@
 import {
   defineStore,
 } from 'pinia'
+import { handleErrorResponse } from '../utils/helpers'
 
 export const useApplicationListStore = defineStore({
   id: "application-list",
@@ -218,7 +219,7 @@ export const useApplicationListStore = defineStore({
 
         return response.data
       } catch (error) {
-        console.log(error)
+
         handleErrorResponse(error)
 
       }
@@ -250,6 +251,69 @@ export const useApplicationListStore = defineStore({
       } catch (error) {
         console.error('Error loading application officers:', error)
         throw error.response?.data?.message || 'An error occurred while loading application officers.'
+      }
+    },
+
+    async fetchApplicationRequests() {
+      try {
+
+
+        const response = await $api('/application-requests', {
+          method: 'GET',
+        })
+
+        return response.data
+      } catch (error) {
+        console.error('Error fetching application requests:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async acceptApplicationRequest(id) {
+      try {
+        const response = await $api(`/application-requests/${id}/accept`, {
+          method: 'POST',
+        })
+
+
+        return response.data
+      } catch (error) {
+        console.error('Error accepting application request:', error)
+        throw error
+      }
+    },
+
+    async rejectApplicationRequest(id) {
+      try {
+        const response = await $api(`/application-requests/${id}/reject`, {
+          method: 'POST',
+        })
+
+
+        return response.data
+      } catch (error) {
+        console.error('Error rejecting application request:', error)
+        throw error
+      }
+    },
+
+    async getApplicationRequests(page, perPage, searchQuery, sortBy, sortOrder) {
+      try {
+        return await $api('/application-requests', {
+          method: 'GET',
+          params: {
+            page,
+            perPage: perPage,
+            searchQuery,
+            sortBy,
+            sortOrder,
+          },
+        })
+      } catch (error) {
+        console.error('Error fetching application requests:', error)
+        throw error
       }
     },
   },
