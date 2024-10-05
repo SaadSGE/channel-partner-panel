@@ -1,199 +1,167 @@
 <script setup>
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
-import { computed, onMounted, ref } from 'vue';
+import AddEditPermissionDialog from '@/components/dialogs/AddEditPermissionDialog.vue';
+import Swal from 'sweetalert2';
+import { onMounted, ref, watch } from 'vue';
+
 const store = useRolePermissionStore();
+
 definePage({
   meta: {
     action: 'read',
     subject: 'record',
   },
 })
+
 const headers = [
-  {
-    title: 'Name',
-    key: 'name',
-  },
-
-
-  {
-    title: 'Actions',
-    key: 'actions',
-    sortable: false,
-  },
+  { title: 'Name', key: 'name' },
+  { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-const search = ref('')
+const permissions = ref([]);
+const totalPermissions = ref(0);
+const itemsPerPage = ref(10);
+const page = ref(1);
+const sortBy = ref('name');
+const orderBy = ref('asc');
+const search = ref('');
+const isLoading = ref(false);
+const isPermissionDialogVisible = ref(false);
+const editedPermission = ref(null);
 
-// Data table options
-const itemsPerPage = ref(10)
-const page = ref(1)
-const sortBy = ref()
-const orderBy = ref()
+const fetchPermissions = async () => {
+  isLoading.value = true;
+  try {
+    const response = await store.getAllPermissionForTable({
+      page: page.value,
+      perPage: itemsPerPage.value,
+      sortBy: sortBy.value,
+      orderBy: orderBy.value,
+      searchQuery: search.value,
+    });
+    permissions.value = response.data;
+    totalPermissions.value = response.total;
+  } catch (error) {
+    console.error('Error fetching permissions:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 const updateOptions = options => {
-  sortBy.value = options.sortBy[0]?.key
-  orderBy.value = options.sortBy[0]?.order
-}
+  sortBy.value = options.sortBy[0]?.key || 'name';
+  orderBy.value = options.sortBy[0]?.order || 'asc';
+  fetchPermissions();
+};
 
-const isPermissionDialogVisible = ref(false)
-const isAddPermissionDialogVisible = ref(false)
-const permissionName = ref('')
+const editPermission = (permission) => {
+  editedPermission.value = { ...permission };
+  isPermissionDialogVisible.value = true;
+};
 
-const colors = {
-  'support': {
-    color: 'info',
-    text: 'Support',
-  },
-  'users': {
-    color: 'success',
-    text: 'Users',
-  },
-  'manager': {
-    color: 'warning',
-    text: 'Manager',
-  },
-  'administrator': {
-    color: 'primary',
-    text: 'Administrator',
-  },
-  'restricted-user': {
-    color: 'error',
-    text: 'Restricted User',
-  },
-}
+const deletePermission = async (id) => {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'Do you want to delete this permission?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+  });
 
+  if (result.isConfirmed) {
+    try {
+      await store.deletePermission(id);
+      fetchPermissions();
+      Swal.fire('Deleted!', 'The permission has been deleted.', 'success');
+    } catch (error) {
+      Swal.fire('Error!', 'There was an error deleting the permission.', 'error');
+    }
+  }
+};
 
-const permissionData = ref([]);
-const permissions = ref([]);
-onMounted(async () => {
-  await store.getAllPermission();
-  permissions.value = store.permissions;
+const onPermissionSaved = async () => {
+  fetchPermissions();
+  isPermissionDialogVisible.value = false;
+  editedPermission.value = null;
+};
 
+watch([search], () => {
+  fetchPermissions();
 });
-const totalPermissions = computed(() => permissionData.value.total)
 
-const editPermission = name => {
-  isPermissionDialogVisible.value = true
-  permissionName.value = name
-}
+onMounted(() => {
+  fetchPermissions();
+});
 </script>
 
 <template>
-  <VRow>
-    <VCol cols="12">
-      <VCard>
-        <VCardText class="d-flex align-center justify-space-between flex-wrap gap-4">
-          <div class="d-flex gap-2 align-center">
-            <p class="text-body-1 mb-0">
-              Show
-            </p>
-            <AppSelect
-              :model-value="itemsPerPage"
-              :items="[
-                { value: 5, title: '5' },
-                { value: 25, title: '25' },
-                { value: 50, title: '50' },
-                { value: 100, title: '100' },
-                { value: -1, title: 'All' },
-              ]"
-              style="inline-size: 5.5rem;"
-              @update:model-value="itemsPerPage = parseInt($event, 10)"
-            />
-          </div>
-
-          <div class="d-flex align-center gap-4 flex-wrap">
-            <AppTextField
-              v-model="search"
-              placeholder="Search Permission"
-              style="inline-size: 15.625rem;"
-            />
-            <VBtn
-              density="default"
-              prepend-icon="tabler-plus"
-              @click="isAddPermissionDialogVisible = true"
-            >
-              Add Permission
-            </VBtn>
-          </div>
-        </VCardText>
-
-        <VDivider />
-
-        <VDataTableServer
-          v-model:items-per-page="itemsPerPage"
-          v-model:page="page"
-          :items-length="totalPermissions"
-          :items-per-page-options="[
-            { value: 5, title: '5' },
+  <div class="permission-list-container">
+    <AppCardActions title="Permission List" :loading="isLoading" no-actions>
+      <VCardText class="d-flex flex-wrap gap-4">
+        <div class="me-3 d-flex gap-3">
+          <AppSelect :model-value="itemsPerPage" :items="[
             { value: 10, title: '10' },
-            { value: -1, title: '$vuetify.dataFooter.itemsPerPageAll' },
-          ]"
-          :headers="headers"
-          :items="permissions"
-          item-value="name"
-          class="text-no-wrap"
-          @update:options="updateOptions"
-        >
-          <!-- Name -->
-          <template #item.name="{ item }">
-            <div class="text-high-emphasis text-body-1">
-              {{ item.name }}
-            </div>
-          </template>
+            { value: 25, title: '25' },
+            { value: 50, title: '50' },
+            { value: 100, title: '100' },
+            { value: -1, title: 'All' },
+          ]" style="inline-size: 6.25rem;" @update:model-value="itemsPerPage = parseInt($event, 10)" />
+        </div>
+        <VSpacer />
 
-          <!-- Assigned To -->
-          <template #item.assignedTo="{ item }">
-            <div class="d-flex gap-4">
-              <VChip
-                v-for="text in item.assignedTo"
-                :key="text"
-                label
-                size="small"
-                :color="colors[text].color"
-                class="font-weight-medium"
-              >
-                {{ colors[text].text }}
-              </VChip>
-            </div>
-          </template>
+        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+          <div style="inline-size: 15.625rem;">
+            <AppTextField v-model="search" placeholder="Search Permission" />
+          </div>
+          <VBtn density="default" prepend-icon="tabler-plus" @click="isPermissionDialogVisible = true">
+            Add Permission
+          </VBtn>
+        </div>
+      </VCardText>
 
-          <template #bottom>
-            <TablePagination
-              v-model:page="page"
-              :items-per-page="itemsPerPage"
-              :total-items="totalPermissions"
-            />
-          </template>
+      <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="permissions"
+        :items-length="totalPermissions" :headers="headers" class="text-no-wrap color-black permission-table"
+        @update:options="updateOptions">
+        <template #item.name="{ item }">
+          <div class="text-high-emphasis text-body-1">
+            {{ item.name }}
+          </div>
+        </template>
 
-          <!-- Actions -->
-          <template #item.actions="{ item }">
-            <VBtn
-              icon
-              size="small"
-              color="medium-emphasis"
-              variant="text"
-              @click="editPermission(item.name)"
-            >
-              <VIcon
-                size="22"
-                icon="tabler-edit"
-              />
-            </VBtn>
-            <IconBtn>
-              <VIcon
-                icon="tabler-dots-vertical"
-                size="22"
-              />
+        <template #item.actions="{ item }">
+          <div class="d-flex flex-column ms-3">
+            <IconBtn @click="editPermission(item)">
+              <VIcon icon="tabler-edit" />
             </IconBtn>
-          </template>
-        </VDataTableServer>
-      </VCard>
+            <IconBtn @click="deletePermission(item.id)">
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
+          </div>
+        </template>
 
-      <AddEditPermissionDialog
-        v-model:isDialogVisible="isPermissionDialogVisible"
-        v-model:permission-name="permissionName"
-      />
-      <AddEditPermissionDialog v-model:isDialogVisible="isAddPermissionDialogVisible" />
-    </VCol>
-  </VRow>
+        <template #bottom>
+          <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalPermissions" />
+        </template>
+      </VDataTableServer>
+    </AppCardActions>
+
+    <AddEditPermissionDialog v-model:isDialogVisible="isPermissionDialogVisible" :permission="editedPermission"
+      @saved="onPermissionSaved" />
+  </div>
 </template>
+
+<style scoped>
+.permission-list-container {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+}
+
+.permission-table {
+  overflow: auto;
+  flex: 1;
+}
+</style>

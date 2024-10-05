@@ -21,7 +21,7 @@ export default [
     icon: { icon: 'tabler-clipboard-check' },
     to: 'application-request',
     action: 'read',
-    subject: 'application',
+    subject: 'application-request',
   },
 
 
@@ -46,13 +46,13 @@ export default [
     title: 'Course Request',
     icon: { icon: 'tabler-command' },
     action: 'read',
-    subject: 'dashboard',
+    subject: 'course-request',
     children: [
       {
         title: 'Course',
         to: 'course-request',
         action: 'read',
-        subject: 'dashboard',
+        subject: 'course-request',
 
       },
 

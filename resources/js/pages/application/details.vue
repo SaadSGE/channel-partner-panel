@@ -291,7 +291,7 @@ const handleAddUniversityComm = async () => {
         <VTab value="university-communication">
           University Communication
         </VTab>
-        <VTab value="assign-officer">
+        <VTab value="assign-officer" v-if="$can('assign', 'application-officer')">
           Assign Application Officer
         </VTab>
 

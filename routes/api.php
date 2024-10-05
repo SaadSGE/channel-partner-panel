@@ -84,6 +84,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/application-requests', [ApplicationController::class, 'getApplicationRequests']);
     Route::post('/application-requests/{id}/accept', [ApplicationController::class, 'acceptApplicationRequest']);
     Route::post('/application-requests/{id}/reject', [ApplicationController::class, 'rejectApplicationRequest']);
+    Route::get('/permissions-table', [PermissionController::class, 'indexForPermissionTable']);
 });
 
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
