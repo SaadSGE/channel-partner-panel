@@ -14,8 +14,7 @@ return new class () extends Migration {
             // Add columns after the 'created_by' column
             $table->foreignId('channel_partner')->nullable()->after('created_by')->constrained('users')->nullOnDelete();
             $table->foreignId('application_control_officer')->nullable()->after('channel_partner')->constrained('users')->nullOnDelete();
-            $table->foreignId('application_officer')->nullable()->after('application_control_officer')->constrained('users')->nullOnDelete();
-            $table->foreignId('compliance_officer')->nullable()->after('application_officer')->constrained('users')->nullOnDelete();
+
         });
     }
 
