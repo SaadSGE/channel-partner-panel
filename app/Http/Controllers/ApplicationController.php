@@ -935,6 +935,9 @@ class ApplicationController extends Controller
             ->firstOrFail();
 
         $application = ApplicationList::findOrFail($assignment->application_id);
+        //update application_officer at $application = $user->id
+        $application->application_officer = $user->id;
+        $application->save();
 
         DB::beginTransaction();
 
@@ -1111,8 +1114,12 @@ class ApplicationController extends Controller
         $additionalDetails = [
             'message' => $communication->message,
         ];
-
-        $recipients = $adminUsers->push($application->user);
+        $user = User::findOrFail(
+            auth('api')->user()->id == $application->application_control_officer
+                ? $application->application_officer
+                : $application->application_control_officer
+        );
+        $recipients = $adminUsers->push($user);
         $senderId = auth('api')->user()->id;
         $senderName = auth('api')->user()->full_name;
         $senderEmail = auth('api')->user()->email;
@@ -1278,7 +1285,13 @@ class ApplicationController extends Controller
             'message' => $communication->message,
         ];
 
-        $recipients = $adminUsers->push($application->user);
+        $user = User::findOrFail(
+            auth('api')->user()->id == $application->application_control_officer
+                ? $application->compliance_officer
+                : $application->application_control_officer
+        );
+
+        $recipients = $adminUsers->push($user);
         $senderId = auth('api')->user()->id;
         $senderName = auth('api')->user()->full_name;
         $senderEmail = auth('api')->user()->email;
@@ -1347,6 +1360,8 @@ class ApplicationController extends Controller
             ->firstOrFail();
 
         $application = ApplicationList::findOrFail($assignment->application_id);
+        $application->compliance_officer = $user->id;
+        $application->save();
 
         DB::beginTransaction();
 

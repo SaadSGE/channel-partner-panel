@@ -118,6 +118,8 @@ class ApplicationList extends Model
 
             if (auth('api')->check()) {
                 $model->created_by = auth('api')->user()->id;
+                $model->channel_partner = auth('api')->user()->id;
+                $model->application_control_officer = auth('api')->user()->parent()->id;
             }
         });
     }
