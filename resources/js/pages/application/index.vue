@@ -19,7 +19,7 @@ import { getUserRole, resolveStatusColor, resolveStatusName } from '@/@core/util
 import Swal from 'sweetalert2';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-
+const { can } = useAbility();
 // Store and Router
 const store = useApplicationListStore()
 
@@ -137,7 +137,7 @@ const headers = ref([
   { title: 'APPLICATION ID', key: 'application_id' },
   { title: 'Student Name', key: 'student.name' },
   { title: 'Student Email', key: 'student.email' },
-  ...(isAdmin.value
+  ...((can('application-control-officer-view', 'application'))
     ? [{ title: 'Application Control Officer', key: 'user.parent.email' }]
     : []),
   { title: 'Channel Partner', key: 'user.email' },

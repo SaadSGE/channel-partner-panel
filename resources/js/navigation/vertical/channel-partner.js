@@ -24,9 +24,18 @@ export default [
     subject: 'application-request',
   },
 
+  {
+    title: 'Compliance Request',
+    icon: { icon: 'tabler-clipboard-check' },
+    to: 'compliance-request',
+    action: 'read',
+    subject: 'compliance-request',
+  },
+
+
 
   {
-    title: 'Application History',
+    title: 'Application List',
     icon: { icon: 'tabler-apps' },
     to: 'application',
     action: 'read',

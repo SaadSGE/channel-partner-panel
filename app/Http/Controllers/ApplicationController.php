@@ -31,6 +31,8 @@ use App\Notifications\EmailNotification;
 use App\Services\EmailService;
 use App\Models\ApplicationOfficerAssignment;
 use App\Models\AcoAoCommunication;
+use App\Models\ComplianceOfficerAssignment;
+use App\Models\AcoCoCommunication;
 
 class ApplicationController extends Controller
 {
@@ -972,8 +974,212 @@ class ApplicationController extends Controller
         return $this->successJsonResponse('ACO & AO Communication added successfully', $communication);
     }
 
+    public function assignComplianceOfficer(Request $request, $id)
+    {
+        $application = ApplicationList::where('application_id', $id)->firstOrFail();
+        $user = User::findOrFail($request->user_id);
 
+        if ($user->role !== 'Compliance Officer') {
+            return $this->errorJsonResponse('Selected user is not a compliance officer', [], 409);
+        }
 
+        // Check if there's a pending or accepted assignment
+        $pendingAssignment = $application->complianceOfficerAssignments()->where('status', 'pending')->first();
+        $acceptedAssignment = $application->complianceOfficerAssignments()->where('status', 'accepted')->first();
 
+        if ($pendingAssignment) {
+            return $this->errorJsonResponse('There is already a pending compliance officer assignment for this application', [], 409);
+        }
+
+        if ($acceptedAssignment) {
+            return $this->errorJsonResponse('This application has already been accepted by a compliance officer', [], 409);
+        }
+
+        $assignment = ComplianceOfficerAssignment::create([
+            'application_id' => $application->id,
+            'user_id' => $user->id,
+            'status' => 'pending',
+        ]);
+
+        // Add activity log
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $application->application_id,
+                'compliance_officer_id' => $user->id,
+                'compliance_officer_name' => $user->full_name,
+            ])
+            ->log('compliance_officer_assigned');
+
+        // You can add notifications here if needed
+
+        return $this->successJsonResponse('Compliance officer assigned successfully', $assignment->load('user'));
+    }
+
+    public function getComplianceOfficerAssignments($id)
+    {
+        $application = ApplicationList::where('application_id', $id)->first();
+
+        if (!$application) {
+            return $this->errorJsonResponse('Application not found', [], 404);
+        }
+
+        $assignments = $application->complianceOfficerAssignments()->with('user')->get();
+
+        return $this->successJsonResponse('Compliance officer assignments retrieved successfully', $assignments);
+    }
+
+    public function getAcoCoCommunications($id)
+    {
+        $application = ApplicationList::where('application_id', $id)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
+        $communications = AcoCoCommunication::where('application_id', $application->id)->with('user')->get();
+        return $this->successJsonResponse('ACO & CO communications retrieved successfully', $communications);
+    }
+
+    public function addAcoCoCommunication(Request $request, $id, EmailService $emailService)
+    {
+        $request->validate([
+            'message' => 'required|string',
+        ]);
+
+        $application = ApplicationList::where('application_id', $id)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
+
+        $communication = new AcoCoCommunication();
+        $communication->application_id = $application->id;
+        $communication->message = $request->message;
+        $communication->created_by = auth('api')->user()->id;
+        $communication->save();
+
+        // Add activity log here
+
+        // Notify relevant users (you may need to adjust this based on your requirements)
+        $adminUsers = User::where('role', 'admin')->get();
+        $additionalDetails = [
+            'message' => $communication->message,
+        ];
+
+        $recipients = $adminUsers->push($application->user);
+        $senderId = auth('api')->user()->id;
+        $senderName = auth('api')->user()->full_name;
+        $senderEmail = auth('api')->user()->email;
+
+        $emailService->sendApplicationNotification('aco_co_communication_added', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
+
+        return $this->successJsonResponse('ACO & CO Communication added successfully', $communication);
+    }
+
+    public function getComplianceRequests(Request $request)
+    {
+        $user = auth('api')->user();
+        $perPage = (int) $request->query('perPage', 10);
+        $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
+        $sortBy = $request->query('sortBy', 'created_at');
+        $orderBy = $request->query('orderBy', 'desc');
+
+        $query = ApplicationList::with(['student', 'intake', 'university', 'course', 'complianceOfficerAssignments','user.parent'])
+            ->whereHas('complianceOfficerAssignments', function ($query) use ($user) {
+                $query->where('user_id', $user->id)->where('status', 'pending');
+            });
+
+        $query->when($searchQuery, function ($q) use ($searchQuery) {
+            return $q->where(function ($q) use ($searchQuery) {
+                $q->where('application_id', 'LIKE', "%$searchQuery%")
+                    ->orWhereHas('student', function ($q) use ($searchQuery) {
+                        $q->where('first_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('last_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('university', function ($q) use ($searchQuery) {
+                        $q->where('name', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('course', function ($q) use ($searchQuery) {
+                        $q->where('name', 'LIKE', "%$searchQuery%");
+                    });
+            });
+        })->when($request->filled('status'), function ($q) use ($request) {
+            return $q->where('status', $request->query('status'));
+        })->when($request->filled('university'), function ($q) use ($request) {
+            return $q->where('university_id', $request->query('university'));
+        })->when($request->filled('dateFrom'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '>=', $request->query('dateFrom'));
+        })->when($request->filled('dateTo'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '<=', $request->query('dateTo'));
+        });
+
+        // Sorting
+        $query->orderBy($sortBy, $orderBy);
+
+        // Pagination
+        $complianceRequests = $query->paginate($perPage);
+
+        // Log the activity
+        $this->logComplianceRequestsActivity($request, $complianceRequests->total());
+
+        return $this->successJsonResponse("Compliance requests found!", $complianceRequests->items(), $complianceRequests->total());
+    }
+
+    public function acceptComplianceRequest($id)
+    {
+        $user = auth('api')->user();
+        $assignment = ComplianceOfficerAssignment::where('application_id', $id)
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $assignment->update(['status' => 'accepted']);
+
+        return $this->successJsonResponse('Compliance request accepted successfully');
+    }
+
+    public function rejectComplianceRequest($id)
+    {
+        $user = auth('api')->user();
+        $assignment = ComplianceOfficerAssignment::where('application_id', $id)
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $assignment->update(['status' => 'rejected']);
+
+        return $this->successJsonResponse('Compliance request rejected successfully');
+    }
+
+    private function logComplianceRequestsActivity(Request $request, int $totalResults)
+    {
+        $activityType = 'compliance_requests_view';
+        $properties = [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'total_results' => $totalResults,
+        ];
+
+        // Check if any filter or search is applied
+        $filterParams = ['status', 'university', 'dateFrom', 'dateTo'];
+        $appliedFilters = array_filter($request->only($filterParams));
+
+        if (!empty($appliedFilters)) {
+            $activityType = 'compliance_requests_filter';
+            $properties['filters'] = $appliedFilters;
+        }
+
+        if ($request->filled('searchQuery')) {
+            $activityType = 'compliance_requests_search';
+            $properties['search_query'] = $request->query('searchQuery');
+        }
+
+        activity()
+            ->causedBy(Auth::user())
+            ->withProperties($properties)
+            ->log($activityType);
+    }
 
 }

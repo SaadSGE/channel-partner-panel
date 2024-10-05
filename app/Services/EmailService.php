@@ -126,6 +126,18 @@ class EmailService
                 $notification_text = "New ACO & AO communication for application {$application->application_id}";
                 $notification_route = 'application-details';
                 break;
+
+            case 'aco_co_communication_added':
+                $subject = 'New ACO & CO Communication Added';
+                $body = "A new ACO & CO communication has been added.<br><br>"
+                    . "<strong>Message:</strong> " . nl2br(e($additionalDetails['message'])) . "<br>"
+                    . "<strong>Application ID:</strong> {$application->application_id}<br>"
+                    . "<strong>Student Email:</strong> {$application->student->email}<br>"
+                    . "<strong>University Name:</strong> {$application->university->name}<br>"
+                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>";
+                $notification_text = "New ACO & CO communication for application {$application->application_id}";
+                $notification_route = 'application-details';
+                break;
         }
 
         $this->sendNotification($additionalDetails, $recipients, $subject, $body, $senderId, $senderName, $senderEmail, $notification_text, $notification_route);

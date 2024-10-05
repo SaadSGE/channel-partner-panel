@@ -88,6 +88,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/application/{id}/aco-ao-communications', [ApplicationController::class, 'getAcoAoCommunications']);
     Route::post('/application/{id}/aco-ao-communication', [ApplicationController::class, 'addAcoAoCommunication']);
+    Route::get('/fetch-compliance-officers', [UserController::class, 'fetchComplianceOfficers']);
 });
 
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
@@ -103,3 +104,12 @@ Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAl
 Route::post('reset-password', [AuthController::class,'resetPassword']);
 
 Route::post('applications/{id}/restore', [ApplicationController::class, 'restore'])->name('applications.restore');
+
+Route::post('/applications/{id}/assign-compliance-officer', [ApplicationController::class, 'assignComplianceOfficer']);
+Route::get('/applications/{id}/compliance-officers', [ApplicationController::class, 'getComplianceOfficerAssignments']);
+Route::get('/application/{id}/aco-co-communications', [ApplicationController::class, 'getAcoCoCommunications']);
+Route::post('/application/{id}/aco-co-communication', [ApplicationController::class, 'addAcoCoCommunication']);
+
+Route::get('/compliance-requests', [ApplicationController::class, 'getComplianceRequests']);
+Route::post('/compliance-requests/{id}/accept', [ApplicationController::class, 'acceptComplianceRequest']);
+Route::post('/compliance-requests/{id}/reject', [ApplicationController::class, 'rejectComplianceRequest']);

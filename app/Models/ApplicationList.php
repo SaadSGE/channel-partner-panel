@@ -162,6 +162,9 @@ class ApplicationList extends Model
                 $q->orWhereHas('applicationOfficerAssignments', function ($subQ) use ($user) {
                     $subQ->where('user_id', $user->id)->where('status', 'accepted');
                 });
+                $q->orWhereHas('complianceOfficerAssignments', function ($subQ) use ($user) {
+                    $subQ->where('user_id', $user->id)->where('status', 'accepted');
+                });
             });
         }
     }
@@ -175,6 +178,19 @@ class ApplicationList extends Model
     public function applicationOfficers()
     {
         return $this->belongsToMany(User::class, 'application_officer_assignments', 'application_id', 'user_id')
+                    ->withPivot('status')
+                    ->withTimestamps();
+    }
+
+    // Add these relationships
+    public function complianceOfficerAssignments()
+    {
+        return $this->hasMany(ComplianceOfficerAssignment::class, 'application_id');
+    }
+
+    public function complianceOfficers()
+    {
+        return $this->belongsToMany(User::class, 'compliance_officer_assignments', 'application_id', 'user_id')
                     ->withPivot('status')
                     ->withTimestamps();
     }

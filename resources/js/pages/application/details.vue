@@ -9,7 +9,9 @@ import { useApplicationListStore } from "@/@core/stores/applicationList";
 import ActivityLog from "@/components/ActivityLog/ApplicationActivityLog.vue";
 
 import AcoAoCommunication from '@/components/AcoAoCommunication.vue';
+import AcoCoCommunication from '@/components/AcoCoCommunication.vue';
 import ApplicationOfficerAssignments from '@/components/ApplicationOfficerAssignments.vue';
+import ComplianceOfficerAssignments from '@/components/ComplianceOfficerAssignments.vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { onMounted, ref } from "vue";
@@ -298,6 +300,8 @@ const handleAddUniversityComm = async () => {
         <VTab value="assign-officer" v-if="$can('assign', 'application-officer')">
           Assign Application Officer
         </VTab>
+        <VTab value="assign-compliance-officer">Assign Compliance Officer</VTab>
+        <VTab value="aco-co-communication">ACO & CO Communication</VTab>
 
         <VTab v-if="isAdmin" value="activity-logs">
           Activity Logs
@@ -455,6 +459,12 @@ const handleAddUniversityComm = async () => {
           </VWindowItem>
           <VWindowItem value="assign-officer">
             <ApplicationOfficerAssignments :application-id="applicationId" />
+          </VWindowItem>
+          <VWindowItem value="assign-compliance-officer">
+            <ComplianceOfficerAssignments :application-id="applicationId" />
+          </VWindowItem>
+          <VWindowItem value="aco-co-communication">
+            <AcoCoCommunication :application-id="applicationId" />
           </VWindowItem>
         </VWindow>
       </VCardText>
