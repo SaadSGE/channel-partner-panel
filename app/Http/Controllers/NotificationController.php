@@ -66,8 +66,6 @@ class NotificationController extends Controller
         $page = $request->query('page', 1);
 
         $notifications = $user->notifications()
-            ->whereRaw("JSON_EXTRACT(data, '$.notification_text') IS NOT NULL")
-            ->whereRaw("JSON_EXTRACT(data, '$.notification_text') != ''")
             ->latest()
             ->paginate($perPage, ['*'], 'page', $page);
 
