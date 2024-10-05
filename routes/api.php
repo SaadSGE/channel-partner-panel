@@ -113,3 +113,5 @@ Route::post('/application/{id}/aco-co-communication', [ApplicationController::cl
 Route::get('/compliance-requests', [ApplicationController::class, 'getComplianceRequests']);
 Route::post('/compliance-requests/{id}/accept', [ApplicationController::class, 'acceptComplianceRequest']);
 Route::post('/compliance-requests/{id}/reject', [ApplicationController::class, 'rejectComplianceRequest']);
+
+Route::get('/notifications/all', [NotificationController::class, 'getAllNotifications']);

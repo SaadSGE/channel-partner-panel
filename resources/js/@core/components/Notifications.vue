@@ -1,4 +1,5 @@
 <script setup>
+import { useRouter } from 'vue-router';
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 
 const props = defineProps({
@@ -44,6 +45,12 @@ const toggleReadUnread = (read, id) => {
     emit('unread', id)
   else
     emit('read', id)
+}
+
+const router = useRouter()
+
+const viewAllNotifications = () => {
+  router.push({ name: 'notifications' })
 }
 </script>
 
@@ -127,7 +134,7 @@ const toggleReadUnread = (read, id) => {
 
         <!-- 👉 Footer -->
         <VCardText v-show="props.notifications.length" class="pa-4">
-          <VBtn block size="small">
+          <VBtn block size="small" @click="viewAllNotifications">
             View All Notifications
           </VBtn>
         </VCardText>

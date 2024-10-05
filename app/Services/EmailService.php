@@ -115,29 +115,122 @@ class EmailService
                 $notification_route = 'application-details';
                 break;
 
-            case 'aco_ao_communication_added':
-                $subject = 'New ACO & AO Communication Added';
-                $body = "A new ACO & AO communication has been added.<br><br>"
-                    . "<strong>Message:</strong> " . nl2br(e($additionalDetails['message'])) . "<br>"
+            case 'application_officer_assigned':
+                $subject = 'Application Officer Assigned';
+                $body = "An Application Officer has been assigned to an application.<br><br>"
                     . "<strong>Application ID:</strong> {$application->application_id}<br>"
+                    . "<strong>Student Name:</strong> {$application->student->full_name}<br>"
                     . "<strong>Student Email:</strong> {$application->student->email}<br>"
                     . "<strong>University Name:</strong> {$application->university->name}<br>"
-                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>";
-                $notification_text = "New ACO & AO communication for application {$application->application_id}";
+                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>"
+                    . "<strong>Assigned Officer:</strong> {$additionalDetails['assigned_officer_name']}<br>"
+                    . "<strong>Assigned Officer Email:</strong> {$additionalDetails['assigned_officer_email']}<br>"
+                    . "<strong>Assigned By:</strong> {$additionalDetails['assigner_name']}<br>";
+                $notification_text = "You have been assigned to application {$application->application_id}";
+                $notification_route = 'application-request';
+                break;
+
+            case 'application_request_accepted':
+                $subject = 'Application Request Accepted';
+                $body = "An Application Officer has accepted an application request.<br><br>"
+                    . "<strong>Application ID:</strong> {$application->application_id}<br>"
+                    . "<strong>Student Name:</strong> {$application->student->full_name}<br>"
+                    . "<strong>Student Email:</strong> {$application->student->email}<br>"
+                    . "<strong>University Name:</strong> {$application->university->name}<br>"
+                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>"
+                    . "<strong>Accepting Officer:</strong> {$additionalDetails['officer_name']}<br>"
+                    . "<strong>Officer Email:</strong> {$additionalDetails['officer_email']}<br>";
+                $notification_text = "Application request accepted by application officer for application {$application->application_id}";
                 $notification_route = 'application-details';
+                break;
+
+            case 'application_request_rejected':
+                $subject = 'Application Request Rejected';
+                $body = "An Application Officer has rejected an application request.<br><br>"
+                    . "<strong>Application ID:</strong> {$application->application_id}<br>"
+                    . "<strong>Student Name:</strong> {$application->student->full_name}<br>"
+                    . "<strong>Student Email:</strong> {$application->student->email}<br>"
+                    . "<strong>University Name:</strong> {$application->university->name}<br>"
+                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>"
+                    . "<strong>Rejecting Officer:</strong> {$additionalDetails['officer_name']}<br>"
+                    . "<strong>Officer Email:</strong> {$additionalDetails['officer_email']}<br>";
+                $notification_text = "Application request rejected by application officer for application {$application->application_id}";
+                $notification_route = 'application-details';
+                break;
+
+            case 'aco_ao_communication_added':
+                $subject = 'New ACO & AO Communication Added';
+                $body = "A new communication has been added between ACO and AO for an application.<br><br>"
+                    . "<strong>Application ID:</strong> {$application->application_id}<br>"
+                    . "<strong>Student Name:</strong> {$application->student->full_name}<br>"
+                    . "<strong>Student Email:</strong> {$application->student->email}<br>"
+                    . "<strong>University Name:</strong> {$application->university->name}<br>"
+                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>"
+                    . "<strong>Added By:</strong> {$senderName}<br>"
+                    . "<strong>Added By Email:</strong> {$senderEmail}<br>"
+                    . "<strong>Message:</strong> " . nl2br(e($additionalDetails['message'])) . "<br>";
+                $notification_text = "New ACO & AO communication added for application {$application->application_id}";
+                $notification_route = 'application-details';
+                break;
+
+            case 'compliance_officer_assigned':
+                $subject = 'Compliance Officer Assigned';
+                $body = "A Compliance Officer has been assigned to an application.<br><br>"
+                    . "<strong>Application ID:</strong> {$application->application_id}<br>"
+                    . "<strong>Student Name:</strong> {$application->student->full_name}<br>"
+                    . "<strong>Student Email:</strong> {$application->student->email}<br>"
+                    . "<strong>University Name:</strong> {$application->university->name}<br>"
+                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>"
+                    . "<strong>Assigned Compliance Officer:</strong> {$additionalDetails['assigned_officer_name']}<br>"
+                    . "<strong>Assigned Officer Email:</strong> {$additionalDetails['assigned_officer_email']}<br>"
+                    . "<strong>Assigned By:</strong> {$additionalDetails['assigner_name']}<br>";
+                $notification_text = "You have a new compliance request for application {$application->application_id}";
+                $notification_route = 'compliance-request';
                 break;
 
             case 'aco_co_communication_added':
                 $subject = 'New ACO & CO Communication Added';
-                $body = "A new ACO & CO communication has been added.<br><br>"
-                    . "<strong>Message:</strong> " . nl2br(e($additionalDetails['message'])) . "<br>"
+                $body = "A new communication has been added between ACO and CO for an application.<br><br>"
                     . "<strong>Application ID:</strong> {$application->application_id}<br>"
+                    . "<strong>Student Name:</strong> {$application->student->full_name}<br>"
                     . "<strong>Student Email:</strong> {$application->student->email}<br>"
                     . "<strong>University Name:</strong> {$application->university->name}<br>"
-                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>";
-                $notification_text = "New ACO & CO communication for application {$application->application_id}";
+                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>"
+                    . "<strong>Added By:</strong> {$senderName}<br>"
+                    . "<strong>Added By Email:</strong> {$senderEmail}<br>"
+                    . "<strong>Message:</strong> " . nl2br(e($additionalDetails['message'])) . "<br>";
+                $notification_text = "New ACO & CO communication added for application {$application->application_id}";
                 $notification_route = 'application-details';
                 break;
+
+            case 'compliance_request_accepted':
+                $subject = 'Compliance Request Accepted';
+                $body = "A Compliance Officer has accepted a compliance request.<br><br>"
+                    . "<strong>Application ID:</strong> {$application->application_id}<br>"
+                    . "<strong>Student Name:</strong> {$application->student->full_name}<br>"
+                    . "<strong>Student Email:</strong> {$application->student->email}<br>"
+                    . "<strong>University Name:</strong> {$application->university->name}<br>"
+                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>"
+                    . "<strong>Accepting Officer:</strong> {$additionalDetails['officer_name']}<br>"
+                    . "<strong>Officer Email:</strong> {$additionalDetails['officer_email']}<br>";
+                $notification_text = "Compliance request accepted for application {$application->application_id}";
+                $notification_route = 'application-details';
+                break;
+
+            case 'compliance_request_rejected':
+                $subject = 'Compliance Request Rejected';
+                $body = "A Compliance Officer has rejected a compliance request.<br><br>"
+                    . "<strong>Application ID:</strong> {$application->application_id}<br>"
+                    . "<strong>Student Name:</strong> {$application->student->full_name}<br>"
+                    . "<strong>Student Email:</strong> {$application->student->email}<br>"
+                    . "<strong>University Name:</strong> {$application->university->name}<br>"
+                    . "<strong>Intake Name:</strong> {$application->intake->name}<br>"
+                    . "<strong>Rejecting Officer:</strong> {$additionalDetails['officer_name']}<br>"
+                    . "<strong>Officer Email:</strong> {$additionalDetails['officer_email']}<br>";
+                $notification_text = "Compliance request rejected for application {$application->application_id}";
+                $notification_route = 'application-details';
+                break;
+
         }
 
         $this->sendNotification($additionalDetails, $recipients, $subject, $body, $senderId, $senderName, $senderEmail, $notification_text, $notification_route);

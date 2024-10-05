@@ -43,5 +43,22 @@ export const useNotificationStore = defineStore({
         throw error
       }
     },
+
+    async fetchAllNotifications(page, perPage) {
+      try {
+        const response = await $api(`/notifications/all?page=${page}&perPage=${perPage}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        return response
+      } catch (error) {
+        console.error('Error fetching all notifications:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
+      }
+    },
   },
 })

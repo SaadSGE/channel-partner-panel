@@ -22,6 +22,7 @@ class ApplicationOfficerAssignment extends Model
         'created_by' => 'integer',
     ];
 
+
     public function application()
     {
         return $this->belongsTo(ApplicationList::class, 'application_id');

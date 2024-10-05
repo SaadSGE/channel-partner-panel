@@ -772,7 +772,7 @@ class ApplicationController extends Controller
         }
     }
 
-    public function assignApplicationOfficer(Request $request, $id)
+    public function assignApplicationOfficer(Request $request, $id, EmailService $emailService)
     {
         $application = ApplicationList::where('application_id', $id)->firstOrFail();
         $user = User::findOrFail($request->user_id);
@@ -780,8 +780,6 @@ class ApplicationController extends Controller
         if ($user->role !== 'Application Officer') {
             return $this->errorJsonResponse('Selected user is not an application officer', [], 409);
         }
-        //check if status is accpeted or pending
-        //return separate error message for each status
 
         $pendingAssignment = $application->applicationOfficerAssignments()->where('status', 'pending')->first();
         $acceptedAssignment = $application->applicationOfficerAssignments()->where('status', 'accepted')->first();
@@ -798,8 +796,46 @@ class ApplicationController extends Controller
             'application_id' => $application->id,
             'user_id' => $user->id,
             'status' => 'pending',
-            'created_by' => auth()->id(),
+            'created_by' => auth('api')->id(),
         ]);
+
+        // Log the activity
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth('api')->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $application->application_id,
+                'assigned_officer_id' => $user->id,
+                'assigned_officer_name' => $user->full_name,
+                'assignment_status' => 'pending',
+            ])
+            ->log('application_officer_assigned');
+
+        // Prepare notification details
+        $additionalDetails = [
+            'assigned_officer_name' => $user->full_name,
+            'assigned_officer_email' => $user->email,
+            'assigner_name' => auth('api')->user()->full_name,
+        ];
+
+        // Get admin users
+        $adminUsers = User::where('role', 'admin')->get();
+
+        // Prepare recipients (assigned user and admin users)
+        $recipients = $adminUsers->push($user);
+
+        // Send notification
+        $emailService->sendApplicationNotification(
+            'application_officer_assigned',
+            $application,
+            $additionalDetails,
+            $recipients,
+            auth('api')->id(),
+            auth('api')->user()->full_name,
+            auth('api')->user()->email
+        );
 
         return $this->successJsonResponse('Application officer assigned successfully', $assignment->load('user'));
     }
@@ -890,30 +926,128 @@ class ApplicationController extends Controller
             ->log($activityType);
     }
 
-    public function acceptApplicationRequest($id)
+    public function acceptApplicationRequest($id, EmailService $emailService)
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
         $assignment = ApplicationOfficerAssignment::where('application_id', $id)
             ->where('user_id', $user->id)
             ->where('status', 'pending')
             ->firstOrFail();
 
-        $assignment->update(['status' => 'accepted']);
+        $application = ApplicationList::findOrFail($assignment->application_id);
 
-        return $this->successJsonResponse('Application request accepted successfully');
+        DB::beginTransaction();
+
+        try {
+            $assignment->update(['status' => 'accepted']);
+
+            // Log the activity
+            activity()
+                ->performedOn($application)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'application_id' => $application->application_id,
+                    'officer_id' => $user->id,
+                    'officer_name' => $user->full_name,
+                    'assignment_id' => $assignment->id,
+                ])
+                ->log('application_request_accepted');
+
+            // Prepare notification details
+            $additionalDetails = [
+                'officer_name' => $user->full_name,
+                'officer_email' => $user->email,
+            ];
+
+            // Get admin users and the user who assigned the application
+            $adminUsers = User::where('role', 'admin')->get();
+            $assigner = User::findOrFail($assignment->created_by);
+
+            // Prepare recipients (admin users and the assigner)
+            $recipients = $adminUsers->push($assigner);
+
+            // Send notification
+            $emailService->sendApplicationNotification(
+                'application_request_accepted',
+                $application,
+                $additionalDetails,
+                $recipients,
+                $user->id,
+                $user->full_name,
+                $user->email
+            );
+
+            DB::commit();
+
+            return $this->successJsonResponse('Application request accepted successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorJsonResponse('Failed to accept application request', $e->getMessage(), 500);
+        }
     }
 
-    public function rejectApplicationRequest($id)
+    public function rejectApplicationRequest($id, EmailService $emailService)
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
         $assignment = ApplicationOfficerAssignment::where('application_id', $id)
             ->where('user_id', $user->id)
             ->where('status', 'pending')
             ->firstOrFail();
 
-        $assignment->update(['status' => 'rejected']);
+        $application = ApplicationList::findOrFail($assignment->application_id);
 
-        return $this->successJsonResponse('Application request rejected successfully');
+        DB::beginTransaction();
+
+        try {
+            $assignment->update(['status' => 'rejected']);
+
+            // Log the activity
+            activity()
+                ->performedOn($application)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'application_id' => $application->application_id,
+                    'officer_id' => $user->id,
+                    'officer_name' => $user->full_name,
+                    'assignment_id' => $assignment->id,
+                ])
+                ->log('application_request_rejected');
+
+            // Prepare notification details
+            $additionalDetails = [
+                'officer_name' => $user->full_name,
+                'officer_email' => $user->email,
+            ];
+
+            // Get admin users and the user who assigned the application
+            $adminUsers = User::where('role', 'admin')->get();
+            $assigner = User::findOrFail($assignment->created_by);
+
+            // Prepare recipients (admin users and the assigner)
+            $recipients = $adminUsers->push($assigner);
+
+            // Send notification
+            $emailService->sendApplicationNotification(
+                'application_request_rejected',
+                $application,
+                $additionalDetails,
+                $recipients,
+                $user->id,
+                $user->full_name,
+                $user->email
+            );
+
+            DB::commit();
+
+            return $this->successJsonResponse('Application request rejected successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorJsonResponse('Failed to reject application request', $e->getMessage(), 500);
+        }
     }
 
     public function getAcoAoCommunications($id)
@@ -922,7 +1056,21 @@ class ApplicationController extends Controller
         if (!$application) {
             return $this->exceptionJsonResponse('Application not found', null, 404);
         }
+
         $communications = AcoAoCommunication::where('application_id', $application->id)->with('user')->get();
+
+        // Log the activity
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth('api')->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'application_id' => $application->application_id,
+                'communications_count' => $communications->count(),
+            ])
+            ->log('aco_ao_communications_viewed');
+
         return $this->successJsonResponse('ACO & AO communications retrieved successfully', $communications);
     }
 
@@ -974,7 +1122,7 @@ class ApplicationController extends Controller
         return $this->successJsonResponse('ACO & AO Communication added successfully', $communication);
     }
 
-    public function assignComplianceOfficer(Request $request, $id)
+    public function assignComplianceOfficer(Request $request, $id, EmailService $emailService)
     {
         $application = ApplicationList::where('application_id', $id)->firstOrFail();
         $user = User::findOrFail($request->user_id);
@@ -999,6 +1147,7 @@ class ApplicationController extends Controller
             'application_id' => $application->id,
             'user_id' => $user->id,
             'status' => 'pending',
+            'created_by' => auth('api')->id(),
         ]);
 
         // Add activity log
@@ -1014,7 +1163,29 @@ class ApplicationController extends Controller
             ])
             ->log('compliance_officer_assigned');
 
-        // You can add notifications here if needed
+        // Prepare notification details
+        $additionalDetails = [
+            'assigned_officer_name' => $user->full_name,
+            'assigned_officer_email' => $user->email,
+            'assigner_name' => auth('api')->user()->full_name,
+        ];
+
+        // Get admin users
+        $adminUsers = User::where('role', 'admin')->get();
+
+        // Prepare recipients (assigned user, admin users, and application owner)
+        $recipients = $adminUsers->push($user)->push($application->user);
+
+        // Send notification
+        $emailService->sendApplicationNotification(
+            'compliance_officer_assigned',
+            $application,
+            $additionalDetails,
+            $recipients,
+            auth('api')->id(),
+            auth('api')->user()->full_name,
+            auth('api')->user()->email
+        );
 
         return $this->successJsonResponse('Compliance officer assigned successfully', $assignment->load('user'));
     }
@@ -1029,6 +1200,18 @@ class ApplicationController extends Controller
 
         $assignments = $application->complianceOfficerAssignments()->with('user')->get();
 
+        // Log the activity
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'application_id' => $application->application_id,
+                'assignments_count' => $assignments->count(),
+            ])
+            ->log('compliance_officer_assignments_viewed');
+
         return $this->successJsonResponse('Compliance officer assignments retrieved successfully', $assignments);
     }
 
@@ -1038,7 +1221,21 @@ class ApplicationController extends Controller
         if (!$application) {
             return $this->exceptionJsonResponse('Application not found', null, 404);
         }
+
         $communications = AcoCoCommunication::where('application_id', $application->id)->with('user')->get();
+
+        // Log the activity
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'application_id' => $application->application_id,
+                'communications_count' => $communications->count(),
+            ])
+            ->log('aco_co_communications_viewed');
+
         return $this->successJsonResponse('ACO & CO communications retrieved successfully', $communications);
     }
 
@@ -1059,7 +1256,21 @@ class ApplicationController extends Controller
         $communication->created_by = auth('api')->user()->id;
         $communication->save();
 
-        // Add activity log here
+        // Log the activity
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth('api')->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $application->application_id,
+                'student_email' => $application->student->email,
+                'university_name' => $application->university->name,
+                'intake_name' => $application->intake->name,
+                'message' => $communication->message,
+                'communication_id' => $communication->id,
+            ])
+            ->log('aco_co_communication_added');
 
         // Notify relevant users (you may need to adjust this based on your requirements)
         $adminUsers = User::where('role', 'admin')->get();
@@ -1127,7 +1338,7 @@ class ApplicationController extends Controller
         return $this->successJsonResponse("Compliance requests found!", $complianceRequests->items(), $complianceRequests->total());
     }
 
-    public function acceptComplianceRequest($id)
+    public function acceptComplianceRequest($id, EmailService $emailService)
     {
         $user = auth('api')->user();
         $assignment = ComplianceOfficerAssignment::where('application_id', $id)
@@ -1135,12 +1346,61 @@ class ApplicationController extends Controller
             ->where('status', 'pending')
             ->firstOrFail();
 
-        $assignment->update(['status' => 'accepted']);
+        $application = ApplicationList::findOrFail($assignment->application_id);
 
-        return $this->successJsonResponse('Compliance request accepted successfully');
+        DB::beginTransaction();
+
+        try {
+            $assignment->update(['status' => 'accepted']);
+
+            // Log the activity
+            activity()
+                ->performedOn($application)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'application_id' => $application->application_id,
+                    'officer_id' => $user->id,
+                    'officer_name' => $user->full_name,
+                    'assignment_id' => $assignment->id,
+                ])
+                ->log('compliance_request_accepted');
+
+            // Prepare notification details
+            $additionalDetails = [
+                'officer_name' => $user->full_name,
+                'officer_email' => $user->email,
+            ];
+
+            // Get admin users and the user who assigned the application
+            $adminUsers = User::where('role', 'admin')->get();
+            $assigner = User::findOrFail($assignment->created_by);
+
+            // Prepare recipients (admin users and the assigner)
+            $recipients = $adminUsers->push($assigner);
+
+            // Send notification
+            $emailService->sendApplicationNotification(
+                'compliance_request_accepted',
+                $application,
+                $additionalDetails,
+                $recipients,
+                $user->id,
+                $user->full_name,
+                $user->email
+            );
+
+            DB::commit();
+
+            return $this->successJsonResponse('Compliance request accepted successfully');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->errorJsonResponse('Failed to accept compliance request', $th, 500);
+        }
     }
 
-    public function rejectComplianceRequest($id)
+    public function rejectComplianceRequest($id, EmailService $emailService)
     {
         $user = auth('api')->user();
         $assignment = ComplianceOfficerAssignment::where('application_id', $id)
@@ -1148,9 +1408,58 @@ class ApplicationController extends Controller
             ->where('status', 'pending')
             ->firstOrFail();
 
-        $assignment->update(['status' => 'rejected']);
+        $application = ApplicationList::findOrFail($assignment->application_id);
 
-        return $this->successJsonResponse('Compliance request rejected successfully');
+        DB::beginTransaction();
+
+        try {
+            $assignment->update(['status' => 'rejected']);
+
+            // Log the activity
+            activity()
+                ->performedOn($application)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'application_id' => $application->application_id,
+                    'officer_id' => $user->id,
+                    'officer_name' => $user->full_name,
+                    'assignment_id' => $assignment->id,
+                ])
+                ->log('compliance_request_rejected');
+
+            // Prepare notification details
+            $additionalDetails = [
+                'officer_name' => $user->full_name,
+                'officer_email' => $user->email,
+            ];
+
+            // Get admin users and the user who assigned the application
+            $adminUsers = User::where('role', 'admin')->get();
+            $assigner = User::findOrFail($assignment->created_by);
+
+            // Prepare recipients (admin users and the assigner)
+            $recipients = $adminUsers->push($assigner);
+
+            // Send notification
+            $emailService->sendApplicationNotification(
+                'compliance_request_rejected',
+                $application,
+                $additionalDetails,
+                $recipients,
+                $user->id,
+                $user->full_name,
+                $user->email
+            );
+
+            DB::commit();
+
+            return $this->successJsonResponse('Compliance request rejected successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorJsonResponse('Failed to reject compliance request', $e->getMessage(), 500);
+        }
     }
 
     private function logComplianceRequestsActivity(Request $request, int $totalResults)
