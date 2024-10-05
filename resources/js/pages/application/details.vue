@@ -294,7 +294,7 @@ const handleAddUniversityComm = async () => {
         <VTab value="university-communication">
           University Communication
         </VTab>
-        <VTab value="aco-ao-communication" v-if="$can('enable', 'aco-ao-communication ')">
+        <VTab value="aco-ao-communication" v-if="$can('enable', 'aco-ao-communication')">
           ACO & AO Communication
         </VTab>
         <VTab value="assign-officer" v-if="$can('assign', 'application-officer')">
@@ -302,7 +302,7 @@ const handleAddUniversityComm = async () => {
         </VTab>
         <VTab value="assign-compliance-officer" v-if="$can('assign', 'compliance-officer')">Assign Compliance Officer
         </VTab>
-        <VTab value="aco-co-communication" v-if="$can('enable', 'aco-co-communication ')">ACO & CO Communication</VTab>
+        <VTab value="aco-co-communication" v-if="$can('enable', 'aco-co-communication')">ACO & CO Communication</VTab>
 
         <VTab v-if="isAdmin" value="activity-logs">
           Activity Logs
