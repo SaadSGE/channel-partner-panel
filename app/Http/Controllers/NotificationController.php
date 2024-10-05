@@ -9,7 +9,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user();
+        $user = auth('api')->user();
 
         $notifications = $user->notifications()
             ->whereRaw("JSON_EXTRACT(data, '$.notification_text') IS NOT NULL")
@@ -40,7 +40,7 @@ class NotificationController extends Controller
 
     public function markAsRead(Request $request, $id)
     {
-        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification = auth('api')->user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
         return response()->json(['success' => true]);
@@ -48,14 +48,14 @@ class NotificationController extends Controller
 
     public function markAllAsRead(Request $request)
     {
-        $request->user()->unreadNotifications->markAsRead();
+        auth('api')->user()->unreadNotifications->markAsRead();
 
         return response()->json(['success' => true]);
     }
 
     public function destroy(Request $request, $id)
     {
-        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification =  auth('api')->user()->notifications()->findOrFail($id);
         $notification->delete();
 
         return response()->json(['success' => true]);
