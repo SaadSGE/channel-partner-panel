@@ -358,6 +358,8 @@
     "handleErrorResponse": true,
     "getUserRole": true,
     "applicationStatuses": true,
-    "getApplicationStatusInfo": true
+    "getApplicationStatusInfo": true,
+    "resolveStatusColor": true,
+    "resolveStatusName": true
   }
 }

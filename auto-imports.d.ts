@@ -130,6 +130,8 @@ declare global {
   const requiredValidator: typeof import('./resources/js/@core/utils/validators.js')['requiredValidator']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
+  const resolveStatusColor: typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusColor']
+  const resolveStatusName: typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusName']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
   const resolveVuetifyTheme: typeof import('./resources/js/@core/utils/vuetify.js')['resolveVuetifyTheme']
   const setActivePinia: typeof import('pinia')['setActivePinia']
@@ -490,6 +492,8 @@ declare module 'vue' {
     readonly requiredValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['requiredValidator']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
+    readonly resolveStatusColor: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusColor']>
+    readonly resolveStatusName: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusName']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
     readonly resolveVuetifyTheme: UnwrapRef<typeof import('./resources/js/@core/utils/vuetify.js')['resolveVuetifyTheme']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
@@ -843,6 +847,8 @@ declare module '@vue/runtime-core' {
     readonly requiredValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['requiredValidator']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
+    readonly resolveStatusColor: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusColor']>
+    readonly resolveStatusName: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusName']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
     readonly resolveVuetifyTheme: UnwrapRef<typeof import('./resources/js/@core/utils/vuetify.js')['resolveVuetifyTheme']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>

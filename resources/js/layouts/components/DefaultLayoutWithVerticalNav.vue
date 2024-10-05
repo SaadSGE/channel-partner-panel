@@ -1,6 +1,8 @@
 <script setup>
 import navItems from '@/navigation/vertical'
+import { useNotificationStore } from '@core/stores/notification'
 import { themeConfig } from '@themeConfig'
+import { onMounted } from 'vue'
 
 // Components
 import Footer from '@/layouts/components/Footer.vue'
@@ -24,6 +26,13 @@ watch([
   if (!isFallbackStateActive.value && refLoadingIndicator.value)
     refLoadingIndicator.value.resolveHandle()
 }, { immediate: true })
+
+const notificationStore = useNotificationStore()
+
+onMounted(() => {
+  notificationStore.fetchNotifications()
+})
+
 // !SECTION
 </script>
 
@@ -32,25 +41,16 @@ watch([
     <!-- 👉 navbar -->
     <template #navbar="{ toggleVerticalOverlayNavActive }">
       <div class="d-flex h-100 align-center">
-        <IconBtn
-          id="vertical-nav-toggle-btn"
-          class="ms-n3 d-lg-none"
-          @click="toggleVerticalOverlayNavActive(true)"
-        >
-          <VIcon
-            size="26"
-            icon="tabler-menu-2"
-          />
+        <IconBtn id="vertical-nav-toggle-btn" class="ms-n3 d-lg-none" @click="toggleVerticalOverlayNavActive(true)">
+          <VIcon size="26" icon="tabler-menu-2" />
         </IconBtn>
 
 
 
         <VSpacer />
 
-        <NavBarI18n
-          v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
-          :languages="themeConfig.app.i18n.langConfig"
-        />
+        <NavBarI18n v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
+          :languages="themeConfig.app.i18n.langConfig" />
 
 
         <NavBarNotifications class="me-1" />
@@ -62,11 +62,7 @@ watch([
 
     <!-- 👉 Pages -->
     <RouterView v-slot="{ Component }">
-      <Suspense
-        :timeout="0"
-        @fallback="isFallbackStateActive = true"
-        @resolve="isFallbackStateActive = false"
-      >
+      <Suspense :timeout="0" @fallback="isFallbackStateActive = true" @resolve="isFallbackStateActive = false">
         <Component :is="Component" />
       </Suspense>
     </RouterView>
@@ -77,6 +73,5 @@ watch([
     </template>
 
     <!-- 👉 Customizer -->
-
   </VerticalNavLayout>
 </template>

@@ -118,6 +118,8 @@ class ApplicationList extends Model
 
             if (auth('api')->check()) {
                 $model->created_by = auth('api')->user()->id;
+                $model->channel_partner = auth('api')->user()->id;
+                $model->application_control_officer = auth('api')->user()->parent()->id;
             }
         });
     }
@@ -139,21 +141,59 @@ class ApplicationList extends Model
     {
         if ($user->hasRole('admin')) {
             if ($id) {
-                \Log::info($id);
-                $user = User::find($id);
-                $childIds = $user->fetch_children;
-                $userIds = array_merge([$user->id], $childIds);
+                $selectedUser = User::find($id);
+                $childIds = $selectedUser ? $selectedUser->fetch_children : [];
+                $userIds = array_merge([$id], $childIds);
                 $query->whereIn('created_by', $userIds);
             }
-            // Don't modify the query for admins
+            // For admins, don't add any further restrictions if no $id is provided
         } else {
             if ($id) {
-                $user = User::find($id);
+                $selectedUser = User::find($id);
+            } else {
+                $selectedUser = $user;
             }
-            $childIds = $user->fetch_children;
-            $userIds = array_merge([$user->id], $childIds);
-            $query->whereIn('created_by', $userIds);
 
+            $childIds = $selectedUser ? $selectedUser->fetch_children : [];
+            $userIds = array_merge([$selectedUser->id], $childIds);
+
+            $query->where(function ($q) use ($userIds, $user) {
+                if (!empty($userIds)) {
+                    $q->whereIn('created_by', $userIds);
+                }
+                $q->orWhereHas('applicationOfficerAssignments', function ($subQ) use ($user) {
+                    $subQ->where('user_id', $user->id)->where('status', 'accepted');
+                });
+                $q->orWhereHas('complianceOfficerAssignments', function ($subQ) use ($user) {
+                    $subQ->where('user_id', $user->id)->where('status', 'accepted');
+                });
+            });
         }
+    }
+
+    // Add this relationship
+    public function applicationOfficerAssignments()
+    {
+        return $this->hasMany(ApplicationOfficerAssignment::class, 'application_id');
+    }
+
+    public function applicationOfficers()
+    {
+        return $this->belongsToMany(User::class, 'application_officer_assignments', 'application_id', 'user_id')
+                    ->withPivot('status')
+                    ->withTimestamps();
+    }
+
+    // Add these relationships
+    public function complianceOfficerAssignments()
+    {
+        return $this->hasMany(ComplianceOfficerAssignment::class, 'application_id');
+    }
+
+    public function complianceOfficers()
+    {
+        return $this->belongsToMany(User::class, 'compliance_officer_assignments', 'application_id', 'user_id')
+                    ->withPivot('status')
+                    ->withTimestamps();
     }
 }

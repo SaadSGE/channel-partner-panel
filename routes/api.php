@@ -18,6 +18,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\AIController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -70,9 +71,25 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/applications/{id}/activity-logs', [ApplicationController::class, 'getActivityLogs']);
     Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
     Route::get('/students/search', [StudentController::class, 'search']);
+    Route::get('/fetch-editor', [UserController::class, 'fetchEditors']);
+    Route::get('/fetch-editor', [UserController::class, 'fetchEditors']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+    Route::post('applications/{id}/assign-officer', [ApplicationController::class, 'assignApplicationOfficer']);
+    Route::get('applications/{id}/officers', [ApplicationController::class, 'getApplicationOfficers']);
+    Route::get('/fetch-application-officers', [UserController::class, 'fetchApplicationOfficers']);
+
+    Route::get('/application-requests', [ApplicationController::class, 'getApplicationRequests']);
+    Route::post('/application-requests/{id}/accept', [ApplicationController::class, 'acceptApplicationRequest']);
+    Route::post('/application-requests/{id}/reject', [ApplicationController::class, 'rejectApplicationRequest']);
+    Route::get('/permissions-table', [PermissionController::class, 'indexForPermissionTable']);
+
+    Route::get('/application/{id}/aco-ao-communications', [ApplicationController::class, 'getAcoAoCommunications']);
+    Route::post('/application/{id}/aco-ao-communication', [ApplicationController::class, 'addAcoAoCommunication']);
+    Route::get('/fetch-compliance-officers', [UserController::class, 'fetchComplianceOfficers']);
 });
-
-
 
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');
@@ -87,3 +104,14 @@ Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAl
 Route::post('reset-password', [AuthController::class,'resetPassword']);
 
 Route::post('applications/{id}/restore', [ApplicationController::class, 'restore'])->name('applications.restore');
+
+Route::post('/applications/{id}/assign-compliance-officer', [ApplicationController::class, 'assignComplianceOfficer']);
+Route::get('/applications/{id}/compliance-officers', [ApplicationController::class, 'getComplianceOfficerAssignments']);
+Route::get('/application/{id}/aco-co-communications', [ApplicationController::class, 'getAcoCoCommunications']);
+Route::post('/application/{id}/aco-co-communication', [ApplicationController::class, 'addAcoCoCommunication']);
+
+Route::get('/compliance-requests', [ApplicationController::class, 'getComplianceRequests']);
+Route::post('/compliance-requests/{id}/accept', [ApplicationController::class, 'acceptComplianceRequest']);
+Route::post('/compliance-requests/{id}/reject', [ApplicationController::class, 'rejectComplianceRequest']);
+
+Route::get('/notifications/all', [NotificationController::class, 'getAllNotifications']);
