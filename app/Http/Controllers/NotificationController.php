@@ -12,8 +12,6 @@ class NotificationController extends Controller
         $user = auth('api')->user();
 
         $notifications = $user->notifications()
-            ->whereRaw("JSON_EXTRACT(data, '$.notification_text') IS NOT NULL")
-            ->whereRaw("JSON_EXTRACT(data, '$.notification_text') != ''")
             ->latest()
             ->limit(10)
             ->get()
