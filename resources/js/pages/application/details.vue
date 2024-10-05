@@ -8,6 +8,7 @@ definePage({
 import { useApplicationListStore } from "@/@core/stores/applicationList";
 import ActivityLog from "@/components/ActivityLog/ApplicationActivityLog.vue";
 
+import AcoAoCommunication from '@/components/AcoAoCommunication.vue';
 import ApplicationOfficerAssignments from '@/components/ApplicationOfficerAssignments.vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
@@ -291,6 +292,9 @@ const handleAddUniversityComm = async () => {
         <VTab value="university-communication">
           University Communication
         </VTab>
+        <VTab value="aco-ao-communication">
+          ACO & AO Communication
+        </VTab>
         <VTab value="assign-officer" v-if="$can('assign', 'application-officer')">
           Assign Application Officer
         </VTab>
@@ -440,6 +444,12 @@ const handleAddUniversityComm = async () => {
               </VCol>
             </VRow>
           </VWindowItem>
+
+          <!-- ACO & AO Communication Tab -->
+          <VWindowItem value="aco-ao-communication" v-if="$can('enable', 'aco-ao-communication')">
+            <AcoAoCommunication :application-id="applicationId" />
+          </VWindowItem>
+
           <VWindowItem value="activity-logs">
             <ActivityLog :application-id="applicationId" />
           </VWindowItem>

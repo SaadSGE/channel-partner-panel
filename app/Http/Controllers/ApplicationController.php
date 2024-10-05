@@ -30,6 +30,7 @@ use App\Models\Intake;
 use App\Notifications\EmailNotification;
 use App\Services\EmailService;
 use App\Models\ApplicationOfficerAssignment;
+use App\Models\AcoAoCommunication;
 
 class ApplicationController extends Controller
 {
@@ -911,6 +912,64 @@ class ApplicationController extends Controller
         $assignment->update(['status' => 'rejected']);
 
         return $this->successJsonResponse('Application request rejected successfully');
+    }
+
+    public function getAcoAoCommunications($id)
+    {
+        $application = ApplicationList::where('application_id', $id)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
+        $communications = AcoAoCommunication::where('application_id', $application->id)->with('user')->get();
+        return $this->successJsonResponse('ACO & AO communications retrieved successfully', $communications);
+    }
+
+    public function addAcoAoCommunication(Request $request, $id, EmailService $emailService)
+    {
+        $request->validate([
+            'message' => 'required|string',
+        ]);
+
+        $application = ApplicationList::where('application_id', $id)->first();
+        if (!$application) {
+            return $this->exceptionJsonResponse('Application not found', null, 404);
+        }
+
+        $communication = new AcoAoCommunication();
+        $communication->application_id = $application->id;
+        $communication->message = $request->message;
+        $communication->created_by = auth('api')->user()->id;
+        $communication->save();
+
+        activity()
+            ->performedOn($application)
+            ->causedBy(auth('api')->user())
+            ->withProperties([
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'application_id' => $application->application_id,
+                'student_email' => $application->student->email,
+                'university_name' => $application->university->name,
+                'intake_name' => $application->intake->name,
+                'message' => $communication->message,
+                'communication_id' => $communication->id,
+            ])
+            ->log('aco_ao_communication_added');
+
+        // Notify relevant users (you may need to adjust this based on your requirements)
+        $adminUsers = User::where('role', 'admin')->get();
+        $additionalDetails = [
+            'message' => $communication->message,
+        ];
+
+        $recipients = $adminUsers->push($application->user);
+        $senderId = auth('api')->user()->id;
+        $senderName = auth('api')->user()->full_name;
+        $senderEmail = auth('api')->user()->email;
+
+        $emailService->sendApplicationNotification('aco_ao_communication_added', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
+
+        return $this->successJsonResponse('ACO & AO Communication added successfully', $communication);
     }
 
 

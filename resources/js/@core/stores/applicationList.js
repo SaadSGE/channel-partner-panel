@@ -18,6 +18,7 @@ export const useApplicationListStore = defineStore({
     universityCommunications: [],
     applicationOfficers: [],
     applicationOfficerOptions: [],
+    acoAoCommunications: [],
   }),
   actions: {
     async getApplicationList(
@@ -313,6 +314,40 @@ export const useApplicationListStore = defineStore({
         })
       } catch (error) {
         console.error('Error fetching application requests:', error)
+        throw error
+      }
+    },
+
+    async getAcoAoCommunications(id) {
+      try {
+        const response = await $api(`/application/${id}/aco-ao-communications`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        console.log(response.data);
+        this.acoAoCommunications = response.data
+      } catch (error) {
+        console.error('Error getting ACO & AO communications:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
+      }
+    },
+
+    async addAcoAoCommunication(id, message) {
+      try {
+        const response = await $api(`/application/${id}/aco-ao-communication`, {
+          method: 'POST',
+          body: JSON.stringify({
+            message,
+          }),
+        })
+
+        return response.data
+      } catch (error) {
+        console.error('Error adding ACO & AO communication:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
         throw error
       }
     },
