@@ -157,7 +157,6 @@ watch(localSelectedParent, (newValue) => {
   emit('update-parent', newValue);
 });
 watch(localSelectedEditor, (newValue) => {
-  console.log("Selected editor:", newValue)
   emit('update-editor', newValue);
 });
 
@@ -235,6 +234,14 @@ onMounted(async () => {
   await userStore.fetchParentUsers(); // Fetch parent users on mount from the Pinia store
   fetchUsers(); // Fetch the main user list
 });
+onMounted(async () => {
+  await loadEditors();
+});
+
+const loadEditors = async () => {
+  if (editorStore.editors.length === 0) await editorStore.getEditors();
+  editors.value = editorStore.editors;
+};
 </script>
 
 
@@ -257,12 +264,6 @@ onMounted(async () => {
     <AppAutocomplete v-model="localSelectedApplicationOfficer" :items="applicationOfficers"
       :item-title="(item) => item.name" :item-value="(item) => item.id" label="Application Officer"
       placeholder="Select Application Officer" clearable />
-  </VCol>
-  <VCol cols="12" md="3" v-if="props.dateFrom !== undefined">
-    <AppDateTimePicker v-model="localDateFrom" label="From Date" placeholder="Select From Date" />
-  </VCol>
-  <VCol cols="12" md="3" v-if="props.dateTo !== undefined">
-    <AppDateTimePicker v-model="localDateTo" label="To Date" placeholder="Select To Date" />
   </VCol>
 
   <!-- course -->
@@ -301,5 +302,13 @@ onMounted(async () => {
   <VCol cols="12" sm="6" md="3" v-if="props.selectedEditor !== undefined">
     <AppAutocomplete v-model="localSelectedEditor" :items="editorStore.editors" :item-title="(item) => item.full_name"
       :item-value="(item) => item.id" label="Editor" placeholder="Select Editor" clearable />
+  </VCol>
+
+
+  <VCol cols="12" md="3" v-if="props.dateFrom !== undefined">
+    <AppDateTimePicker v-model="localDateFrom" label="From Date" placeholder="Select From Date" />
+  </VCol>
+  <VCol cols="12" md="3" v-if="props.dateTo !== undefined">
+    <AppDateTimePicker v-model="localDateTo" label="To Date" placeholder="Select To Date" />
   </VCol>
 </template>

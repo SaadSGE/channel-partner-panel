@@ -51,8 +51,7 @@ const refForm = ref(null);
 const refFormEdit = ref(null);
 const showAppllicationForm = ref(true);
 const showCourseDetails = ref(false);
-const dateFrom = ref(null);
-const dateTo = ref(null);
+
 const applicationLists = ref([]);
 const totalApplications = ref(0);
 const editors = ref()
@@ -60,11 +59,6 @@ const editors = ref()
 
 const search = ref('');
 const selectedStatus = ref(null);
-
-const selectedChannelPartner = ref(null);
-const selectedApplicationOfficer = ref(null);
-const selectedStudentEmail = ref('');
-const selectedEditor = ref(null);
 
 const passportCountries = [
   "Bangladesh",
@@ -94,7 +88,12 @@ const selectedCountry = ref(null);
 const selectedIntake = ref(null);
 const selectedUniversity = ref(null);
 const selectedCourseName = ref("");
-
+const selectedChannelPartner = ref(null);
+const selectedApplicationOfficer = ref(null);
+const selectedStudentEmail = ref('');
+const selectedEditor = ref(null);
+const dateFrom = ref(null);
+const dateTo = ref(null);
 // Computed properties
 const filteredCourseDetails = computed(() => {
   return commonFunctionStore.getFilteredCourseDetails(
@@ -114,7 +113,10 @@ const getRecord = async (page = 1) => {
     selectedCountry.value,
     selectedIntake.value,
     selectedUniversity.value,
-    selectedCourseName.value
+    selectedCourseName.value,
+    selectedEditor.value,
+    dateFrom.value,
+    dateTo.value
   );
   records.value = fetchRecord.data;
   total.value = fetchRecord.total;
@@ -266,7 +268,7 @@ const updateOptions = (event) => {
 }
 
 // Add this watch effect
-watch([searchQuery, selectedCountry, selectedIntake, selectedUniversity, selectedCourseName], () => {
+watch([searchQuery, selectedCountry, selectedIntake, selectedUniversity, selectedCourseName, selectedEditor, dateFrom, dateTo], () => {
   getRecord();
 });
 
@@ -291,71 +293,7 @@ const props = defineProps({
     default: null,
   }
 });
-const fetchApplications = async () => {
-  isLoading.value = true;
-  try {
-    const response = await store.getApplicationList(
 
-      props.userId,
-      page.value,
-      itemsPerPage.value,
-      search.value,
-      sortBy.value,
-      orderBy.value,
-      selectedStatus.value,
-      selectedUniversity.value,
-      selectedChannelPartner.value,
-      selectedApplicationOfficer.value,
-      selectedStudentEmail.value,
-      dateFrom.value,
-      dateTo.value
-    );
-    applicationLists.value = response.data;
-    totalApplications.value = response.total;
-  } catch (error) {
-    console.error('Error fetching applications:', error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-watch([
-  dateFrom,
-  dateTo
-], () => {
-  fetchApplications();
-});
-
-onMounted(() => {
-
-  fetchApplications();
-});
-
-onMounted(async () => {
-  await loadEditors();
-});
-
-const loadEditors = async () => {
-  if (editorStore.editors.length === 0) await editorStore.getEditors();
-
-
-  editors.value = editorStore.editors;
-
-};
-
-const handleEditorChange = async (newEditor) => {
-  selectedEditor.value = newEditor;
-
-  // Make your AJAX request here when the editor is updated
-  if (newEditor) {
-    try {
-      const response = await $api('/fetch-editor', { method: 'GET' })(newEditor);
-      console.log("AJAX request successful", response);
-    } catch (error) {
-      console.error("Error during AJAX request:", error);
-    }
-  }
-};
 </script>
 
 <template>
@@ -511,7 +449,8 @@ const handleEditorChange = async (newEditor) => {
             :selected-university2="selectedUniversity" @update-university2="selectedUniversity = $event"
             :selected-courseName="selectedCourseName" @update-courseName="selectedCourseName = $event"
             :date-from="dateFrom" @update-date-from="dateFrom = $event" :date-to="dateTo"
-            @update-date-to="dateTo = $event" :selected-editor="selectedEditor" @update-editor="handleEditorChange">
+            @update-date-to="dateTo = $event" :selected-editor="selectedEditor"
+            @update-editor="selectedEditor = $event">
           </Filters>
 
 
