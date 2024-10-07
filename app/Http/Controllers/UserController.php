@@ -23,6 +23,7 @@ class UserController extends Controller
         $roleFilter = request()->query('role', null);
         $parentId = request()->query('parentId', null);
         $fetchAll = filter_var(request()->query('fetchAll'), FILTER_VALIDATE_BOOLEAN);
+        $statusFilter = request()->query('status', null); // New status filter
 
         if (auth('api')->user()->role != 'admin') {
             $parentId = auth('api')->user()->id;
@@ -43,15 +44,15 @@ class UserController extends Controller
             })
             ->when($parentId, function ($query, $parentId) {
                 return $query->where('parent_id', $parentId);
+            })
+            ->when($statusFilter !== null, function ($query) use ($statusFilter) {
+                return $query->where('status', $statusFilter);
             });
-
 
         if ($fetchAll) {
             $users = $query->get();
             $totalRows = $users->count();
         } else {
-            //query latest created_at
-
             $queryResult = $query->orderBy('created_at', 'DESC')->paginate($perPage)->toArray();
             $users = $queryResult['data'];
             $totalRows = $queryResult['total'];
