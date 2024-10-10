@@ -1,86 +1,46 @@
 <script setup>
+import { useNotificationStore } from '@core/stores/notification';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
-const notifications = ref([
-  // {
-  //   id: 1,
-  //   img: avatar4,
-  //   title: 'Congratulation Flora! 🎉',
-  //   subtitle: 'Won the monthly best seller badge',
-  //   time: 'Today',
-  //   isSeen: true,
-  // },
-  // {
-  //   id: 2,
-  //   text: 'Tom Holland',
-  //   title: 'New user registered.',
-  //   subtitle: '5 hours ago',
-  //   time: 'Yesterday',
-  //   isSeen: false,
-  // },
-  // {
-  //   id: 3,
-  //   img: avatar5,
-  //   title: 'New message received 👋🏻',
-  //   subtitle: 'You have 10 unread messages',
-  //   time: '11 Aug',
-  //   isSeen: true,
-  // },
-  // {
-  //   id: 4,
-  //   img: paypal,
-  //   title: 'PayPal',
-  //   subtitle: 'Received Payment',
-  //   time: '25 May',
-  //   isSeen: false,
-  //   color: 'error',
-  // },
-  // {
-  //   id: 5,
-  //   img: avatar3,
-  //   title: 'Received Order 📦',
-  //   subtitle: 'New order received from john',
-  //   time: '19 Mar',
-  //   isSeen: true,
-  // },
-])
+const notificationStore = useNotificationStore()
+const router = useRouter()
+
+onMounted(() => {
+  notificationStore.fetchNotifications()
+})
 
 const removeNotification = notificationId => {
-  notifications.value.forEach((item, index) => {
-    if (notificationId === item.id)
-      notifications.value.splice(index, 1)
-  })
+  notificationStore.notifications = notificationStore.notifications.filter(item => item.id !== notificationId)
 }
 
 const markRead = notificationId => {
-  notifications.value.forEach(item => {
-    notificationId.forEach(id => {
-      if (id === item.id)
-        item.isSeen = true
-    })
-  })
+  notificationStore.markAsRead(notificationId)
 }
 
 const markUnRead = notificationId => {
-  notifications.value.forEach(item => {
-    notificationId.forEach(id => {
-      if (id === item.id)
-        item.isSeen = false
-    })
-  })
+  // This functionality is not implemented in the backend yet
+  console.warn('Mark as unread not implemented')
 }
 
 const handleNotificationClick = notification => {
-  if (!notification.isSeen)
-    markRead([notification.id])
+  if (!notification.read) {
+    markRead(notification.id)
+  }
+  if (notification.notification_route) {
+    const currentRouteName = router.currentRoute.value.name
+    if (currentRouteName === notification.notification_route) {
+      // If on the same route, just reload the page
+      router.go(0)
+    } else {
+      // If routes are different, navigate without forcing a reload
+      router.push({ name: notification.notification_route, params: { id: notification.application_id } })
+    }
+  }
 }
 </script>
 
 <template>
-  <Notifications
-    :notifications="notifications"
-    @remove="removeNotification"
-    @read="markRead"
-    @unread="markUnRead"
-    @click:notification="handleNotificationClick"
-  />
+  <Notifications :notifications="notificationStore.notifications" @remove="removeNotification" @read="markRead"
+    @unread="markUnRead" @click:notification="handleNotificationClick" />
 </template>

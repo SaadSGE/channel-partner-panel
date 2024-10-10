@@ -1,58 +1,55 @@
 <script setup>
+const props = defineProps({
+  userId: {
+    type: String,
+    default: null,
+  },
+})
+
 definePage({
   meta: {
     action: 'read',
     subject: 'application',
   },
-});
+})
 
 import Filters from '@/@core/components/Filters.vue';
 import { useApplicationListStore } from '@/@core/stores/applicationList';
-
-
-
-
+import { getUserRole, resolveStatusColor, resolveStatusName } from '@/@core/utils/helpers';
 import Swal from 'sweetalert2';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-
+const { can } = useAbility();
 // Store and Router
-const store = useApplicationListStore();
+const store = useApplicationListStore()
 
-const router = useRouter();
-const isAdmin = ref(getUserRole() === 'admin');
+const router = useRouter()
+const isAdmin = ref(getUserRole() === 'admin')
 
 // Reactive State
-const applicationLists = ref([]);
-const totalApplications = ref(0);
-const itemsPerPage = ref(10);
-const page = ref(1);
-const sortBy = ref();
-const orderBy = ref();
-const search = ref('');
-const selectedStatus = ref(null);
-const selectedUniversity = ref(null);
-const selectedChannelPartner = ref(null);
-const selectedApplicationOfficer = ref(null);
-const selectedStudentEmail = ref('');
-const dateFrom = ref(null);
-const dateTo = ref(null);
-const isLoading = ref(false);
+const applicationLists = ref([])
+const totalApplications = ref(0)
+const itemsPerPage = ref(10)
+const page = ref(1)
+const sortBy = ref()
+const orderBy = ref()
+const search = ref('')
+const selectedStatus = ref(null)
+const selectedUniversity = ref(null)
+const selectedChannelPartner = ref(null)
+const selectedApplicationOfficer = ref(null)
+const selectedStudentEmail = ref('')
+const selectedDateFrom = ref(null)
+const selectedDateTo = ref(null)
+const isLoading = ref(false)
 
-const applicationStore = useApplicationListStore();
+const applicationStore = useApplicationListStore()
 
 
-
-const props = defineProps({
-  userId: {
-    type: String,
-    default: null,
-  }
-});
 
 // Methods
 const fetchApplications = async () => {
-  isLoading.value = true;
+  isLoading.value = true
   try {
     const response = await store.getApplicationList(
       props.userId,
@@ -66,29 +63,30 @@ const fetchApplications = async () => {
       selectedChannelPartner.value,
       selectedApplicationOfficer.value,
       selectedStudentEmail.value,
-      dateFrom.value,
-      dateTo.value
-    );
-    applicationLists.value = response.data;
-    totalApplications.value = response.total;
+      selectedDateFrom.value,
+      selectedDateTo.value,
+    )
+
+    applicationLists.value = response.data
+    totalApplications.value = response.total
   } catch (error) {
-    console.error('Error fetching applications:', error);
+    console.error('Error fetching applications:', error)
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
-const updateOptions = (options) => {
-  sortBy.value = options.sortBy[0]?.key;
-  orderBy.value = options.sortBy[0]?.order;
-  fetchApplications();
-};
+const updateOptions = options => {
+  sortBy.value = options.sortBy[0]?.key
+  orderBy.value = options.sortBy[0]?.order
+  fetchApplications()
+}
 
-const viewApplicationDetail = (applicationId) => {
-  router.push({ name: 'application-details', params: { id: applicationId } });
-};
+const viewApplicationDetail = applicationId => {
+  router.push({ name: 'application-details', params: { id: applicationId } })
+}
 
-const deleteItem = async (itemId) => {
+const deleteItem = async itemId => {
   const result = await Swal.fire({
     title: 'Are you sure?',
     text: 'Do you want to delete this item?',
@@ -98,18 +96,18 @@ const deleteItem = async (itemId) => {
     cancelButtonColor: '#d33',
     confirmButtonText: 'Yes, delete it!',
     cancelButtonText: 'Cancel',
-  });
+  })
 
   if (result.isConfirmed) {
     try {
-      await store.deleteItem(itemId);
-      fetchApplications();
-      Swal.fire('Deleted!', 'The item has been deleted.', 'success');
+      await store.deleteItem(itemId)
+      fetchApplications()
+      Swal.fire('Deleted!', 'The item has been deleted.', 'success')
     } catch (error) {
-      Swal.fire('Error!', 'There was an error deleting the item.', 'error');
+      Swal.fire('Error!', 'There was an error deleting the item.', 'error')
     }
   }
-};
+}
 
 // Fetch filter options
 
@@ -122,60 +120,37 @@ watch([
   selectedChannelPartner,
   selectedApplicationOfficer,
   selectedStudentEmail,
-  dateFrom,
-  dateTo
+  selectedDateFrom,
+  selectedDateTo,
 ], () => {
-  fetchApplications();
-});
+  fetchApplications()
+})
 
 // Mounted Hook
 onMounted(() => {
 
-  fetchApplications();
-});
+  fetchApplications()
+})
 
 // Header Definitions
 const headers = ref([
   { title: 'APPLICATION ID', key: 'application_id' },
   { title: 'Student Name', key: 'student.name' },
   { title: 'Student Email', key: 'student.email' },
-  ...(isAdmin.value
-    ? [{ title: 'Application Officer', key: 'user.parent.email' }]
+  ...((can('application-control-officer-view', 'application'))
+    ? [{ title: 'Application Control Officer', key: 'user.parent.email' }]
     : []),
   { title: 'Channel Partner', key: 'user.email' },
   { title: 'University/Course Details', key: 'university.name' },
   { title: 'Status', key: 'status' },
   { title: 'Date Added', key: 'created_at' },
   { title: 'Action', key: 'action', sortable: false },
-]);
-
-// Status Color Resolvers
-const resolveStatusColor = (status) => {
-  const statusColors = {
-    0: 'primary', 1: 'success', 2: 'warning', 3: 'info',
-    4: 'info', 5: 'warning', 6: 'success', 7: 'warning',
-    8: 'danger', 9: 'danger', 10: 'secondary', 11: 'success',
-    12: 'warning'
-  };
-  return statusColors[status] || 'secondary';
-};
-
-const resolveStatusName = (status) => {
-  const statusNames = {
-    0: 'Application Processing', 1: 'Application Submitted',
-    2: 'Pending Docs', 3: 'Offer Issue Conditional',
-    4: 'Offer Issue Unconditional', 5: 'Need Payment',
-    6: 'CAS Issued', 7: 'Additional Doc Needed',
-    8: 'Refund Required', 9: 'Application Rejected',
-    10: 'Session Expired', 11: 'Doc Received', 12: 'Partial Payment',
-  };
-  return statusNames[status] || 'Unknown Status';
-};
+])
 
 // Add this computed property
 const tableHeight = computed(() => {
-  return `calc(100vh - 200px)`; // Adjust this value as needed
-});
+  return `calc(100vh - 200px)` // Adjust this value as needed
+})
 </script>
 
 <template>
@@ -184,12 +159,13 @@ const tableHeight = computed(() => {
       <!-- New Filters Section -->
       <VCardText>
         <VRow>
-          <Filters :selected-status="selectedStatus" @update-status="selectedStatus = $event"
-            :selected-channel-partner="selectedChannelPartner" @update-channel-partner="selectedChannelPartner = $event"
-            :selected-university="selectedUniversity" @update-university="selectedUniversity = $event"
-            :selected-application-officer="selectedApplicationOfficer"
-            @update-application-officer="selectedApplicationOfficer = $event" :date-from="dateFrom"
-            @update-date-from="dateFrom = $event" :date-to="dateTo" @update-date-to="dateTo = $event">
+          <Filters :selected-status="selectedStatus" :selected-channel-partner="selectedChannelPartner"
+            :selected-university="selectedUniversity" :selected-application-officer="selectedApplicationOfficer"
+            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
+            @update-status="selectedStatus = $event" @update-channel-partner="selectedChannelPartner = $event"
+            @update-university="selectedUniversity = $event"
+            @update-application-officer="selectedApplicationOfficer = $event"
+            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
             :isAdmin = "isAdmin"
           </Filters>
         </VRow>
@@ -249,10 +225,10 @@ const tableHeight = computed(() => {
         </template>
         <template #item.action="{ item }">
           <div class="d-flex flex-column ms-3">
-            <IconBtn @click="viewApplicationDetail(item.id)">
+            <IconBtn @click="viewApplicationDetail(item.application_id)">
               <VIcon icon="tabler-eye" />
             </IconBtn>
-            <IconBtn @click="deleteItem(item.id)" v-if="$can('delete', 'application')">
+            <IconBtn v-if="$can('delete', 'application')" @click="deleteItem(item.id)">
               <VIcon icon="tabler-trash" />
             </IconBtn>
           </div>

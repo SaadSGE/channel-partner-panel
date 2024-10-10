@@ -7,6 +7,8 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    AcoAoCommunication: typeof import('./resources/js/components/AcoAoCommunication.vue')['default']
+    AcoCoCommunication: typeof import('./resources/js/components/AcoCoCommunication.vue')['default']
     AddAuthenticatorAppDialog: typeof import('./resources/js/components/dialogs/AddAuthenticatorAppDialog.vue')['default']
     AddEditAddressDialog: typeof import('./resources/js/components/dialogs/AddEditAddressDialog.vue')['default']
     AddEditPermissionDialog: typeof import('./resources/js/components/dialogs/AddEditPermissionDialog.vue')['default']
@@ -20,6 +22,7 @@ declare module 'vue' {
     AppDateTimePicker: typeof import('./resources/js/@core/components/app-form-elements/AppDateTimePicker.vue')['default']
     AppDrawerHeaderSection: typeof import('./resources/js/@core/components/AppDrawerHeaderSection.vue')['default']
     ApplicationActivityLog: typeof import('./resources/js/components/ActivityLog/ApplicationActivityLog.vue')['default']
+    ApplicationOfficerAssignments: typeof import('./resources/js/components/ApplicationOfficerAssignments.vue')['default']
     AppLoadingIndicator: typeof import('./resources/js/components/AppLoadingIndicator.vue')['default']
     AppPricing: typeof import('./resources/js/components/AppPricing.vue')['default']
     AppSearchHeader: typeof import('./resources/js/components/AppSearchHeader.vue')['default']
@@ -32,6 +35,7 @@ declare module 'vue' {
     CardStatisticsHorizontal: typeof import('./resources/js/@core/components/cards/CardStatisticsHorizontal.vue')['default']
     CardStatisticsVertical: typeof import('./resources/js/@core/components/cards/CardStatisticsVertical.vue')['default']
     CardStatisticsVerticalSimple: typeof import('./resources/js/@core/components/CardStatisticsVerticalSimple.vue')['default']
+    ComplianceOfficerAssignments: typeof import('./resources/js/components/ComplianceOfficerAssignments.vue')['default']
     ConfirmDialog: typeof import('./resources/js/components/dialogs/ConfirmDialog.vue')['default']
     CreateAppDialog: typeof import('./resources/js/components/dialogs/CreateAppDialog.vue')['default']
     CustomCheckboxes: typeof import('./resources/js/@core/components/app-form-elements/CustomCheckboxes.vue')['default']

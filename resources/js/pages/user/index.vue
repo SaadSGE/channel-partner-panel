@@ -33,6 +33,7 @@ const selectedRole = ref(null);
 const selectedParent = ref(null); // State for the selected parent
 const selectedPlan = ref();
 const selectedStatus = ref();
+const selectedUserStatus = ref(null);
 const isLoading = ref(false);
 const roles = ref([]);
 const isEditUserDrawerVisible = ref(false);
@@ -92,7 +93,8 @@ const fetchUsers = async () => {
       page.value,
       searchQuery.value,
       selectedRole.value,
-      selectedParent.value
+      selectedParent.value,
+      selectedUserStatus.value
     );
     users.value = response.data;
     totalUsers.value = response.total;
@@ -184,7 +186,7 @@ onMounted(async () => {
   fetchUsers(); // Fetch the main user list
 });
 
-watch([searchQuery, selectedRole, selectedParent], () => {
+watch([searchQuery, selectedRole, selectedParent, selectedUserStatus], () => {
   fetchUsers();
 });
 </script>
@@ -221,7 +223,8 @@ watch([searchQuery, selectedRole, selectedParent], () => {
         <VRow>
           <!-- 👉 Select Role -->
           <Filters :selected-role="selectedRole" @update-role="selectedRole = $event" :selected-parent="selectedParent"
-            @update-parent="selectedParent = $event"></Filters>
+            @update-parent="selectedParent = $event" :selected-userStatus="selectedUserStatus"
+            @update-userStatus="selectedUserStatus = $event"></Filters>
 
 
         </VRow>

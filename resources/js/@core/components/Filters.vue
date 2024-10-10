@@ -29,10 +29,14 @@ const roles = ref([]);
 const universities = ref([]);
 const channelPartners = ref([]);
 const applicationOfficers = ref([]);
+const editors = ref()
 
 const isLoading = ref(false);
 const selectedRole = ref();
 const selectedParent = ref(null);
+const selectedUserStatus = ref(null);
+const users = ref([]);
+const totalUsers = ref(0);
 const roleStore = useRolePermissionStore();
 
 const userStore = useUserStore();
@@ -63,14 +67,15 @@ const props = defineProps({
     type: Number,
     Required: false,
   },
-  dateFrom: {
+  selectedDateFrom: {
     type: Number,
     Required: false,
   },
-  dateTo: {
+  selectedDateTo: {
     type: Number,
     Required: false,
   },
+
   selectedCountry: {
     type: Number,
     Required: false,
@@ -98,20 +103,25 @@ const props = defineProps({
   selectedEditor: {
     type: Number,
     Required: false,
+  },
+  selectedUserStatus: {
+    type: Object,
+    Required: false,
   }
 
 
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-date-from', 'update-date-to', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedChannelPartner = ref(props.selectedChannelPartner);
 const localSelectedUniversity = ref(props.selectedUniversity);
 const localSelectedApplicationOfficer = ref(props.selectedApplicationOfficer);
-const localDateFrom = ref(props.dateFrom);
-const localDateTo = ref(props.dateTo);
+const localSelectedDateFrom = ref(props.selectedDateFrom);
+const localSelectedDateTo = ref(props.selectedDateTo);
+
 const localSelectedCountry = ref(props.selectedCountry);
 const localSelectedIntake = ref(props.selectedIntake);
 const localSelectedUniversity2 = ref(props.selectedUniversity2);
@@ -119,6 +129,7 @@ const localSelectedCourseName = ref(props.selectedCourseName);
 const localSelectedRole = ref(props.selectedRole);
 const localSelectedParent = ref(props.selectedParent);
 const localSelectedEditor = ref(props.selectedEditor);
+const localSelectedUserStatus = ref(props.selectedUserStatus);
 
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
@@ -132,12 +143,13 @@ watch(localSelectedUniversity, (newValue) => {
 watch(localSelectedApplicationOfficer, (newValue) => {
   emit('update-application-officer', newValue);
 });
-watch(localDateFrom, (newValue) => {
-  emit('update-date-from', newValue);
+watch(localSelectedDateFrom, (newValue) => {
+  emit('update-dateFrom', newValue);
 });
-watch(localDateTo, (newValue) => {
-  emit('update-date-to', newValue);
+watch(localSelectedDateTo, (newValue) => {
+  emit('update-dateTo', newValue);
 });
+
 watch(localSelectedCountry, (newValue) => {
   emit('update-country', newValue);
 });
@@ -158,6 +170,9 @@ watch(localSelectedParent, (newValue) => {
 });
 watch(localSelectedEditor, (newValue) => {
   emit('update-editor', newValue);
+});
+watch(localSelectedUserStatus, (newValue) => {
+  emit('update-userStatus', newValue);
 });
 
 
@@ -217,16 +232,20 @@ const fetchUsers = async () => {
     const response = await userStore.fetchUsers(
 
       selectedRole.value,
-      selectedParent.value
-    );
+      selectedParent.value,
 
+    );
+    users.value = response.data;
+    totalUsers.value = response.total;
   } catch (error) {
     console.error("Error fetching users:", error);
   } finally {
     isLoading.value = false;
   }
 };
-
+watch([selectedRole, selectedParent], () => {
+  fetchUsers();
+});
 
 onMounted(async () => {
   await roleStore.getAllRoles();
@@ -242,6 +261,8 @@ const loadEditors = async () => {
   if (editorStore.editors.length === 0) await editorStore.getEditors();
   editors.value = editorStore.editors;
 };
+
+
 </script>
 
 
@@ -296,7 +317,12 @@ const loadEditors = async () => {
     <AppAutocomplete v-model="localSelectedParent" placeholder="Select Parent" :items="userStore.parentUsers" clearable
       clear-icon="tabler-x" :item-title="(item) => item.full_name" :item-value="(item) => item.id" />
   </VCol>
-
+  <VCol cols="12" sm="4" v-if="props.selectedUserStatus !== undefined">
+    <AppAutocomplete v-model="localSelectedUserStatus" :items="[
+      { value: 1, title: 'Active' },
+      { value: 0, title: 'Inactive' }
+    ]" placeholder="Select Status" @change="fetchUsers" clearable clear-icon="tabler-x" />
+  </VCol>
   <!--All record  -->
 
   <VCol cols="12" sm="6" md="3" v-if="props.selectedEditor !== undefined">
@@ -305,10 +331,11 @@ const loadEditors = async () => {
   </VCol>
 
 
-  <VCol cols="12" md="3" v-if="props.dateFrom !== undefined">
-    <AppDateTimePicker v-model="localDateFrom" label="From Date" placeholder="Select From Date" />
+  <VCol cols="12" md="3" v-if="props.selectedDateFrom !== undefined">
+    <AppDateTimePicker v-model="localSelectedDateFrom" label="From Date" placeholder="Select From Date" />
   </VCol>
-  <VCol cols="12" md="3" v-if="props.dateTo !== undefined">
-    <AppDateTimePicker v-model="localDateTo" label="To Date" placeholder="Select To Date" />
+  <VCol cols="12" md="3" v-if="props.selectedDateTo !== undefined">
+    <AppDateTimePicker v-model="localSelectedDateTo" label="To Date" placeholder="Select To Date" />
   </VCol>
+
 </template>

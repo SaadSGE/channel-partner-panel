@@ -71,7 +71,7 @@ abstract class Controller
 
     protected function handleValidationErrors(ValidationException $exception): JsonResponse
     {
-        Log::info($exception);
+
 
         $flattenedErrors = collect($exception->errors())->flatten()->all();
 

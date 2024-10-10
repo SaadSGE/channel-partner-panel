@@ -205,4 +205,8 @@ class User extends Authenticatable
         return $parentIds ? explode(',', $parentIds) : [];
     }
 
+    public function applicationOfficerAssignments()
+    {
+        return $this->hasMany(ApplicationOfficerAssignment::class, 'user_id');
+    }
 }

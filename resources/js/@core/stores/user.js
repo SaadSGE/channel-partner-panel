@@ -31,7 +31,7 @@ export const useUserStore = defineStore( {
         throw error;
       }
     },
-    async fetchUsers(page = 1, searchQuery = '', role = '', parentId = '', fetchAll = false) {
+    async fetchUsers(page = 1, searchQuery = '', role = '', parentId = '',userStatus='', fetchAll = false) {
       try {
         const response = await $api("/users", {
           method: "GET",
@@ -43,7 +43,8 @@ export const useUserStore = defineStore( {
             searchQuery: searchQuery,
             role: role,
             parentId: parentId,
-            fetchAll: fetchAll
+            fetchAll: fetchAll,
+            userStatus: userStatus
           }
         });
 

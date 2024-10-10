@@ -92,8 +92,8 @@ const selectedChannelPartner = ref(null);
 const selectedApplicationOfficer = ref(null);
 const selectedStudentEmail = ref('');
 const selectedEditor = ref(null);
-const dateFrom = ref(null);
-const dateTo = ref(null);
+const selectedDateFrom = ref(null);
+const selectedDateTo = ref(null);
 // Computed properties
 const filteredCourseDetails = computed(() => {
   return commonFunctionStore.getFilteredCourseDetails(
@@ -115,8 +115,8 @@ const getRecord = async (page = 1) => {
     selectedUniversity.value,
     selectedCourseName.value,
     selectedEditor.value,
-    dateFrom.value,
-    dateTo.value
+    selectedDateFrom.value,
+    selectedDateTo.value
   );
   records.value = fetchRecord.data;
   total.value = fetchRecord.total;
@@ -268,7 +268,7 @@ const updateOptions = (event) => {
 }
 
 // Add this watch effect
-watch([searchQuery, selectedCountry, selectedIntake, selectedUniversity, selectedCourseName, selectedEditor, dateFrom, dateTo], () => {
+watch([searchQuery, selectedCountry, selectedIntake, selectedUniversity, selectedCourseName, selectedEditor, selectedDateFrom, selectedDateTo], () => {
   getRecord();
 });
 
@@ -448,8 +448,8 @@ const props = defineProps({
             :selected-intake="selectedIntake" @update-intake="selectedIntake = $event"
             :selected-university2="selectedUniversity" @update-university2="selectedUniversity = $event"
             :selected-courseName="selectedCourseName" @update-courseName="selectedCourseName = $event"
-            :date-from="dateFrom" @update-date-from="dateFrom = $event" :date-to="dateTo"
-            @update-date-to="dateTo = $event" :selected-editor="selectedEditor"
+            :selected-dateFrom="selectedDateFrom" @update-dateFrom="selectedDateFrom = $event"
+            :selected-dateTo="selectedDateTo" @update-dateTo="selectedDateTo = $event" :selected-editor="selectedEditor"
             @update-editor="selectedEditor = $event">
           </Filters>
 

@@ -1,95 +1,76 @@
 <script setup>
+import { useRolePermissionStore } from "@/@core/stores/rolePermission";
+import Swal from 'sweetalert2';
+import { ref, watch } from 'vue';
+
 const props = defineProps({
-  isDialogVisible: {
-    type: Boolean,
-    required: true,
-  },
-  permissionName: {
-    type: String,
-    required: false,
-    default: '',
-  },
-})
+  isDialogVisible: Boolean,
+  permission: Object,
+});
 
-const emit = defineEmits([
-  'update:isDialogVisible',
-  'update:permissionName',
-])
+const emit = defineEmits(['update:isDialogVisible', 'saved']);
 
-const currentPermissionName = ref('')
+const store = useRolePermissionStore();
 
-const onReset = () => {
-  emit('update:isDialogVisible', false)
-  currentPermissionName.value = ''
-}
+const name = ref('');
 
-const onSubmit = () => {
-  emit('update:isDialogVisible', false)
-  emit('update:permissionName', currentPermissionName.value)
-}
+watch(() => props.permission, (newPermission) => {
+  if (newPermission) {
+    name.value = newPermission.name;
+  } else {
+    name.value = '';
+  }
+}, { immediate: true });
 
-watch(props, () => {
-  currentPermissionName.value = props.permissionName
-})
+const onSubmit = async () => {
+  try {
+    if (props.permission) {
+      await store.updatePermission({
+        id: props.permission.id,
+        name: name.value,
+      });
+    } else {
+      await store.createPermission({
+        name: name.value,
+      });
+    }
+    closeDialog();
+    emit('saved');
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: props.permission ? 'Permission updated successfully' : 'Permission created successfully',
+    });
+  } catch (error) {
+    closeDialog();
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error,
+    });
+  }
+};
+
+const closeDialog = () => {
+  emit('update:isDialogVisible', false);
+  name.value = '';
+};
 </script>
 
 <template>
-  <VDialog
-    :width="$vuetify.display.smAndDown ? 'auto' : 600"
-    :model-value="props.isDialogVisible"
-    @update:model-value="onReset"
-  >
-    <!-- 👉 dialog close btn -->
-    <DialogCloseBtn @click="onReset" />
-
-    <VCard class="pa-2 pa-sm-10">
+  <VDialog :model-value="isDialogVisible" @update:model-value="closeDialog" max-width="600px">
+    <VCard>
+      <VCardTitle>
+        {{ permission ? 'Edit' : 'Add' }} Permission
+      </VCardTitle>
       <VCardText>
-        <!-- 👉 Title -->
-        <h4 class="text-h4 text-center mb-2">
-          {{ props.permissionName ? 'Edit' : 'Add' }} Permission
-        </h4>
-        <p class="text-body-1 text-center mb-6">
-          {{ props.permissionName ? 'Edit' : 'Add' }}  permission as per your requirements.
-        </p>
-
-        <!-- 👉 Form -->
-        <VForm>
-          <VAlert
-            type="warning"
-            title="Warning!"
-            variant="tonal"
-            class="mb-6"
-          >
-            <template #text>
-              By {{ props.permissionName ? 'editing' : 'adding' }} the permission name, you might break the system permissions functionality.
-            </template>
-          </VAlert>
-
-          <!-- 👉 Role name -->
-          <div class="d-flex gap-4 mb-6 flex-wrap flex-column flex-sm-row">
-            <AppTextField
-              v-model="currentPermissionName"
-              placeholder="Enter Permission Name"
-            />
-
-            <VBtn @click="onSubmit">
-              Update
-            </VBtn>
-          </div>
-
-          <VCheckbox label="Set as core permission" />
+        <VForm @submit.prevent="onSubmit">
+          <VTextField v-model="name" label="Permission Name" required />
+          <VBtn type="submit" color="primary" class="mt-4">
+            {{ permission ? 'Update' : 'Create' }} Permission
+          </VBtn>
         </VForm>
       </VCardText>
     </VCard>
   </VDialog>
 </template>
-
-<style lang="scss">
-.permission-table {
-  td {
-    border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-    padding-block: 0.5rem;
-    padding-inline: 0;
-  }
-}
-</style>

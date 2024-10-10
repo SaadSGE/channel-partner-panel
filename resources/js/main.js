@@ -11,9 +11,12 @@ import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import 'sweetalert2/dist/sweetalert2.min.css'
 import VueSweetalert2 from 'vue-sweetalert2'
+import './echo'
+
 
 // Create vue app
 const app = createApp(App)
+
 app.use(VueFileAgentNext)
 app.use(VueSweetalert2)
 app.component('QuillEditor', QuillEditor)
