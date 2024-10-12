@@ -379,6 +379,7 @@ class CourseDetailsController extends Controller
                 'sender_email' => $request->user()->email,
                 'notification_type' => 'email',
                 'notification_text' => 'A new course/university/intake request has been submitted',
+
             ];
 
             // Send email notification to admin users
