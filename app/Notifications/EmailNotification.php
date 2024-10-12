@@ -18,13 +18,16 @@ class EmailNotification extends Notification implements ShouldQueue
      */
     public function __construct(array $details)
     {
+        // Log the details recipients
+        Log::info($details['recipients']);
         // Filter out null or empty email addresses
         if (isset($details['recipients']) && is_array($details['recipients'])) {
             $details['recipients'] = array_filter($details['recipients'], function ($email) {
                 return !is_null($email) && trim($email) !== '';
             });
         }
-        Log::info($details);
+        // Log the details recipients
+        Log::info($details['recipients']);
         $this->details = $details;
     }
 
