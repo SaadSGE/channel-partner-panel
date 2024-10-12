@@ -152,7 +152,7 @@ class CourseDetailsController extends Controller
             Cache::forget('course_details_all');
             Cache::forget('country_intake_university_course');
             // Log the newly created course detail
-            Log::info('CourseDetail created: ', $courseDetail->toArray());
+
 
             // Return success response
             return $this->successJsonResponse('Course detail created successfully', $courseDetail);
@@ -378,6 +378,7 @@ class CourseDetailsController extends Controller
                 'sender_name' => $request->user()->full_name,
                 'sender_email' => $request->user()->email,
                 'notification_type' => 'email',
+                'notification_text' => 'A new course/university/intake request has been submitted',
             ];
 
             // Send email notification to admin users

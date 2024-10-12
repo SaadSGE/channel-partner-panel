@@ -17,7 +17,7 @@ class FileUploadService
      */
     public function upload(string $filePath, $file): ?string
     {
-        Log::info('hello');
+
         try {
             $originalFileName = $file->getClientOriginalName();
             $randomNumber = rand(100000, 999999);
