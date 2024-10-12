@@ -427,19 +427,20 @@ class ApplicationController extends Controller
 
         $recipients = collect();
 
-        // Always include admin users
         $adminUsers = User::where('role', 'admin')->get();
         $recipients = $recipients->concat($adminUsers);
 
         if ($user->role == 'channel partner') {
-            // Fetch all parent users
             $parentIds = $user->fetchParent();
             $parentUsers = User::whereIn('id', $parentIds)->get();
             $recipients = $recipients->concat($parentUsers);
         } else {
-            // For non-channel partners, include the application creator
             $creator = $application->user;
+            $parentIds = $creator->fetchParent();
+            $parentUsers = User::whereIn('id', $parentIds)->get();
+            $recipients = $recipients->concat($parentUsers);
             $recipients->push($creator);
+
         }
 
         // Prepare the notification details
@@ -1463,7 +1464,7 @@ class ApplicationController extends Controller
             $adminUsers = User::where('role', 'admin')->get();
             $assigner = User::findOrFail($assignment->created_by);
 
-            // Prepare recipients (admin users and the assigner)
+
             $recipients = $adminUsers->push($assigner);
 
             // Send notification
@@ -1480,9 +1481,9 @@ class ApplicationController extends Controller
             DB::commit();
 
             return $this->successJsonResponse('Compliance request rejected successfully');
-        } catch (\Exception $e) {
+        } catch (\Throwable $th) {
             DB::rollBack();
-            return $this->errorJsonResponse('Failed to reject compliance request', $e->getMessage(), 500);
+            return $this->errorJsonResponse('Failed to reject compliance request', [$th->getMessage()], 500);
         }
     }
 
