@@ -26,6 +26,7 @@ class EmailNotification extends Notification implements ShouldQueue
         }
 
         $this->details = $details;
+        Log::info($this->details);
 
     }
 
