@@ -365,7 +365,7 @@ class CourseDetailsController extends Controller
             // Fetch admin users to notify
             $users = User::where('role', 'admin')->get();
 
-            // Prepare the notification details
+            // Prepare the notification detai/'ls
             $details = [
                 'subject' => 'Request for New Course/University/Intake',
                 'body' => "A new request has been submitted for the following details:<br><br>"

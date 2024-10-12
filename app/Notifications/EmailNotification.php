@@ -17,7 +17,13 @@ class EmailNotification extends Notification implements ShouldQueue
      */
     public function __construct(array $details)
     {
-        //
+        // Filter out null or empty email addresses
+        if (isset($details['recipients']) && is_array($details['recipients'])) {
+            $details['recipients'] = array_filter($details['recipients'], function ($email) {
+                return !is_null($email) && trim($email) !== '';
+            });
+        }
+
         $this->details = $details;
     }
 
@@ -61,7 +67,7 @@ class EmailNotification extends Notification implements ShouldQueue
             'sender_name' => $this->details['sender_name'],  // Include sender_name
             'sender_email' => $this->details['sender_email'],  // Include sender_email
             'notification_type' => $this->details['notification_type'],
-            'notification_text' => $this->details['notification_text'] ?? '',
+            'notification_text' => $this->details['notification_text'] ?? 'A new course/university/intake request has been submitted',
             'notification_route' => $this->details['notification_route'] ?? '',
 
         ];
