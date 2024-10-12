@@ -18,16 +18,13 @@ class EmailNotification extends Notification implements ShouldQueue
      */
     public function __construct(array $details)
     {
-        // Log the details recipients
-        Log::info($details['recipients']);
-        // Filter out null or empty email addresses
+
         if (isset($details['recipients']) && is_array($details['recipients'])) {
             $details['recipients'] = array_filter($details['recipients'], function ($email) {
                 return !is_null($email) && trim($email) !== '';
             });
         }
-        // Log the details recipients
-        Log::info($details['recipients']);
+
         $this->details = $details;
     }
 
@@ -51,10 +48,18 @@ class EmailNotification extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
-        return (new MailMessage())
-            ->bcc($this->details['recipients'])
+        $mailMessage = (new MailMessage())
             ->subject($this->details['subject'])
-            ->view('emails.general', ['body' => $this->details['body'],'subject' => $this->details['subject']]);
+            ->view('emails.general', ['body' => $this->details['body']]);
+
+        // Add BCC recipients if there are any
+        if (!empty($this->details['recipients'])) {
+            foreach ($this->details['recipients'] as $recipient) {
+                $mailMessage->bcc($recipient);
+            }
+        }
+
+        return $mailMessage;
     }
     /**
      * Get the array representation of the notification.
