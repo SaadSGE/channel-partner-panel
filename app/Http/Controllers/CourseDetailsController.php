@@ -223,7 +223,7 @@ class CourseDetailsController extends Controller
             Cache::forget('course_details_all');
             Cache::forget('country_intake_university_course');
             // Log the updated course detail
-            Log::info('CourseDetail updated: ', $courseDetail->toArray());
+
 
             return $this->successJsonResponse('Course details updated successfully', $courseDetail);
         } catch (\Throwable $th) {
@@ -286,12 +286,12 @@ class CourseDetailsController extends Controller
         try {
             // Check if the data is already cached. If not, execute the query and cache the result.
             $courseDetails = Cache::rememberForever($cacheKey, function () {
-                Log::info('Fetching course details from the database.');
+
                 return CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
             });
 
             if (Cache::has($cacheKey)) {
-                Log::info('Course details retrieved from cache.');
+
             }
 
             // Return the cached or fresh data

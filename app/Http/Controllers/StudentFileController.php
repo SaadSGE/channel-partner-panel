@@ -38,7 +38,7 @@ class StudentFileController extends Controller
     {
 
         try {
-            Log::info($request->application_id);
+
             $file = $request->file('student_document');
             $filePath = 'channelPartnerPanel/studentDocument/';
             $originalFileName = $file->getClientOriginalName();
@@ -59,7 +59,7 @@ class StudentFileController extends Controller
 
     public function show($filename)
     {
-        Log::info('test');
+
         $path = storage_path('app/public/document/' . $filename);
 
         if (!file_exists($path)) {

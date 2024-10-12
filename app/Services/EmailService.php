@@ -22,10 +22,18 @@ class EmailService
      */
     public function sendNotification(array $details, $recipients, string $subject, string $body, int $senderId, string $senderName, string $senderEmail, string $notification_text, string $notification_route)
     {
+        // Get the authenticated user
+        $authUser = auth('api')->user();
+
+        // Filter out the authenticated user from recipients
+        $filteredRecipients = $recipients->filter(function ($recipient) use ($authUser) {
+            return $recipient->id !== $authUser->id;
+        });
+
         $details = array_merge($details, [
             'subject' => $subject,
             'body' => $body,
-            'recipients' => $recipients->pluck('email')->toArray(),
+            'recipients' => $filteredRecipients->pluck('email')->toArray(),
             'sender_id' => $senderId,
             'sender_name' => $senderName,
             'sender_email' => $senderEmail,
@@ -40,7 +48,7 @@ class EmailService
 
         // Send database notification
         $details['send_via'] = 'database';
-        Notification::send($recipients, new EmailNotification($details));
+        Notification::send($filteredRecipients, new EmailNotification($details));
     }
 
     /**

@@ -253,7 +253,7 @@ class UserController extends Controller
     }
     public function updateProfile(Request $request)
     {
-        \Log::info($request->all());
+
         // Validate the incoming request data
         $validatedData = $request->validate([
             'first_name' => 'required|string',
