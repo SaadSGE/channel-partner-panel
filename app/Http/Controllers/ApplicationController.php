@@ -394,6 +394,7 @@ class ApplicationController extends Controller
 
     public function addComment(Request $request, $id, EmailService $emailService)
     {
+        $user = auth('api')->user();
         $request->validate([
             'comment' => 'required|string',
         ]);
@@ -411,7 +412,7 @@ class ApplicationController extends Controller
 
         activity()
             ->performedOn($application)
-            ->causedBy(auth('api')->user())
+            ->causedBy($user)
             ->withProperties([
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
@@ -424,23 +425,31 @@ class ApplicationController extends Controller
             ])
             ->log('comment_added');
 
+        $recipients = collect();
 
-        if ($application->user->role == 'channel partner') {
-            $creator = $application->user->parent;
-        } else {
-            $creator = $application->user;
-        }
+        // Always include admin users
         $adminUsers = User::where('role', 'admin')->get();
+        $recipients = $recipients->concat($adminUsers);
+
+        if ($user->role == 'channel partner') {
+            // Fetch all parent users
+            $parentIds = $user->fetchParent();
+            $parentUsers = User::whereIn('id', $parentIds)->get();
+            $recipients = $recipients->concat($parentUsers);
+        } else {
+            // For non-channel partners, include the application creator
+            $creator = $application->user;
+            $recipients->push($creator);
+        }
 
         // Prepare the notification details
         $additionalDetails = [
             'comment' => $comment->comment,
         ];
 
-        $recipients = $adminUsers->push($creator);
-        $senderId = auth('api')->user()->id;
-        $senderName = auth('api')->user()->full_name;
-        $senderEmail = auth('api')->user()->email;
+        $senderId = $user->id;
+        $senderName = $user->full_name;
+        $senderEmail = $user->email;
 
         $emailService->sendApplicationNotification('comment_added', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
 
