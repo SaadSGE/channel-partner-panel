@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 
 class EmailNotification extends Notification implements ShouldQueue
 {
@@ -23,7 +24,7 @@ class EmailNotification extends Notification implements ShouldQueue
                 return !is_null($email) && trim($email) !== '';
             });
         }
-
+        Log::info($details);
         $this->details = $details;
     }
 
