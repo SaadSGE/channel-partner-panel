@@ -200,9 +200,35 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        try {
+            $user = User::findOrFail($id);
+
+            // Check if the user is trying to delete themselves
+            if (auth('api')->id() == $id) {
+                return $this->errorJsonResponse('You cannot delete your own account.');
+            }
+
+
+            // Soft delete the user
+            $user->delete();
+
+            // Log the activity
+            activity()
+                ->performedOn($user)
+                ->causedBy(auth('api')->user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('user_deleted');
+
+            return $this->successJsonResponse('User deleted successfully');
+        } catch (\Throwable $th) {
+            \Log::error($th);
+            return $this->exceptionJsonResponse('Failed to delete user', $th);
+        }
     }
 
     public function setParent(Request $request, $id)

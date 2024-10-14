@@ -19,6 +19,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\AIController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\CourseRequestController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -101,3 +102,7 @@ Route::post('/compliance-requests/{id}/accept', [ApplicationController::class, '
 Route::post('/compliance-requests/{id}/reject', [ApplicationController::class, 'rejectComplianceRequest']);
 
 Route::get('/notifications/all', [NotificationController::class, 'getAllNotifications']);
+
+// Add these new routes
+Route::get('/course-requests', [CourseRequestController::class, 'index']);
+Route::post('/course-requests/{id}/complete', [CourseRequestController::class, 'complete']);
