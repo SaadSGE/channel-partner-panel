@@ -15,7 +15,7 @@ const headers = [
   { title: 'University Name', key: 'university_name' },
   { title: 'Course Name', key: 'course_name' },
   { title: 'Intake Name', key: 'intake' },
-  { title: 'User Name', key: 'user.name' },
+  { title: 'Company Name', key: 'user.company_name_with_email' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
