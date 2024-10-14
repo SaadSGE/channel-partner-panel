@@ -51,14 +51,14 @@ export default [
 
   },
 
-  {
-    title: 'Course Request List',
-    icon: { icon: 'tabler-apps' },
-    to: 'course-request-list',
-    action: 'read',
-    subject: 'dashboard',
+  // {
+  //   title: 'Course Request List',
+  //   icon: { icon: 'tabler-apps' },
+  //   to: 'course-request-list',
+  //   action: 'read',
+  //   subject: 'dashboard',
 
-  },
+  // },
 
   {
     title: 'Course Request',
