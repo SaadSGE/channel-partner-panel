@@ -41,11 +41,16 @@ class CourseDetailsController extends Controller
         $sortBy = (string) request()->query('sortBy');
         $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
 
-        // New filter parameters
+        // Existing filter parameters
         $countryId = request()->query('countryId');
         $intakeId = request()->query('intakeId');
         $universityId = request()->query('universityId');
         $courseName = request()->query('courseName');
+
+        // New filter parameters
+        $dateFrom = request()->query('dateFrom');
+        $dateTo = request()->query('dateTo');
+        $editorId = request()->query('editorID');
 
         $queryResult = CourseDetails::with(['course', 'country', 'intake', 'university'])
             ->when($searchQuery, function ($query, $searchQuery) {
@@ -65,7 +70,7 @@ class CourseDetailsController extends Controller
             ->when($id, function ($query, $id) {
                 return $query->where('created_by', $id);
             })
-            // New filter conditions
+            // Existing filter conditions
             ->when($countryId, function ($query, $countryId) {
                 return $query->where('country_id', $countryId);
             })
@@ -79,6 +84,16 @@ class CourseDetailsController extends Controller
                 return $query->whereHas('course', function ($q) use ($courseName) {
                     $q->where('name', 'LIKE', "%$courseName%");
                 });
+            })
+            // New filter conditions
+            ->when($dateFrom, function ($query, $dateFrom) {
+                return $query->whereDate('created_at', '>=', $dateFrom);
+            })
+            ->when($dateTo, function ($query, $dateTo) {
+                return $query->whereDate('created_at', '<=', $dateTo);
+            })
+            ->when($editorId, function ($query, $editorId) {
+                return $query->where('created_by', $editorId);
             })
             ->when($sortBy, function ($query) use ($sortBy, $sortDesc) {
                 return $query->when($sortBy === 'id', function ($sq) use ($sortDesc) {

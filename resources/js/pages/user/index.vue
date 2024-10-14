@@ -1,4 +1,5 @@
 <script setup>
+import Filters from "@/@core/components/Filters.vue";
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
 import { useUserStore } from "@/@core/stores/user.js";
 import AddNewUserDrawer from "@/pages/user/add/AddNewUserDrawer.vue";
@@ -28,10 +29,11 @@ const page = ref(1);
 const sortBy = ref();
 const orderBy = ref();
 const searchQuery = ref("");
-const selectedRole = ref();
+const selectedRole = ref(null);
 const selectedParent = ref(null); // State for the selected parent
 const selectedPlan = ref();
 const selectedStatus = ref();
+const selectedUserStatus = ref(null);
 const isLoading = ref(false);
 const roles = ref([]);
 const isEditUserDrawerVisible = ref(false);
@@ -91,7 +93,8 @@ const fetchUsers = async () => {
       page.value,
       searchQuery.value,
       selectedRole.value,
-      selectedParent.value
+      selectedParent.value,
+      selectedUserStatus.value
     );
     users.value = response.data;
     totalUsers.value = response.total;
@@ -146,13 +149,13 @@ const headers = [
   { title: "Company", key: "company_name_with_email" },
   { title: "Role", key: "role" },
   ...(isAdmin.value
-    ? [ { title: "Parent", key: "parent.full_name" }]
+    ? [{ title: "Parent", key: "parent.full_name" }]
     : []),
 
   { title: "Record Count", key: "record_count" },
 
   ...(isAdmin.value
-    ? [ { title: "Status", key: "status", sortable: false }]
+    ? [{ title: "Status", key: "status", sortable: false }]
     : []),
   { title: "Actions", key: "actions", sortable: false },
 ];
@@ -183,18 +186,14 @@ onMounted(async () => {
   fetchUsers(); // Fetch the main user list
 });
 
-watch([searchQuery, selectedRole, selectedParent], () => {
+watch([searchQuery, selectedRole, selectedParent, selectedUserStatus], () => {
   fetchUsers();
 });
 </script>
 
 <template>
-  <EditNewUserDrawer
-    :isDrawerOpen="isEditUserDrawerVisible"
-    :editedUser="selectedUser"
-    @update:isDrawerOpen="isEditUserDrawerVisible = $event"
-    @userUpdated="handleUserUpdate"
-  />
+  <EditNewUserDrawer :isDrawerOpen="isEditUserDrawerVisible" :editedUser="selectedUser"
+    @update:isDrawerOpen="isEditUserDrawerVisible = $event" @userUpdated="handleUserUpdate" />
   <section>
 
     <VDialog v-model="isParentDialogVisible" max-width="500px">
@@ -202,15 +201,9 @@ watch([searchQuery, selectedRole, selectedParent], () => {
         <VCardTitle>Set Parent</VCardTitle>
         <VCardText>
           <VForm @submit.prevent="handleParentSet">
-            <AppAutocomplete
-              v-model="parentId"
-              :items="userStore.parentUsers"
-              :item-title="(item) => item.name_with_email"
-              :item-value="(item) => item.id"
-              label="Parent"
-              placeholder="Select Parent"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="parentId" :items="userStore.parentUsers"
+              :item-title="(item) => item.name_with_email" :item-value="(item) => item.id" label="Parent"
+              placeholder="Select Parent" :rules="[requiredValidator]" />
           </VForm>
         </VCardText>
         <VCardActions>
@@ -222,36 +215,18 @@ watch([searchQuery, selectedRole, selectedParent], () => {
     </VDialog>
 
     <VCard class="mb-6">
-      <VCardItem class="pb-4" v-if="$can('filter','user')">
+      <VCardItem class="pb-4" v-if="$can('filter', 'user')">
         <VCardTitle>Filter</VCardTitle>
       </VCardItem>
 
-      <VCardText v-if="$can('filter','user')">
+      <VCardText v-if="$can('filter', 'user')">
         <VRow>
           <!-- 👉 Select Role -->
-          <VCol cols="12" sm="4">
-            <AppSelect
-              v-model="selectedRole"
-              placeholder="Select Role"
-              :items="roles"
-              clearable
-              clear-icon="tabler-x"
-              :item-title="(item) => item.role"
-              :item-value="(item) => item.role"
-            />
-          </VCol>
+          <Filters :selected-role="selectedRole" @update-role="selectedRole = $event" :selected-parent="selectedParent"
+            @update-parent="selectedParent = $event" :selected-userStatus="selectedUserStatus"
+            @update-userStatus="selectedUserStatus = $event"></Filters>
 
-          <VCol cols="12" sm="4">
-            <AppAutocomplete
-              v-model="selectedParent"
-              placeholder="Select Parent"
-              :items="userStore.parentUsers"
-              clearable
-              clear-icon="tabler-x"
-              :item-title="(item) => item.full_name"
-              :item-value="(item) => item.id"
-            />
-          </VCol>
+
         </VRow>
       </VCardText>
 
@@ -259,18 +234,13 @@ watch([searchQuery, selectedRole, selectedParent], () => {
 
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-3 d-flex gap-3">
-          <AppSelect
-            :model-value="itemsPerPage"
-            :items="[
-              { value: 10, title: '10' },
-              { value: 25, title: '25' },
-              { value: 50, title: '50' },
-              { value: 100, title: 100 },
-              { value: -1, title: 'All' },
-            ]"
-            style="inline-size: 6.25rem;"
-            @update:model-value="itemsPerPage = parseInt($event, 10)"
-          />
+          <AppSelect :model-value="itemsPerPage" :items="[
+            { value: 10, title: '10' },
+            { value: 25, title: '25' },
+            { value: 50, title: '50' },
+            { value: 100, title: 100 },
+            { value: -1, title: 'All' },
+          ]" style="inline-size: 6.25rem;" @update:model-value="itemsPerPage = parseInt($event, 10)" />
         </div>
         <VSpacer />
 
@@ -283,11 +253,7 @@ watch([searchQuery, selectedRole, selectedParent], () => {
           <!-- 👉 Export button -->
 
           <!-- 👉 Add user button -->
-          <VBtn
-            prepend-icon="tabler-plus"
-            @click="isAddNewUserDrawerVisible = true"
-            v-if="$can('create','user')"
-          >
+          <VBtn prepend-icon="tabler-plus" @click="isAddNewUserDrawerVisible = true" v-if="$can('create', 'user')">
             Add New User
           </VBtn>
         </div>
@@ -296,25 +262,15 @@ watch([searchQuery, selectedRole, selectedParent], () => {
       <VDivider />
 
       <!-- SECTION datatable -->
-      <VDataTableServer
-        v-model:items-per-page="itemsPerPage"
-        v-model:page="page"
-        :items="users"
-        :items-length="totalUsers"
-        :headers="headers"
-        class="text-no-wrap"
-        show-select
-        :height="tableHeight"
-        @update:options="updateOptions"
-      >
+      <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="users"
+        :items-length="totalUsers" :headers="headers" class="text-no-wrap" show-select :height="tableHeight"
+        @update:options="updateOptions">
         <template #item.actions="{ item }">
           <VBtn icon variant="text" color="medium-emphasis">
             <VIcon icon="tabler-dots-vertical" />
             <VMenu activator="parent">
               <VList>
-                <VListItem
-                  :to="{ name: 'user-view-id', params: { id: item.id } }"
-                >
+                <VListItem :to="{ name: 'user-view-id', params: { id: item.id } }">
                   <template #prepend>
                     <VIcon icon="tabler-eye" />
                   </template>
@@ -322,21 +278,21 @@ watch([searchQuery, selectedRole, selectedParent], () => {
                   <VListItemTitle>View</VListItemTitle>
                 </VListItem>
 
-                <VListItem @click="editUser(item)"   v-if="$can('edit','user')">
+                <VListItem @click="editUser(item)" v-if="$can('edit', 'user')">
                   <template #prepend>
                     <VIcon icon="tabler-pencil" />
                   </template>
                   <VListItemTitle>Edit</VListItemTitle>
                 </VListItem>
 
-                <VListItem @click="setParent(item)"   v-if="$can('edit','user')">
+                <VListItem @click="setParent(item)" v-if="$can('edit', 'user')">
                   <template #prepend>
                     <VIcon icon="tabler-pencil" />
                   </template>
                   <VListItemTitle>Set Parent</VListItemTitle>
                 </VListItem>
 
-                <VListItem @click="deleteUser(item.id)"  v-if="$can('delete','user')">
+                <VListItem @click="deleteUser(item.id)" v-if="$can('delete', 'user')">
                   <template #prepend>
                     <VIcon icon="tabler-trash" />
                   </template>
@@ -347,30 +303,18 @@ watch([searchQuery, selectedRole, selectedParent], () => {
           </VBtn>
         </template>
         <template #item.status="{ item }">
-            <VSwitch
-            v-model="item.status"
-            :true-value="1"
-              :false-value="0"
-              @change="updateUserStatus(item)"
-              :loading="item.statusLoading"
-            />
-          </template>
+          <VSwitch v-model="item.status" :true-value="1" :false-value="0" @change="updateUserStatus(item)"
+            :loading="item.statusLoading" />
+        </template>
 
         <!-- pagination -->
         <template #bottom>
-          <TablePagination
-            v-model:page="page"
-            :items-per-page="itemsPerPage"
-            :total-items="totalUsers"
-          />
+          <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalUsers" />
         </template>
       </VDataTableServer>
       <!-- SECTION -->
     </VCard>
     <!-- 👉 Add New User -->
-    <AddNewUserDrawer
-      v-model:isDrawerOpen="isAddNewUserDrawerVisible"
-      @user-data="addUser"
-    />
+    <AddNewUserDrawer v-model:isDrawerOpen="isAddNewUserDrawerVisible" @user-data="addUser" />
   </section>
 </template>

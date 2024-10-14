@@ -39,8 +39,8 @@ const selectedUniversity = ref(null)
 const selectedChannelPartner = ref(null)
 const selectedApplicationOfficer = ref(null)
 const selectedStudentEmail = ref('')
-const dateFrom = ref(null)
-const dateTo = ref(null)
+const selectedDateFrom = ref(null)
+const selectedDateTo = ref(null)
 const isLoading = ref(false)
 
 const applicationStore = useApplicationListStore()
@@ -63,8 +63,8 @@ const fetchApplications = async () => {
       selectedChannelPartner.value,
       selectedApplicationOfficer.value,
       selectedStudentEmail.value,
-      dateFrom.value,
-      dateTo.value,
+      selectedDateFrom.value,
+      selectedDateTo.value,
     )
 
     applicationLists.value = response.data
@@ -120,8 +120,8 @@ watch([
   selectedChannelPartner,
   selectedApplicationOfficer,
   selectedStudentEmail,
-  dateFrom,
-  dateTo,
+  selectedDateFrom,
+  selectedDateTo,
 ], () => {
   fetchApplications()
 })
@@ -161,10 +161,11 @@ const tableHeight = computed(() => {
         <VRow>
           <Filters :selected-status="selectedStatus" :selected-channel-partner="selectedChannelPartner"
             :selected-university="selectedUniversity" :selected-application-officer="selectedApplicationOfficer"
-            :selected-date-from="dateFrom" :selected-date-to="dateTo" @update-status="selectedStatus = $event"
-            @update-channel-partner="selectedChannelPartner = $event" @update-university="selectedUniversity = $event"
-            @update-application-officer="selectedApplicationOfficer = $event" @update-date-from="dateFrom = $event"
-            @update-date-to="dateTo = $event">
+            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
+            @update-status="selectedStatus = $event" @update-channel-partner="selectedChannelPartner = $event"
+            @update-university="selectedUniversity = $event"
+            @update-application-officer="selectedApplicationOfficer = $event"
+            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
             :isAdmin = "isAdmin"
           </Filters>
         </VRow>

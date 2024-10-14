@@ -8,7 +8,7 @@ export const useRecordStore = defineStore({
     successMessage: "",
   }),
   actions: {
-    async fetchRecord(page = 1, searchQuery = '', countryId = null, intakeId = null, universityId = null, courseName = '') {
+    async fetchRecord(page = 1, searchQuery = '', countryId = null, intakeId = null, universityId = null, courseName = '', editorID = null, dateFrom = null, dateTo = null) {
       try {
         const response = await $api("/course-detail", {
           method: "GET",
@@ -21,7 +21,10 @@ export const useRecordStore = defineStore({
             countryId: countryId,
             intakeId: intakeId,
             universityId: universityId,
-            courseName: courseName
+            courseName: courseName,
+            editorID: editorID,
+            dateFrom: dateFrom,
+            dateTo: dateTo
           }
         });
         return response;
