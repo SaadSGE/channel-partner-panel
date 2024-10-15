@@ -37,7 +37,11 @@ const markAllReadOrUnread = () => {
 }
 
 const totalUnseenNotifications = computed(() => {
-  return props.notifications.filter(item => !item.read).length
+  //if props.notification is not empty then filter the item that is not read
+  if (props.notifications && props.notifications.length > 0)
+    return props.notifications.filter(item => !item.read).length
+  else
+    return 0
 })
 
 const toggleReadUnread = (read, id) => {
