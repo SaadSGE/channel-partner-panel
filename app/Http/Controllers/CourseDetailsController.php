@@ -393,7 +393,8 @@ class CourseDetailsController extends Controller
                 'sender_name' => $request->user()->full_name,
                 'sender_email' => $request->user()->email,
                 'notification_type' => 'email',
-                'notification_text' => 'A new course/university/intake request has been submitted',
+                'notification_text' => 'A new course/university/intake request has come',
+                'notification_route' => '/course-request-list',
 
             ];
 

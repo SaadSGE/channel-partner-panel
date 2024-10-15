@@ -1,11 +1,12 @@
 <script setup>
 definePage({
   meta: {
-    action: 'read',
-    subject: 'dashboard',
+    action: 'enable',
+    subject: 'course-request-list',
   },
 });
 import { useCourseRequestStore } from '@/@core/stores/courseRequestStore';
+import Swal from 'sweetalert2';
 import { onMounted, ref } from 'vue';
 
 
@@ -29,10 +30,20 @@ onMounted(async () => {
 
 const handleComplete = async (id) => {
   try {
+    loading.value = true
     await courseRequestStore.completeCourseRequest(id)
-    // You can add a success message here if needed
+
+    // Reload the course requests after completion
+    await courseRequestStore.fetchCourseRequests();
+    loading.value = false
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Course request completed successfully',
+      showConfirmButton: false,
+      timer: 1500
+    })
   } catch (error) {
-    // Handle error (e.g., show an error message)
     console.error('Failed to complete course request:', error)
   }
 }
@@ -43,7 +54,7 @@ const handleComplete = async (id) => {
     <VCardText>
       <VDataTable :headers="headers" :items="courseRequestStore.courseRequests" :loading="loading" class="elevation-1">
         <template v-slot:item.actions="{ item }">
-          <VBtn color="primary" size="small" @click="handleComplete(item.raw.id)">
+          <VBtn color="primary" size="small" @click="handleComplete(item.id)">
             Complete
           </VBtn>
         </template>

@@ -19,6 +19,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\AIController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\CourseRequestController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -89,6 +90,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/application/{id}/aco-ao-communications', [ApplicationController::class, 'getAcoAoCommunications']);
     Route::post('/application/{id}/aco-ao-communication', [ApplicationController::class, 'addAcoAoCommunication']);
     Route::get('/fetch-compliance-officers', [UserController::class, 'fetchComplianceOfficers']);
+    Route::get('/course-requests', [CourseRequestController::class, 'index']);
+    Route::post('/course-requests/{id}/complete', [CourseRequestController::class, 'complete']);
 });
 
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);

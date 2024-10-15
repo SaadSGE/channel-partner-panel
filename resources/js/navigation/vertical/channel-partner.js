@@ -55,8 +55,8 @@ export default [
     title: 'Course Request List',
     icon: { icon: 'tabler-apps' },
     to: 'course-request-list',
-    action: 'read',
-    subject: 'dashboard',
+    action: 'enable',
+    subject: 'course-request-list',
 
   },
 

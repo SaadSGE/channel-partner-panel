@@ -58,11 +58,17 @@ const fetchNotifications = async () => {
 }
 
 const handleNotificationClick = (notification) => {
+
   if (!notification.read) {
     notificationStore.markAsRead(notification.id)
   }
   if (notification.notification_route) {
-    router.push({ name: notification.notification_route, params: { id: notification.application_id } })
+
+    if (notification.application_id) {
+      router.push({ name: notification.notification_route, params: { id: notification.application_id } })
+    } else {
+      router.push({ name: notification.notification_route })
+    }
   }
 }
 
