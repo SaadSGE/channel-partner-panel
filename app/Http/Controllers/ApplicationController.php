@@ -166,7 +166,7 @@ class ApplicationController extends Controller
         try {
             DB::beginTransaction();
             //findorfail by application id
-            $application = ApplicationList::where('application_id', $id)->first();
+            $application = ApplicationList::where('id', $id)->first();
             if (!$application) {
                 return $this->exceptionJsonResponse('Application not found', null, 404);
             }
