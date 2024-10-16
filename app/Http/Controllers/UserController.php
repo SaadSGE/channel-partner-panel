@@ -290,7 +290,7 @@ class UserController extends Controller
             'mobile_number' => 'nullable|string',
             'whatsapp_number' => 'nullable|string',
             'company_name' => 'nullable|string',
-            'website' => 'nullable|url',
+            'website' => 'nullable',
             'address' => 'nullable|string',
             'city' => 'nullable|string',
             'post_code' => 'nullable|string',
