@@ -23,7 +23,7 @@ const authThemeImg = useGenerateImageVariant(
 );
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
 const appUrl = import.meta.env.VITE_APP_NAME;
-console.log(appUrl);
+console.log(appUrl + "login");
 const loginImage2 = appUrl === 'Shabujglobal.africa' ? useGenerateImageVariant(loginImage) : useGenerateImageVariant(loginImageOrg);
 
 definePage({
