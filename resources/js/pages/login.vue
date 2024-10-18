@@ -22,9 +22,9 @@ const authThemeImg = useGenerateImageVariant(
   true
 );
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
-const appUrl = import.meta.env.VITE_APP_NAME;
+const appUrl = import.meta.env.VITE_SERVER;
 console.log(appUrl + "login");
-const loginImage2 = appUrl === 'Shabujglobal.africa' ? useGenerateImageVariant(loginImage) : useGenerateImageVariant(loginImageOrg);
+const loginImage2 = appUrl === 'org' ? useGenerateImageVariant(loginImageOrg) : useGenerateImageVariant(loginImage);
 
 definePage({
   meta: {
