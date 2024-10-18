@@ -22,8 +22,8 @@ const authThemeImg = useGenerateImageVariant(
   true
 );
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
-const appUrl = import.meta.env.VITE_APPS;
-console.log(appUrl + "login");
+const appUrl = import.meta.env.VITE_WEBSITE;
+console.log(appUrl + " login");
 const loginImage2 = appUrl === 'org' ? useGenerateImageVariant(loginImageOrg) : useGenerateImageVariant(loginImage);
 
 definePage({
