@@ -96,6 +96,7 @@ declare module 'vue-router/auto/routes' {
     'components-tabs': RouteRecordInfo<'components-tabs', '/components/tabs', Record<never, never>, Record<never, never>>,
     'components-timeline': RouteRecordInfo<'components-timeline', '/components/timeline', Record<never, never>, Record<never, never>>,
     'components-tooltip': RouteRecordInfo<'components-tooltip', '/components/tooltip', Record<never, never>, Record<never, never>>,
+    'course': RouteRecordInfo<'course', '/course', Record<never, never>, Record<never, never>>,
     'course-request': RouteRecordInfo<'course-request', '/course-request', Record<never, never>, Record<never, never>>,
     'dashboard': RouteRecordInfo<'dashboard', '/dashboard', Record<never, never>, Record<never, never>>,
     'dashboards-analytics': RouteRecordInfo<'dashboards-analytics', '/dashboards/analytics', Record<never, never>, Record<never, never>>,

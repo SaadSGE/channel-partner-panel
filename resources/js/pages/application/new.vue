@@ -6,8 +6,9 @@ definePage({
   },
 })
 
-import Filters from "@/@core/components/Filters.vue";
 import { commonFunction } from "@/@core/stores/commonFunction";
+import { useRecordStore } from '@/@core/stores/recordStore';
+import Swal from 'sweetalert2';
 import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { VForm } from 'vuetify/components/VForm';
@@ -16,6 +17,13 @@ import CourseDetails from "./course-details.vue";
 const router = useRouter();
 const commonFunctionStore = commonFunction();
 
+const recordStore = useRecordStore();
+const showModal = ref(false);
+const isFormValid = ref(false);
+const universityName = ref("");
+const courseName = ref("");
+const intakeName = ref("");
+const requiredValidator = (value) => !!value || 'This field is required';
 
 const passportCountry = ref("");
 const intake = ref(null);
@@ -97,16 +105,40 @@ const next = () => {
     }
   });
 };
+// for course request modal
 
+const requestRecord = async () => {
+  refForm.value.validate().then(async (valid) => {
+    if (valid.valid) {
+
+      try {
+        await recordStore.requestForm({
+          universityName: universityName.value,
+          courseName: courseName.value,
+          intakeName: intakeName.value,
+        });
+        Swal.fire("Success!", "Your request has been successfully submitted. Our team will review it and get back to you shortly.", "success");
+        showModal.value = false;
+        refForm.value.reset();
+      } catch (error) {
+        Swal.fire("Error!", "Failed to submit the request.", "error");
+      }
+    }
+  });
+};
 </script>
 
 
 <template>
   <div v-if="showAppllicationForm">
     <AppCardActions title="New Application" :loading="isLoading" no-actions>
+      <div class="text-center mt-2 mb-8">
+        Don't find your desired record?
+        <a href="#" @click.prevent="showModal = true">Click here to request</a>
+      </div>
       <VForm ref="refForm" @submit.prevent="() => { }" class="form-padding">
         <VRow>
-          <Filters></Filters>
+
           <VCol cols="12" md="6">
             <AppAutocomplete v-model="countryToApply" :items="commonFunctionStore.countries" item-title="name"
               item-value="id" label="Country to Apply" placeholder="Select Country" :rules="[requiredValidator]" />
@@ -152,6 +184,26 @@ const next = () => {
       @update:showCourseDetails="showCourseDetails = $event"
       @update:showApplicationForm="showAppllicationForm = $event" />
   </div>
+  <VDialog v-model="showModal" max-width="500px">
+    <VCard>
+      <VCardTitle>Request Record</VCardTitle>
+      <VCardText>
+        <VForm ref="refForm" v-model="isFormValid" @submit.prevent="requestRecord">
+          <VTextField v-model="universityName" :rules="[requiredValidator]" label="University Name"
+            placeholder="Enter university name" class="mt-2" />
+          <VTextField v-model="courseName" :rules="[requiredValidator]" label="Course Name"
+            placeholder="Enter course name" class="mt-2" />
+          <VTextField v-model="intakeName" :rules="[requiredValidator]" label="Intake" placeholder="Enter intake"
+            class="mt-2" />
+        </VForm>
+      </VCardText>
+      <VCardActions>
+        <VSpacer></VSpacer>
+        <VBtn color="primary" @click="requestRecord">Submit</VBtn>
+        <VBtn @click="showModal = false">Cancel</VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style lang="scss">
