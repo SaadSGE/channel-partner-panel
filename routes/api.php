@@ -20,6 +20,7 @@ use App\Http\Controllers\AIController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CourseRequestController;
+use App\Http\Controllers\NigeriaStudentController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -118,3 +119,5 @@ Route::post('/compliance-requests/{id}/accept', [ApplicationController::class, '
 Route::post('/compliance-requests/{id}/reject', [ApplicationController::class, 'rejectComplianceRequest']);
 
 Route::get('/notifications/all', [NotificationController::class, 'getAllNotifications']);
+
+Route::post('/nigeria-students', [NigeriaStudentController::class, 'store']);
