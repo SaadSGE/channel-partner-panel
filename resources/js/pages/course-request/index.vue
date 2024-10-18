@@ -1,4 +1,5 @@
 <script setup>
+import Filters from "@/@core/components/Filters.vue";
 import { commonFunction } from "@/@core/stores/commonFunction.js";
 import { useRecordStore } from "@/@core/stores/recordStore.js";
 import Swal from 'sweetalert2';
@@ -7,7 +8,7 @@ import { useRouter } from "vue-router";
 
 definePage({
   meta: {
-   public:true
+    public: true
   },
 });
 
@@ -37,6 +38,7 @@ const selectedCountry = ref(null);
 const selectedIntake = ref(null);
 const selectedUniversity = ref(null);
 const selectedCourseName = ref("");
+
 
 const countries = ref([]);
 const intakes = ref([]);
@@ -129,47 +131,13 @@ const headersRecord = [
     <!-- Search and Filter Section -->
     <VCardText>
       <VRow>
-        <VCol cols="12" sm="6" md="3">
-          <AppAutocomplete
-            v-model="selectedCountry"
-            :items="countries"
-            :item-title="(item) => item.name"
-            :item-value="(item) => item.id"
-            label="Filter by Country"
-            placeholder="Select Country"
-            clearable
-          />
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <AppAutocomplete
-            v-model="selectedIntake"
-            :items="intakes"
-            :item-title="(item) => item.name"
-            :item-value="(item) => item.id"
-            label="Filter by Intake"
-            placeholder="Select Intake"
-            clearable
-          />
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <AppAutocomplete
-            v-model="selectedUniversity"
-            :items="universities"
-            :item-title="(item) => item.name"
-            :item-value="(item) => item.id"
-            label="Filter by University"
-            placeholder="Select University"
-            clearable
-          />
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <AppTextField
-            v-model="selectedCourseName"
-            label="Filter by Course Name"
-            placeholder="Enter Course Name"
-            clearable
-          />
-        </VCol>
+        <Filters :selected-country="selectedCountry" @update-country="selectedCountry = $event"
+          :selected-intake="selectedIntake" @update-intake="selectedIntake = $event"
+          :selected-university2="selectedUniversity" @update-university2="selectedUniversity = $event"
+          :selected-courseName="selectedCourseName" @update-courseName="selectedCourseName = $event"></Filters>
+
+
+
       </VRow>
       <div class="d-flex flex-column align-center">
         <VCardTitle class="text-center mt-5">
@@ -177,12 +145,8 @@ const headersRecord = [
         </VCardTitle>
         <VRow class="mt-2">
           <VCol cols="12" sm="8" md="6">
-            <AppTextField
-              v-model="searchQuery"
-              placeholder="Search Course/University/Intake"
-              class="mx-auto"
-              style="max-inline-size: 30rem; min-inline-size: 30rem;"
-            />
+            <AppTextField v-model="searchQuery" placeholder="Search Course/University/Intake" class="mx-auto"
+              style="max-inline-size: 30rem; min-inline-size: 30rem;" />
           </VCol>
         </VRow>
         <!-- Additional Text Below Search Bar -->
@@ -200,28 +164,15 @@ const headersRecord = [
       <div class="d-flex justify-space-between flex-wrap gap-6">
         <!-- Items Per Page Selector -->
         <div class="d-flex flex-row gap-4 align-center flex-wrap">
-          <AppSelect
-            v-model="itemsPerPage"
-            :items="[10, 25, 50, 100]"
-            style="inline-size: 6.25rem;"
-          />
+          <AppSelect v-model="itemsPerPage" :items="[10, 25, 50, 100]" style="inline-size: 6.25rem;" />
         </div>
       </div>
     </VCardText>
 
     <!-- Data Table -->
-    <VDataTableServer
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :loading="isLoading"
-      :items-length="total"
-      :headers="headersRecord"
-      :items="records"
-      item-value="total"
-      class="text-no-wrap text-sm rounded-0"
-      :height="tableHeight"
-      @update:options="updateOptions"
-    >
+    <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :loading="isLoading"
+      :items-length="total" :headers="headersRecord" :items="records" item-value="total"
+      class="text-no-wrap text-sm rounded-0" :height="tableHeight" @update:options="updateOptions">
       <template #item.academic_requirement="{ item }">
         <ShowMore :text="item.academic_requirement" :lines="3" />
       </template>
@@ -229,11 +180,7 @@ const headersRecord = [
         <ShowMore :text="item.english_requirement" :lines="3" />
       </template>
       <template #bottom>
-        <TablePagination
-          v-model:page="page"
-          :items-per-page="itemsPerPage"
-          :total-items="total"
-        />
+        <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="total" />
       </template>
     </VDataTableServer>
   </AppCardActions>
@@ -244,27 +191,12 @@ const headersRecord = [
       <VCardTitle>Request Record</VCardTitle>
       <VCardText>
         <VForm ref="refForm" v-model="isFormValid" @submit.prevent="requestRecord">
-          <VTextField
-            v-model="universityName"
-            :rules="[requiredValidator]"
-            label="University Name"
-            placeholder="Enter university name"
-            class="mt-2"
-          />
-          <VTextField
-            v-model="courseName"
-            :rules="[requiredValidator]"
-            label="Course Name"
-            placeholder="Enter course name"
-            class="mt-2"
-          />
-          <VTextField
-            v-model="intakeName"
-            :rules="[requiredValidator]"
-            label="Intake"
-            placeholder="Enter intake"
-            class="mt-2"
-          />
+          <VTextField v-model="universityName" :rules="[requiredValidator]" label="University Name"
+            placeholder="Enter university name" class="mt-2" />
+          <VTextField v-model="courseName" :rules="[requiredValidator]" label="Course Name"
+            placeholder="Enter course name" class="mt-2" />
+          <VTextField v-model="intakeName" :rules="[requiredValidator]" label="Intake" placeholder="Enter intake"
+            class="mt-2" />
         </VForm>
       </VCardText>
       <VCardActions>
@@ -275,4 +207,3 @@ const headersRecord = [
     </VCard>
   </VDialog>
 </template>
-
