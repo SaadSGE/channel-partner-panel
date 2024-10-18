@@ -24,12 +24,6 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      # Step to check if npm build is required
-      - name: Check if npm build is required
-        id: build-check
-        run: |
-          git diff --quiet HEAD^ HEAD -- resources/ || echo "build_required=true" >> $GITHUB_ENV
-
       - name: Deploy to server 1 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -65,12 +59,6 @@ jobs:
 
       - name: Install npm dependencies
         run: npm ci
-
-      # Step to check if npm build is required
-      - name: Check if npm build is required
-        id: build-check
-        run: |
-          git diff --quiet HEAD^ HEAD -- resources/ || echo "build_required=true" >> $GITHUB_ENV
 
       - name: Deploy to server 2 via SSH
         uses: appleboy/ssh-action@v1.0.3
