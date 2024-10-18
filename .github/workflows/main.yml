@@ -28,6 +28,7 @@ jobs:
             composer dump-autoload
             php artisan config:cache
             php artisan route:cache
+            npm run build
 
       - name: Deploy to server 2 via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -44,3 +45,4 @@ jobs:
             composer dump-autoload
             php artisan config:cache
             php artisan route:cache
+            npm run build

@@ -25,7 +25,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
 const appUrl = import.meta.env.VITE_WEBSITE;
 const appName = import.meta.env.VITE_WEBSITE;
 //console log doteenv app_name
-console.log(appName);
+console.log('hello');
 
 
 const loginImage2 = appUrl === 'org' ? useGenerateImageVariant(loginImageOrg) : useGenerateImageVariant(loginImage);
