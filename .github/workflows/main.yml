@@ -28,6 +28,7 @@ jobs:
             composer dump-autoload
             php artisan config:cache
             php artisan route:cache
+            npm install
             npm run build
 
       - name: Deploy to server 2 via SSH
@@ -45,4 +46,5 @@ jobs:
             composer dump-autoload
             php artisan config:cache
             php artisan route:cache
+            npm install
             npm run build
