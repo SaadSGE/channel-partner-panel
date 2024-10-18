@@ -23,7 +23,7 @@ const authThemeImg = useGenerateImageVariant(
 );
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
 const appUrl = import.meta.env.VITE_WEBSITE;
-const appName = import.meta.env.VITE_APP_URL;
+const appName = import.meta.env.VITE_APP_PLATFORM;
 
 console.log(appName + " login");
 
