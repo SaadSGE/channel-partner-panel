@@ -71,7 +71,7 @@ jobs:
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST_[matrix.server] }}
+          host: ${{ secrets[format('HOST_{0}', matrix.server)] }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_KEY }}
           script: |
