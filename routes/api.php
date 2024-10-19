@@ -121,3 +121,4 @@ Route::post('/compliance-requests/{id}/reject', [ApplicationController::class, '
 Route::get('/notifications/all', [NotificationController::class, 'getAllNotifications']);
 
 Route::post('/nigeria-students', [NigeriaStudentController::class, 'store']);
+Route::post('/nigeria-students2', [NigeriaStudentController::class, 'store']);
