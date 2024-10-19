@@ -6,61 +6,39 @@ on:
       - master
 
 jobs:
-  prepare:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
+        uses: actions/checkout@v2
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.3"
-
-      - name: Pull latest changes
-        run: git pull origin master
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Build assets
-        run: npm run build
-
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v3
-        with:
-          name: app-build
-          path: |
-            .
-            !node_modules
-            !tests
-            !vendor
-
-  deploy:
-    needs: prepare
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        server: [AFRICA, BANGLADESH]
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: app-build
-
-      - name: Deploy to server via SSH
+      - name: Deploy to server 1 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets[format('HOST_{0}', matrix.server)] }}
+          host: ${{ secrets.HOST_AFRICA }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_KEY }}
           script: |
             cd /var/www/html
+            git pull
             php artisan optimize:clear
-            composer install
+            composer install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
-            rm -rf public/build
-            mv build public/
+            composer dump-autoload
+            php artisan optimize
+
+      - name: Deploy to server 2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_BANGLADESH }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_KEY }}
+          script: |
+            cd /var/www/html
+            git pull
+            php artisan optimize:clear
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+            php artisan migrate --force
+            composer dump-autoload
+            php artisan optimize
