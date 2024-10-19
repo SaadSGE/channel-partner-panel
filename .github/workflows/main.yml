@@ -66,5 +66,3 @@ jobs:
             php artisan optimize:clear
             composer install --no-dev --prefer-dist --optimize-autoloader
             php artisan migrate --force
-            php artisan optimize
-            # Remove npm ci and npm run build from here
