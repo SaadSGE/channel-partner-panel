@@ -22,9 +22,6 @@ jobs:
       - name: Pull latest changes
         run: git pull origin master
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress
-
       - name: Install npm dependencies
         run: npm ci
 
@@ -65,3 +62,5 @@ jobs:
             php artisan optimize:clear
             composer install
             php artisan migrate --force
+            rm -rf public/build
+            mv build public/
