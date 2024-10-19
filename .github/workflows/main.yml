@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  build:
+  deploy_to_server_1:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -24,49 +24,78 @@ jobs:
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-node-
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Build assets
-        run: npm run build
-
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+      - name: Cache build artifacts
+        uses: actions/cache@v3
         with:
-          name: dist
-          path: |
-            public
-            vendor
-            .env.example
+          path: public/build
+          key: ${{ runner.os }}-build-${{ hashFiles('package.json', 'webpack.mix.js') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        server: [africa, bangladesh]
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-
-      - name: Deploy to ${{ matrix.server }} via SSH
+      - name: Deploy to server 1 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST_${{ upper(matrix.server) }} }}
+          host: ${{ secrets.HOST_AFRICA }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_KEY }}
           script: |
             cd /var/www/html
             git pull
-            rsync -avz --delete ${{ github.workspace }}/ .
             php artisan optimize:clear
+            composer install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
+            composer dump-autoload
             php artisan config:cache
             php artisan route:cache
+            npm ci
+            npm run build
+
+  deploy_to_server_2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Cache npm modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache build artifacts
+        uses: actions/cache@v3
+        with:
+          path: public/build
+          key: ${{ runner.os }}-build-${{ hashFiles('package.json', 'webpack.mix.js') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Deploy to server 2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_BANGLADESH }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_KEY }}
+          script: |
+            cd /var/www/html
+            git pull
+            php artisan optimize:clear
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+            php artisan migrate --force
+            composer dump-autoload
+            php artisan config:cache
+            php artisan route:cache
+            npm ci
+            npm run build
