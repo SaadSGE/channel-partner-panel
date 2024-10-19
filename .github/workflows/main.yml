@@ -17,25 +17,6 @@ jobs:
         with:
           php-version: "8.3"
 
-      - name: Check PHP version
-        run: php -v
-
-      - name: Cache Composer packages
-        uses: actions/cache@v3
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
-
-      - name: Cache npm modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress
 
@@ -78,6 +59,7 @@ jobs:
             cd /var/www/html
             git pull
             php artisan optimize:clear
-            composer install --no-dev --prefer-dist --optimize-autoloader
+            composer install
             php artisan migrate --force
             php artisan optimize
+            npm ci
