@@ -623,7 +623,34 @@ class ApplicationController extends Controller
         $courseDetails = CourseDetails::findOrFail($data['course_details_id']);
 
         \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
+        //if channel_partner_email is not null then create a new channel partner user
+        if ($data['channel_partner_email']) {
+            $channelPartner = User::where('email', $data['channel_partner_email'])->first();
+            if (!$channelPartner) {
+                $channelPartner = User::create([
+                    'email' => $data['channel_partner_email'],
+                    'password' => bcrypt('password'),
+                    'role' => 'channel partner',
+                    'first_name' => $data['channel_partner_email'],
+                    'last_name' => $data['channel_partner_email'],
+                    'status' => 1,
+                    'company_name' => $data['channel_partner_email'],
+                    'whatsapp_number' => $data['channel_partner_email'],
+                    'mobile_number' => $data['channel_partner_email'],
+                    'address' => $data['channel_partner_email'],
+                    'city' => $data['channel_partner_email'],
+                    'post_code' => $data['channel_partner_email'],
+                    'country' => 'India',
+                    'recruit_countries' => json_encode(['India']),
 
+
+                ]);
+            }
+        }
+        $user_id = auth('api')->id();
+        if ($channelPartner) {
+            $user_id = $channelPartner->id;
+        }
         return ApplicationList::create([
             'application_id' => $applicationId,
             'course_id' => $courseDetails->course_id,
@@ -631,7 +658,7 @@ class ApplicationController extends Controller
             'intake_id' => $data['intake_id'],
             'university_id' => $data['university_id'],
             'course_details_id' => $data['course_details_id'],
-            'user_id' => auth('api')->id(),
+            'user_id' => $user_id,
             'student_id' => $student->id,
             'counsellor_number' => $data['counsellor_number'],
             'counsellor_email' => $data['counsellor_email'],
