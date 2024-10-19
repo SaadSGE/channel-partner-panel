@@ -86,7 +86,7 @@ const exclusiveServices = [
       <VCol cols="12" sm="10" md="8" lg="6">
         <VCard class="elevation-12">
           <VCardTitle class="text-h5 font-weight-bold pa-4">
-            Student Registration
+            Membership Registration
           </VCardTitle>
           <VCardText>
             <VForm ref="refForm" @submit.prevent="submitForm">
