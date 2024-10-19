@@ -24,7 +24,7 @@ const authThemeImg = useGenerateImageVariant(
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
 const appUrl = import.meta.env.VITE_WEBSITE;
 
-console.log(appUrl);
+console.log("hello");
 
 
 
