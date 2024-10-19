@@ -3,7 +3,7 @@ import { useNigeriaStudentStore } from '@core/stores/nigeriaStudent';
 import { emailValidator, requiredValidator } from '@core/utils/validators';
 import Swal from 'sweetalert2';
 import { computed, ref } from 'vue';
-
+console.log('nigeria')
 definePage({
   meta: {
     layout: "blank",
