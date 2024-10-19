@@ -46,9 +46,10 @@ jobs:
             cd /var/www/html
             git pull
             php artisan optimize:clear
-            composer install
+            composer install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
+            composer dump-autoload
             php artisan config:cache
             php artisan route:cache
             npm ci
-            npm run build --max-old-space-size=4096
+            npm run build
