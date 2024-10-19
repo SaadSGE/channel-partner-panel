@@ -1,276 +1,199 @@
-<script setup>
-const props = defineProps({
-  userId: {
-    type: String,
-    default: null,
-  },
-})
-
+<script lang="js" setup>
 definePage({
   meta: {
-    action: 'read',
-    subject: 'application',
+    layout: "blank",
+    public: true,
+    unauthenticatedOnly: true,
   },
-})
+});
 
-import Filters from '@/@core/components/Filters.vue';
-import { useApplicationListStore } from '@/@core/stores/applicationList';
-import { getUserRole, resolveStatusColor, resolveStatusName } from '@/@core/utils/helpers';
-import Swal from 'sweetalert2';
-import { computed, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
-const { can } = useAbility();
-// Store and Router
-const store = useApplicationListStore()
+import Filters from "@/@core/components/Filters.vue";
+import { commonFunction } from "@/@core/stores/commonFunction";
+import { ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import { VForm } from 'vuetify/components/VForm';
+import CourseDetails from "./course-details.vue";
 
-const router = useRouter()
-const isAdmin = ref(getUserRole() === 'admin')
-
-// Reactive State
-const applicationLists = ref([])
-const totalApplications = ref(0)
-const itemsPerPage = ref(10)
-const page = ref(1)
-const sortBy = ref()
-const orderBy = ref()
-const search = ref('')
-const selectedStatus = ref(null)
-const selectedUniversity = ref(null)
-const selectedChannelPartner = ref(null)
-const selectedApplicationOfficer = ref(null)
-const selectedStudentEmail = ref('')
-const selectedDateFrom = ref(null)
-const selectedDateTo = ref(null)
-const isLoading = ref(false)
-
-const applicationStore = useApplicationListStore()
+const router = useRouter();
+const commonFunctionStore = commonFunction();
 
 
+const passportCountry = ref("");
+const intake = ref(null);
+const courseType = ref(null);
+const university = ref(null);
+const course = ref(null);
+const refForm = ref(null);
+const showAppllicationForm = ref(true);
+const showCourseDetails = ref(false);
+const isLoading = ref(true);
+const countryToApply = ref("");
 
-// Methods
-const fetchApplications = async () => {
-  isLoading.value = true
-  try {
-    const response = await store.getApplicationList(
-      props.userId,
-      page.value,
-      itemsPerPage.value,
-      search.value,
-      sortBy.value,
-      orderBy.value,
-      selectedStatus.value,
-      selectedUniversity.value,
-      selectedChannelPartner.value,
-      selectedApplicationOfficer.value,
-      selectedStudentEmail.value,
-      selectedDateFrom.value,
-      selectedDateTo.value,
-    )
+const passportCountries = [
+  "Bangladesh",
+  "Nigeria",
+  "Sri Lanka",
+  "India",
+  "Bhutan",
+  "Ghana",
+  "Pakistan",
+];
 
-    applicationLists.value = response.data
-    totalApplications.value = response.total
-  } catch (error) {
-    console.error('Error fetching applications:', error)
-  } finally {
-    isLoading.value = false
+onMounted(async () => {
+  await commonFunctionStore.getUniqueCountries();
+  isLoading.value = false;
+});
+
+watch(countryToApply, async (newVal) => {
+  if (newVal) {
+    intake.value = null;
+    courseType.value = null;
+    university.value = null;
+    course.value = null;
+    commonFunctionStore.setSelectedCountryId(newVal);
+    await commonFunctionStore.getIntakesByCountry(newVal);
   }
-}
+});
 
-const updateOptions = options => {
-  sortBy.value = options.sortBy[0]?.key
-  orderBy.value = options.sortBy[0]?.order
-  fetchApplications()
-}
 
-const viewApplicationDetail = applicationId => {
-  router.push({ name: 'application-details', params: { id: applicationId } })
-}
 
-const deleteItem = async itemId => {
-  const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'Do you want to delete this item?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete it!',
-    cancelButtonText: 'Cancel',
-  })
+watch(intake, async (newVal) => {
+  if (newVal) {
+    courseType.value = null;
+    university.value = null;
+    course.value = null;
+    await commonFunctionStore.getCourseTypesByCountryIntake(countryToApply.value, newVal);
+  }
+});
 
-  if (result.isConfirmed) {
-    try {
-      await store.deleteItem(itemId)
-      fetchApplications()
-      Swal.fire('Deleted!', 'The item has been deleted.', 'success')
-    } catch (error) {
-      Swal.fire('Error!', 'There was an error deleting the item.', 'error')
+watch(courseType, async (newVal) => {
+  if (newVal) {
+    university.value = null;
+    course.value = null;
+    commonFunctionStore.selectedCourseType = newVal;
+    await commonFunctionStore.getUniversitiesByCountryIntakeCourseType(countryToApply.value, intake.value, newVal);
+  }
+});
+
+watch(university, async (newVal) => {
+  if (newVal) {
+    course.value = null;
+    if (intake.value && courseType.value) {
+      await commonFunctionStore.getCourseDetails(intake.value, newVal, courseType.value);
     }
   }
-}
+});
 
-// Fetch filter options
+watch(course, (newVal) => {
+  if (newVal) {
+    commonFunctionStore.selectedCourseDetailsId = newVal;
+  }
+});
 
+const next = () => {
+  refForm.value.validate().then((success) => {
+    if (success.valid) {
+      showCourseDetails.value = true;
+      showAppllicationForm.value = false;
+    }
+  });
+};
 
-// Watchers
-watch([
-  search,
-  selectedStatus,
-  selectedUniversity,
-  selectedChannelPartner,
-  selectedApplicationOfficer,
-  selectedStudentEmail,
-  selectedDateFrom,
-  selectedDateTo,
-], () => {
-  fetchApplications()
-})
-
-// Mounted Hook
-onMounted(() => {
-
-  fetchApplications()
-})
-
-// Header Definitions
-const headers = ref([
-  { title: 'APPLICATION ID', key: 'application_id' },
-  { title: 'Student Name', key: 'student.name' },
-  { title: 'Student Email', key: 'student.email' },
-  ...((can('application-control-officer-view', 'application'))
-    ? [{ title: 'Application Control Officer', key: 'user.parent.email' }]
-    : []),
-  { title: 'Channel Partner', key: 'user.email' },
-  { title: 'University/Course Details', key: 'university.name' },
-  { title: 'Status', key: 'status' },
-  { title: 'Date Added', key: 'created_at' },
-  { title: 'Action', key: 'action', sortable: false },
-])
-
-// Add this computed property
-const tableHeight = computed(() => {
-  return `calc(100vh - 200px)` // Adjust this value as needed
-})
 </script>
 
+
 <template>
-  <div class="application-list-container">
-    <AppCardActions title="Application List" :loading="isLoading" no-actions>
-      <!-- New Filters Section -->
-      <VCardText>
-        <VRow>
-          <Filters :selected-status="selectedStatus" :selected-channel-partner="selectedChannelPartner"
-            :selected-university="selectedUniversity" :selected-application-officer="selectedApplicationOfficer"
-            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
-            @update-status="selectedStatus = $event" @update-channel-partner="selectedChannelPartner = $event"
-            @update-university="selectedUniversity = $event"
-            @update-application-officer="selectedApplicationOfficer = $event"
-            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
-            :isAdmin = "isAdmin"
-          </Filters>
-        </VRow>
-      </VCardText>
-      <!-- Search and Pagination -->
-      <VCardText class="d-flex flex-wrap gap-4">
-        <div class="me-3 d-flex gap-3">
-          <AppSelect :model-value="itemsPerPage" :items="[
-            { value: 10, title: '10' },
-            { value: 25, title: '25' },
-            { value: 50, title: '50' },
-            { value: 100, title: 100 },
-            { value: -1, title: 'All' },
-          ]" style="inline-size: 6.25rem;" @update:model-value="itemsPerPage = parseInt($event, 10)" />
+  <VContainer class="fill-height">
+    <VRow justify="center"> <!-- Changed main container VRow to v-row -->
+      <VCol cols="12" md="8"> <!-- Changed main container VCol to v-col -->
+        <img src="https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/channelPartnerPanel/sge-logo-trans.png"
+          alt="Logo" style=" block-size: auto;inline-size: 100%; object-fit: cover;" /> <!-- Unchanged -->
+      </VCol> <!-- Changed main container VCol to v-col -->
+    </VRow> <!-- Changed main container VRow to v-row -->
+    <VRow justify="center" class="mt-8">
+      <VCol cols="12" sm="12" md="12" lg="12">
+        <div v-if="showAppllicationForm">
+          <AppCardActions title="New Application" :loading="isLoading" no-actions>
+            <VForm ref="refForm" @submit.prevent="() => { }" class="form-padding">
+              <v-row> <!-- Changed inner VRow to v-row -->
+                <Filters></Filters>
+                <v-col cols="12" md="6"> <!-- Changed inner VCol to v-col -->
+                  <AppAutocomplete v-model="countryToApply" :items="commonFunctionStore.countries" item-title="name"
+                    item-value="id" label="Country to Apply" placeholder="Select Country"
+                    :rules="[requiredValidator]" />
+                </v-col> <!-- Changed inner VCol to v-col -->
+
+                <v-col cols="12" md="6"> <!-- Changed inner VCol to v-col -->
+                  <AppAutocomplete v-model="passportCountry" :items="passportCountries"
+                    label="Country of Student Passport" placeholder="Select Country of Student's Passport"
+                    :rules="[requiredValidator]" />
+                </v-col> <!-- Changed inner VCol to v-col -->
+
+                <v-col cols="12" md="6"> <!-- Changed inner VCol to v-col -->
+                  <AppAutocomplete v-model="intake" :items="commonFunctionStore.intakes" item-title="intake_name"
+                    item-value="intake_id" label="Intake" placeholder="Select Intake" :rules="[requiredValidator]"
+                    :disabled="!countryToApply" />
+                </v-col> <!-- Changed inner VCol to v-col -->
+
+                <v-col cols="12" md="6"> <!-- Changed inner VCol to v-col -->
+                  <AppAutocomplete v-model="courseType" :items="commonFunctionStore.courseTypes" item-title="name"
+                    item-value="id" label="Course Type" placeholder="Select Course Type" :rules="[requiredValidator]"
+                    :disabled="!intake" />
+                </v-col> <!-- Changed inner VCol to v-col -->
+
+                <v-col cols="12" md="6"> <!-- Changed inner VCol to v-col -->
+                  <AppAutocomplete v-model="university" :items="commonFunctionStore.universities"
+                    item-title="university_name" item-value="university_id" label="University"
+                    placeholder="Select University" :rules="[requiredValidator]" :disabled="!courseType" />
+                </v-col> <!-- Changed inner VCol to v-col -->
+
+                <v-col cols="12" md="6"> <!-- Changed inner VCol to v-col -->
+                  <AppAutocomplete v-model="course" :items="commonFunctionStore.courseDetails" item-title="course_name"
+                    item-value="id" label="Course" placeholder="Select Course" :rules="[requiredValidator]"
+                    :disabled="!university" />
+                </v-col> <!-- Changed inner VCol to v-col -->
+                <v-col cols="12" class="d-flex gap-4 justify-end"> <!-- Changed inner VCol to v-col -->
+                  <VBtn @click="next()" type="submit" color="primary">Next</VBtn>
+                </v-col> <!-- Changed inner VCol to v-col -->
+              </v-row> <!-- Changed inner VRow to v-row -->
+            </VForm>
+          </AppCardActions>
         </div>
-        <VSpacer />
-
-        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-          <!-- 👉 Search  -->
-          <div style="inline-size: 15.625rem;">
-            <AppTextField v-model="search" placeholder="Search Application" />
-          </div>
+        <div v-if="showCourseDetails">
+          <CourseDetails :courseDetails="commonFunctionStore.getPreparedCourseDetails"
+            @update:showCourseDetails="showCourseDetails = $event"
+            @update:showApplicationForm="showAppllicationForm = $event" />
         </div>
-      </VCardText>
+      </VCol>
+    </VRow>
 
+  </VContainer>
 
-
-      <!-- Data Table -->
-      <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="applicationLists"
-        :items-length="totalApplications" :headers="headers" class="text-no-wrap color-black application-table"
-        :height="tableHeight" @update:options="updateOptions">
-        <template #item.student.name="{ item }">
-          <p>{{ item.student.first_name }} {{ item.student.last_name }}</p>
-        </template>
-        <template #item.user.email="{ item }">
-          <div class="d-flex flex-column">
-            <span class="d-block font-weight-medium text-truncate text-high-emphasis">
-              {{ item.user.company_name }}
-            </span>
-            <span class="text-md">{{ item.user.email }}</span>
-          </div>
-        </template>
-        <template #item.university.name="{ item }">
-          <div class="d-flex flex-column ms-3">
-            <span class="d-block font-weight-medium text-truncate text-high-emphasis">
-              {{ item.university.name }}
-            </span>
-            <span class="text-md">{{ item.course.name }}</span>
-            <span class="text-md">{{ item.intake.name }}</span>
-          </div>
-        </template>
-        <template #item.status="{ item }">
-          <VChip :color="resolveStatusColor(item.status)" :class="`text-${resolveStatusColor(item.status)}`"
-            size="small" class="font-weight-medium">
-            {{ resolveStatusName(item.status) }}
-          </VChip>
-        </template>
-        <template #item.action="{ item }">
-          <div class="d-flex flex-column ms-3">
-            <IconBtn @click="viewApplicationDetail(item.application_id)">
-              <VIcon icon="tabler-eye" />
-            </IconBtn>
-            <IconBtn v-if="$can('delete', 'application')" @click="deleteItem(item.id)">
-              <VIcon icon="tabler-trash" />
-            </IconBtn>
-          </div>
-        </template>
-
-        <!-- pagination -->
-        <template #bottom>
-          <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalApplications" />
-        </template>
-      </VDataTableServer>
-    </AppCardActions>
-  </div>
 </template>
 
-<style scoped>
+<style lang="scss">
+.centered-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+
+  /* Ensure it takes full width up to the max */
+  margin-block: 0;
+  margin-inline: auto;
+
+  /* Center the container */
+  max-inline-size: 75rem;
+  min-inline-size: 75rem;
+
+  /* Set a maximum width */
+  padding-block: 2rem 0;
+  padding-inline: 0;
+}
+
 .form-padding {
   padding-block: 0 2rem;
   padding-inline: 2rem;
-}
-
-.label {
-  color: black;
-}
-
-.v-data-table>.v-data-table__wrapper>table>thead>tr>th,
-td {
-  overflow: auto;
-  max-inline-size: 30rem;
-
-  /* Adjust the max-width as needed */
-  white-space: nowrap;
-  word-wrap: break-word;
-}
-
-.application-list-container {
-  display: flex;
-  flex-direction: column;
-  block-size: 100%;
-}
-
-.application-table {
-  overflow: auto;
-  flex: 1;
 }
 </style>

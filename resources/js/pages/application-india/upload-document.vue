@@ -1,5 +1,5 @@
 <template>
-  <VCard class="mb-6">
+  <!-- <VCard class="mb-6">
     <VCardTitle>Select Existing Student</VCardTitle>
     <VCardText>
       <AppAutocomplete
@@ -16,26 +16,19 @@
         <VBtn color="primary" @click="submitApplication">Next</VBtn>
       </div>
     </VCardText>
-  </VCard>
+  </VCard> -->
 
-  <div class="d-flex align-center my-6">
+  <!-- <div class="d-flex align-center my-6">
     <VDivider></VDivider>
     <span class="mx-4">OR</span>
     <VDivider></VDivider>
-  </div>
+  </div> -->
 
   <VCard>
     <VCardTitle>Please upload only color scan copy files for new student</VCardTitle>
     <VCardText>
-      <file-pond
-        ref="pond"
-        name="student_document"
-        :allow-multiple="true"
-        allowRemove="true"
-        :files="files"
-        :server="server"
-        label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>"
-      />
+      <file-pond ref="pond" name="student_document" :allow-multiple="true" allowRemove="true" :files="files"
+        :server="server" label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" />
       <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
       <div class="d-flex justify-end mt-4">
         <VBtn color="primary" @click="next()">Next</VBtn>
@@ -142,7 +135,7 @@ const removeFile = (fileId) => {
 const listItems = document.querySelectorAll('.student-list-item');
 
 listItems.forEach(item => {
-  item.addEventListener('click', function() {
+  item.addEventListener('click', function () {
     // Handle item selection
     console.log('Item selected:', this.textContent);
     // Add your selection logic here

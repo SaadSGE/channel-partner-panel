@@ -593,6 +593,7 @@ class ApplicationController extends Controller
             'gender' => 'required|in:male,female',
             'visa_refusal' => 'required|in:yes,no',
             'document_paths' => 'nullable|array',
+            'channel_partner_email' => 'nullable',
         ]);
     }
 
@@ -634,6 +635,7 @@ class ApplicationController extends Controller
             'student_id' => $student->id,
             'counsellor_number' => $data['counsellor_number'],
             'counsellor_email' => $data['counsellor_email'],
+            'temp_channel_partner_email' => $data['channel_partner_email'],
             'status' => 0,
         ]);
     }
