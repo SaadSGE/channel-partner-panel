@@ -6,74 +6,71 @@ on:
       - master
 
 jobs:
-  deploy_to_server_1:
+  prepare:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Cache Composer packages
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
 
       - name: Cache npm modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
 
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Deploy to server 1 via SSH
+      - name: Build assets
+        run: npm run build
+
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-build
+          path: |
+            .
+            !node_modules
+            !tests
+
+  deploy:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        server: [AFRICA, BANGLADESH]
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: app-build
+
+      - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST_AFRICA }}
+          host: ${{ secrets.HOST_[matrix.server] }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_KEY }}
           script: |
             cd /var/www/html
             git pull
             php artisan optimize:clear
-            composer install --no-interaction --prefer-dist --optimize-autoloader
+            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
             php artisan migrate --force
-            composer dump-autoload
             php artisan config:cache
             php artisan route:cache
-            npm install
-            npm run build
-
-  deploy_to_server_2:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Cache npm modules
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Deploy to server 2 via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST_BANGLADESH }}
-          username: ${{ secrets.DO_USER }}
-          key: ${{ secrets.DO_KEY }}
-          script: |
-            cd /var/www/html
-            git pull
-            php artisan optimize:clear
-            composer install --no-interaction --prefer-dist --optimize-autoloader
-            php artisan migrate --force
-            composer dump-autoload
-            php artisan config:cache
-            php artisan route:cache
-            npm install
-            npm run build
+            php artisan view:cache
