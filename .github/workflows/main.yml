@@ -62,7 +62,6 @@ jobs:
           key: ${{ secrets.DO_KEY }}
           script: |
             cd /var/www/html
-            git pull
             php artisan optimize:clear
-            composer install --no-dev --prefer-dist --optimize-autoloader
+            composer install
             php artisan migrate --force
