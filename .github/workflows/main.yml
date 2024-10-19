@@ -24,6 +24,14 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Cache build artifacts
+        uses: actions/cache@v2
+        with:
+          path: /var/www/html/public/build
+          key: ${{ runner.os }}-build-${{ hashFiles('package.json', 'webpack.mix.js') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
       - name: Deploy to server 1 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -39,7 +47,7 @@ jobs:
             composer dump-autoload
             php artisan config:cache
             php artisan route:cache
-            npm install
+            npm install --production
             npm run build
 
   deploy_to_server_2:
@@ -60,6 +68,14 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Cache build artifacts
+        uses: actions/cache@v2
+        with:
+          path: /var/www/html/public/build
+          key: ${{ runner.os }}-build-${{ hashFiles('package.json', 'webpack.mix.js') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
       - name: Deploy to server 2 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -75,5 +91,5 @@ jobs:
             composer dump-autoload
             php artisan config:cache
             php artisan route:cache
-            npm install
+            npm install --production
             npm run build
