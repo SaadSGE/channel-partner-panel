@@ -21,6 +21,8 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CourseRequestController;
 use App\Http\Controllers\NigeriaStudentController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\CountryController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -93,6 +95,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/fetch-compliance-officers', [UserController::class, 'fetchComplianceOfficers']);
     Route::get('/course-requests', [CourseRequestController::class, 'index']);
     Route::post('/course-requests/{id}/complete', [CourseRequestController::class, 'complete']);
+
 });
 
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
@@ -121,4 +124,5 @@ Route::post('/compliance-requests/{id}/reject', [ApplicationController::class, '
 Route::get('/notifications/all', [NotificationController::class, 'getAllNotifications']);
 
 Route::post('/nigeria-students', [NigeriaStudentController::class, 'store']);
-Route::post('/nigeria-students2', [NigeriaStudentController::class, 'store']);
+Route::apiResource('branches', BranchController::class);
+Route::apiResource('countries', CountryController::class);
