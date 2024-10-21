@@ -51,7 +51,7 @@ export default [
   },
 
   {
-    title: 'Course',
+    title: 'Course List',
     to: 'course',
     icon: { icon: 'tabler-command' },
     action: 'read',
