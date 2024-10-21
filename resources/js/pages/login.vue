@@ -6,6 +6,7 @@ import authV2LoginIllustrationBorderedLight from "@images/pages/auth-v2-login-il
 import authV2LoginIllustrationDark from "@images/pages/auth-v2-login-illustration-dark.png";
 import authV2LoginIllustrationLight from "@images/pages/auth-v2-login-illustration-light.png";
 import loginImage from "@images/pages/login-image.png";
+import loginImageOrg from "@images/pages/login-org.gif";
 import authV2MaskDark from "@images/pages/misc-mask-dark.png";
 import authV2MaskLight from "@images/pages/misc-mask-light.png";
 import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
@@ -21,7 +22,13 @@ const authThemeImg = useGenerateImageVariant(
   true
 );
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
-const loginImage2 = useGenerateImageVariant(loginImage);
+const appUrl = import.meta.env.VITE_WEBSITE;
+
+console.log("hello2");
+
+
+
+const loginImage2 = appUrl === 'org' ? useGenerateImageVariant(loginImageOrg) : useGenerateImageVariant(loginImage);
 
 definePage({
   meta: {
@@ -72,10 +79,10 @@ const onSubmit = () => {
         useCookie("accessToken").value = accessToken;
 
         await nextTick(() => {
-          if(userData.main_role=='editor'){
+          if (userData.main_role == 'editor') {
             router.replace(route.query.to ? String(route.query.to) : "/record");
           }
-          else{
+          else {
             router.replace(route.query.to ? String(route.query.to) : "/");
           }
         });
@@ -106,20 +113,13 @@ const onSubmit = () => {
   <VRow no-gutters class="auth-wrapper bg-surface">
     <VCol md="8" class="d-none d-md-flex">
       <div class="position-relative bg-background w-100 me-0">
-        <div
-          class="d-flex align-center justify-center w-100 h-100"
-          style="padding-inline: 6.25rem;"
-        >
+        <div class="d-flex align-center justify-center w-100 h-100" style="padding-inline: 6.25rem;">
           <VImg :src="loginImage2" class="auth-illustration mt-16 mb-2" />
         </div>
       </div>
     </VCol>
 
-    <VCol
-      cols="12"
-      md="4"
-      class="auth-card-v2 d-flex align-center justify-center"
-    >
+    <VCol cols="12" md="4" class="auth-card-v2 d-flex align-center justify-center">
       <VCard flat :max-width="500" class="mt-12 mt-sm-0 pa-4">
         <VCardText>
           <h4 class="text-h4 mb-1">
@@ -137,43 +137,20 @@ const onSubmit = () => {
             <VRow>
               <!-- email -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="credentials.email"
-                  label="Email"
-                  placeholder="johndoe@email.com"
-                  type="email"
-                  autofocus
-                  :rules="[requiredValidator, emailValidator]"
-                  :error-messages="authStore.errors.email"
-                />
+                <AppTextField v-model="credentials.email" label="Email" placeholder="johndoe@email.com" type="email"
+                  autofocus :rules="[requiredValidator, emailValidator]" :error-messages="authStore.errors.email" />
               </VCol>
 
               <!-- password -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="credentials.password"
-                  label="Password"
-                  placeholder="············"
-                  :rules="[requiredValidator]"
-                  :type="isPasswordVisible ? 'text' : 'password'"
-                  :error-messages="authStore.errors.password"
-                  :append-inner-icon="
-                    isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'
-                  "
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                />
+                <AppTextField v-model="credentials.password" label="Password" placeholder="············"
+                  :rules="[requiredValidator]" :type="isPasswordVisible ? 'text' : 'password'"
+                  :error-messages="authStore.errors.password" :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'
+                    " @click:append-inner="isPasswordVisible = !isPasswordVisible" />
 
-                <div
-                  class="d-flex align-center flex-wrap justify-space-between my-6"
-                >
-                  <VCheckbox
-                    v-model="authStore.rememberMe"
-                    label="Remember Me"
-                  />
-                  <RouterLink
-                    class="text-primary"
-                    to="/forgot-password"
-                  >
+                <div class="d-flex align-center flex-wrap justify-space-between my-6">
+                  <VCheckbox v-model="authStore.rememberMe" label="Remember Me" />
+                  <RouterLink class="text-primary" to="/forgot-password">
                     Forgot Password?
                   </RouterLink>
                 </div>
@@ -184,10 +161,7 @@ const onSubmit = () => {
               <!-- create account -->
               <VCol cols="12" class="text-center">
                 <span>New on our platform?</span>
-                <RouterLink
-                  class="text-primary ms-1"
-                  :to="{ name: 'register' }"
-                >
+                <RouterLink class="text-primary ms-1" :to="{ name: 'register' }">
                   Create an account
                 </RouterLink>
               </VCol>

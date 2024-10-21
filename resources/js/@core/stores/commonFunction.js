@@ -32,8 +32,7 @@ export const commonFunction = defineStore({
         if (!courseDetail) {
           return null;
         }
-        console.log(state.courseTypes)
-        console.log(state)
+
         return {
           courseName: courseDetail.course_name,
           intake: state.intakes.find(i => i.intake_id === state.selectedIntakeId)?.intake_name || '',

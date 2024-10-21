@@ -24,6 +24,7 @@ const markUnRead = notificationId => {
 }
 
 const handleNotificationClick = notification => {
+
   if (!notification.read) {
     markRead(notification.id)
   }
@@ -34,7 +35,11 @@ const handleNotificationClick = notification => {
       router.go(0)
     } else {
       // If routes are different, navigate without forcing a reload
-      router.push({ name: notification.notification_route, params: { id: notification.application_id } })
+      if (notification.application_id) {
+        router.push({ name: notification.notification_route, params: { id: notification.application_id } })
+      } else {
+        router.push(notification.notification_route)
+      }
     }
   }
 }

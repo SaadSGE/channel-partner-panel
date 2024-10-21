@@ -167,7 +167,7 @@ class CourseDetailsController extends Controller
             Cache::forget('course_details_all');
             Cache::forget('country_intake_university_course');
             // Log the newly created course detail
-            Log::info('CourseDetail created: ', $courseDetail->toArray());
+
 
             // Return success response
             return $this->successJsonResponse('Course detail created successfully', $courseDetail);
@@ -238,7 +238,7 @@ class CourseDetailsController extends Controller
             Cache::forget('course_details_all');
             Cache::forget('country_intake_university_course');
             // Log the updated course detail
-            Log::info('CourseDetail updated: ', $courseDetail->toArray());
+
 
             return $this->successJsonResponse('Course details updated successfully', $courseDetail);
         } catch (\Throwable $th) {
@@ -301,12 +301,12 @@ class CourseDetailsController extends Controller
         try {
             // Check if the data is already cached. If not, execute the query and cache the result.
             $courseDetails = Cache::rememberForever($cacheKey, function () {
-                Log::info('Fetching course details from the database.');
+
                 return CourseDetails::with(['course', 'country', 'intake', 'university'])->get();
             });
 
             if (Cache::has($cacheKey)) {
-                Log::info('Course details retrieved from cache.');
+
             }
 
             // Return the cached or fresh data
@@ -380,7 +380,7 @@ class CourseDetailsController extends Controller
             // Fetch admin users to notify
             $users = User::where('role', 'admin')->get();
 
-            // Prepare the notification details
+            // Prepare the notification detai/'ls
             $details = [
                 'subject' => 'Request for New Course/University/Intake',
                 'body' => "A new request has been submitted for the following details:<br><br>"
@@ -393,6 +393,9 @@ class CourseDetailsController extends Controller
                 'sender_name' => $request->user()->full_name,
                 'sender_email' => $request->user()->email,
                 'notification_type' => 'email',
+                'notification_text' => 'A new course/university/intake request has come',
+                'notification_route' => '/course-request-list',
+
             ];
 
             // Send email notification to admin users

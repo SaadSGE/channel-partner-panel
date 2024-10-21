@@ -35,7 +35,9 @@ const fetchCommunications = async () => {
   await store.getAcoAoCommunications(props.applicationId);
   acoAoCommunications.value = store.acoAoCommunications;
 };
-
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString();
+};
 onMounted(fetchCommunications);
 </script>
 

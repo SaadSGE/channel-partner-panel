@@ -26,8 +26,7 @@ jobs:
             composer install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
             composer dump-autoload
-            php artisan config:cache
-            php artisan route:cache
+            php artisan optimize
 
       - name: Deploy to server 2 via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -42,5 +41,4 @@ jobs:
             composer install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
             composer dump-autoload
-            php artisan config:cache
-            php artisan route:cache
+            php artisan optimize

@@ -166,7 +166,7 @@ class ApplicationController extends Controller
         try {
             DB::beginTransaction();
             //findorfail by application id
-            $application = ApplicationList::where('application_id', $id)->first();
+            $application = ApplicationList::where('id', $id)->first();
             if (!$application) {
                 return $this->exceptionJsonResponse('Application not found', null, 404);
             }
@@ -394,6 +394,7 @@ class ApplicationController extends Controller
 
     public function addComment(Request $request, $id, EmailService $emailService)
     {
+        $user = auth('api')->user();
         $request->validate([
             'comment' => 'required|string',
         ]);
@@ -411,7 +412,7 @@ class ApplicationController extends Controller
 
         activity()
             ->performedOn($application)
-            ->causedBy(auth('api')->user())
+            ->causedBy($user)
             ->withProperties([
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
@@ -424,23 +425,32 @@ class ApplicationController extends Controller
             ])
             ->log('comment_added');
 
+        $recipients = collect();
 
-        if ($application->user->role == 'channel partner') {
-            $creator = $application->user->parent;
+        $adminUsers = User::where('role', 'admin')->get();
+        $recipients = $recipients->concat($adminUsers);
+
+        if ($user->role == 'channel partner') {
+            $parentIds = $user->fetchParent();
+            $parentUsers = User::whereIn('id', $parentIds)->get();
+            $recipients = $recipients->concat($parentUsers);
         } else {
             $creator = $application->user;
+            $parentIds = $creator->fetchParent();
+            $parentUsers = User::whereIn('id', $parentIds)->get();
+            $recipients = $recipients->concat($parentUsers);
+            $recipients->push($creator);
+
         }
-        $adminUsers = User::where('role', 'admin')->get();
 
         // Prepare the notification details
         $additionalDetails = [
             'comment' => $comment->comment,
         ];
 
-        $recipients = $adminUsers->push($creator);
-        $senderId = auth('api')->user()->id;
-        $senderName = auth('api')->user()->full_name;
-        $senderEmail = auth('api')->user()->email;
+        $senderId = $user->id;
+        $senderName = $user->full_name;
+        $senderEmail = $user->email;
 
         $emailService->sendApplicationNotification('comment_added', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
 
@@ -583,6 +593,7 @@ class ApplicationController extends Controller
             'gender' => 'required|in:male,female',
             'visa_refusal' => 'required|in:yes,no',
             'document_paths' => 'nullable|array',
+            'channel_partner_email' => 'nullable',
         ]);
     }
 
@@ -612,7 +623,34 @@ class ApplicationController extends Controller
         $courseDetails = CourseDetails::findOrFail($data['course_details_id']);
 
         \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
+        //if channel_partner_email is not null then create a new channel partner user
+        if ($data['channel_partner_email']) {
+            $channelPartner = User::where('email', $data['channel_partner_email'])->first();
+            if (!$channelPartner) {
+                $channelPartner = User::create([
+                    'email' => $data['channel_partner_email'],
+                    'password' => bcrypt('password'),
+                    'role' => 'channel partner',
+                    'first_name' => $data['channel_partner_email'],
+                    'last_name' => $data['channel_partner_email'],
+                    'status' => 1,
+                    'company_name' => $data['channel_partner_email'],
+                    'whatsapp_number' => $data['channel_partner_email'],
+                    'mobile_number' => $data['channel_partner_email'],
+                    'address' => $data['channel_partner_email'],
+                    'city' => $data['channel_partner_email'],
+                    'post_code' => $data['channel_partner_email'],
+                    'country' => 'India',
+                    'recruit_countries' => json_encode(['India']),
 
+
+                ]);
+            }
+        }
+        $user_id = auth('api')->id();
+        if ($channelPartner) {
+            $user_id = $channelPartner->id;
+        }
         return ApplicationList::create([
             'application_id' => $applicationId,
             'course_id' => $courseDetails->course_id,
@@ -620,10 +658,11 @@ class ApplicationController extends Controller
             'intake_id' => $data['intake_id'],
             'university_id' => $data['university_id'],
             'course_details_id' => $data['course_details_id'],
-            'user_id' => auth('api')->id(),
+            'user_id' => $user_id,
             'student_id' => $student->id,
             'counsellor_number' => $data['counsellor_number'],
             'counsellor_email' => $data['counsellor_email'],
+            'temp_channel_partner_email' => $data['channel_partner_email'],
             'status' => 0,
         ]);
     }
@@ -1454,7 +1493,7 @@ class ApplicationController extends Controller
             $adminUsers = User::where('role', 'admin')->get();
             $assigner = User::findOrFail($assignment->created_by);
 
-            // Prepare recipients (admin users and the assigner)
+
             $recipients = $adminUsers->push($assigner);
 
             // Send notification
@@ -1471,9 +1510,9 @@ class ApplicationController extends Controller
             DB::commit();
 
             return $this->successJsonResponse('Compliance request rejected successfully');
-        } catch (\Exception $e) {
+        } catch (\Throwable $th) {
             DB::rollBack();
-            return $this->errorJsonResponse('Failed to reject compliance request', $e->getMessage(), 500);
+            return $this->errorJsonResponse('Failed to reject compliance request', [$th->getMessage()], 500);
         }
     }
 

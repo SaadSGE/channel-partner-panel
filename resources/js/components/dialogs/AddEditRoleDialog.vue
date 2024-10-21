@@ -10,6 +10,7 @@ const customPermissionKeys = ref([]); // Array to store keys of custom permissio
 onMounted(async () => {
   await store.getAllPermission();
   permissions.value = store.permissions;
+  console.log(permissions.value);
 
   // Extract custom permission keys
   permissions.value.forEach(permission => {
@@ -146,11 +147,8 @@ const onReset = () => {
 
 
 <template>
-  <VDialog
-    :width="$vuetify.display.smAndDown ? 'auto' : 900"
-    :model-value="props.isDialogVisible"
-    @update:model-value="onReset"
-  >
+  <VDialog :width="$vuetify.display.smAndDown ? 'auto' : 900" :model-value="props.isDialogVisible"
+    @update:model-value="onReset">
     <DialogCloseBtn @click="onReset" />
 
     <VCard class="pa-sm-10 pa-2">
@@ -163,11 +161,7 @@ const onReset = () => {
         </p>
 
         <VForm ref="refPermissionForm">
-          <AppTextField
-            v-model="role"
-            label="Role Name"
-            placeholder="Enter Role Name"
-          />
+          <AppTextField v-model="role" label="Role Name" placeholder="Enter Role Name" />
 
           <h5 class="text-h5 my-6">
             Role Permissions
@@ -175,44 +169,29 @@ const onReset = () => {
 
           <VTable class="permission-table text-no-wrap mb-6">
             <!-- Group for Read, Create, Edit, Delete -->
-            <template
-              v-for="permission in permissions"
-              :key="permission.name"
-            >
-              <tr>
+            <template v-for="permission in permissions" :key="permission.name">
+              <tr v-if="!permission.custom"> <!-- Only show non-custom permissions -->
                 <td>
                   <h6 class="text-h6">{{ formatKey(permission.name) }}</h6>
                 </td>
                 <td>
                   <div class="d-flex justify-end">
-                    <VCheckbox
-                      v-model="permission.read"
-                      label="Read"
-                    />
+                    <VCheckbox v-model="permission.read" label="Read" />
                   </div>
                 </td>
                 <td>
                   <div class="d-flex justify-end">
-                    <VCheckbox
-                      v-model="permission.create"
-                      label="Create"
-                    />
+                    <VCheckbox v-model="permission.create" label="Create" />
                   </div>
                 </td>
                 <td>
                   <div class="d-flex justify-end">
-                    <VCheckbox
-                      v-model="permission.edit"
-                      label="Edit"
-                    />
+                    <VCheckbox v-model="permission.edit" label="Edit" />
                   </div>
                 </td>
                 <td>
                   <div class="d-flex justify-end">
-                    <VCheckbox
-                      v-model="permission.delete"
-                      label="Delete"
-                    />
+                    <VCheckbox v-model="permission.delete" label="Delete" />
                   </div>
                 </td>
               </tr>
@@ -225,23 +204,19 @@ const onReset = () => {
 
           <VTable class="permission-table text-no-wrap mb-6">
             <!-- Custom permissions group -->
-            <template
-              v-for="permission in permissions"
-              :key="permission.name"
-            >
-              <tr v-for="(enabled, customPermission) in permission.custom_permissions" :key="customPermission">
-                <td>
-                  <!-- Concatenate the permission name with the custom permission -->
-                  <h6 class="text-h6">{{ formatKey(permission.name) }} {{ formatKey(customPermission) }}</h6>
-                </td>
-                <td colspan="4">
-                  <div class="d-flex justify-end">
-                    <VCheckbox
-                      v-model="permission.custom_permissions[customPermission]"
-                    />
-                  </div>
-                </td>
-              </tr>
+            <template v-for="permission in permissions" :key="permission.name">
+              <template v-if="permission.custom"> <!-- Only show custom permissions -->
+                <tr v-for="(enabled, customPermission) in permission.custom_permissions" :key="customPermission">
+                  <td>
+                    <h6 class="text-h6">{{ formatKey(permission.name) }} {{ formatKey(customPermission) }}</h6>
+                  </td>
+                  <td colspan="4">
+                    <div class="d-flex justify-end">
+                      <VCheckbox v-model="permission.custom_permissions[customPermission]" />
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </template>
           </VTable>
 
@@ -250,11 +225,7 @@ const onReset = () => {
               Submit
             </VBtn>
 
-            <VBtn
-              color="secondary"
-              variant="tonal"
-              @click="onReset"
-            >
+            <VBtn color="secondary" variant="tonal" @click="onReset">
               Cancel
             </VBtn>
           </div>
@@ -286,4 +257,3 @@ const onReset = () => {
   }
 }
 </style>
-

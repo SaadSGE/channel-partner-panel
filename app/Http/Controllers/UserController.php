@@ -36,7 +36,9 @@ class UserController extends Controller
                 return $query->where(function ($query) use ($searchQuery) {
                     $query->where('first_name', 'LIKE', "%$searchQuery%")
                         ->orWhere('last_name', 'LIKE', "%$searchQuery%")
-                        ->orWhere('email', 'LIKE', "%$searchQuery%");
+                        ->orWhere('email', 'LIKE', "%$searchQuery%")
+                        // ... added company_name search
+                        ->orWhere('company_name', 'LIKE', "%$searchQuery%"); // New search condition for company_name
                 });
             })
             ->when($roleFilter, function ($query, $roleFilter) {
@@ -200,9 +202,35 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        try {
+            $user = User::findOrFail($id);
+
+            // Check if the user is trying to delete themselves
+            if (auth('api')->id() == $id) {
+                return $this->errorJsonResponse('You cannot delete your own account.');
+            }
+
+
+            // Soft delete the user
+            $user->delete();
+
+            // Log the activity
+            activity()
+                ->performedOn($user)
+                ->causedBy(auth('api')->user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('user_deleted');
+
+            return $this->successJsonResponse('User deleted successfully');
+        } catch (\Throwable $th) {
+            \Log::error($th);
+            return $this->exceptionJsonResponse('Failed to delete user', $th);
+        }
     }
 
     public function setParent(Request $request, $id)
@@ -254,7 +282,7 @@ class UserController extends Controller
     }
     public function updateProfile(Request $request)
     {
-        \Log::info($request->all());
+
         // Validate the incoming request data
         $validatedData = $request->validate([
             'first_name' => 'required|string',
@@ -262,7 +290,7 @@ class UserController extends Controller
             'mobile_number' => 'nullable|string',
             'whatsapp_number' => 'nullable|string',
             'company_name' => 'nullable|string',
-            'website' => 'nullable|url',
+            'website' => 'nullable',
             'address' => 'nullable|string',
             'city' => 'nullable|string',
             'post_code' => 'nullable|string',

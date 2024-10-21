@@ -28,6 +28,7 @@ class RoleController extends Controller
                         'create' => false,
                         'delete' => false,
                         'custom_permissions' => [],
+                        'custom' => false,
                     ];
                 }
 
@@ -35,6 +36,14 @@ class RoleController extends Controller
                     $permissionsMap[$base][$action] = true;
                 } else {
                     $permissionsMap[$base]['custom_permissions'][$action] = true;
+                    $permissionsMap[$base]['custom'] = true;
+                }
+            }
+
+            // Set 'custom' to false if there are no custom permissions
+            foreach ($permissionsMap as &$permission) {
+                if (empty($permission['custom_permissions'])) {
+                    $permission['custom'] = false;
                 }
             }
 
@@ -51,7 +60,6 @@ class RoleController extends Controller
 
         return $this->successJsonResponse('Roles found', $transformedRoles);
     }
-
     /**
      * Store a newly created resource in storage.
      */

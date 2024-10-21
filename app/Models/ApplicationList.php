@@ -115,11 +115,12 @@ class ApplicationList extends Model
         parent::boot();
 
         static::creating(function ($model) {
-
             if (auth('api')->check()) {
-                $model->created_by = auth('api')->user()->id;
-                $model->channel_partner = auth('api')->user()->id;
-                $model->application_control_officer = auth('api')->user()->parent->id;
+                $user = auth('api')->user();
+                $model->created_by = $user->id;
+                $model->channel_partner = $user->id;
+                // Set application_control_officer only if the user has a parent
+                $model->application_control_officer = $user->parent_id ?? null;
             }
         });
     }

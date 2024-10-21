@@ -34,10 +34,14 @@ class PermissionController extends Controller
             }
         }
 
+        // Set 'custom' flag for each permission
+        foreach ($permissionsMap as &$permission) {
+            $permission['custom'] = !empty($permission['custom_permissions']);
+        }
+
         $permissionsList = array_values($permissionsMap);
         return $this->successJsonResponse('Permissions found', $permissionsList);
     }
-
 
     private function initializePermissionsMap()
     {
@@ -53,7 +57,8 @@ class PermissionController extends Controller
                     'edit' => false,
                     'create' => false,
                     'delete' => false,
-                    'custom_permissions' => []
+                    'custom_permissions' => [],
+                    'custom' => false
                 ];
             }
 
@@ -77,7 +82,8 @@ class PermissionController extends Controller
                 'edit' => false,
                 'create' => false,
                 'delete' => false,
-                'custom_permissions' => []
+                'custom_permissions' => [],
+                'custom' => false
             ];
         }
 
