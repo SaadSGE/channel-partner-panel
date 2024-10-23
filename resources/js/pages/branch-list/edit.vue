@@ -1,11 +1,12 @@
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
-import { defineEmits, defineProps, ref, watch } from "vue";
+import { defineEmits, defineProps, onMounted, ref, watch } from "vue";
 const loadings = ref([]);
 
 const commonFunctionStore = commonFunction();
 const branchName = ref("");
-const countries = ref([]);
+const countryName = ref(null);
+const countriesName = ref([]);
 const isLoading = ref(false);
 const props = defineProps({
     isNavDrawerOpen: Boolean,
@@ -15,47 +16,60 @@ const id = ref(null);
 const refForm = ref(null);
 const emits = defineEmits(["update:isNavDrawerOpen"]);
 
+// Fetch countries on component mount
+onMounted(async () => {
+    await getCountries();
+});
+
+// Fetch countries from API
+const getCountries = async () => {
+    try {
+        await commonFunctionStore.getBranchesCountries();
+        countriesName.value = await commonFunctionStore.countriesName;
+    } catch (error) {
+        console.error("Error fetching countries:", error);
+    }
+};
+
 
 watch(
     () => props.editedItem,
-    async (newValue) => {
+    (newValue) => {
         if (newValue) {
             branchName.value = newValue.name;
+            countryName.value = newValue.country_id;
             id.value = newValue.id;
         }
     },
     { immediate: true }
 );
 
-// Placeholder for validation rule
+// Validation rule for required fields
 const requiredValidator = (value) => !!value || "Required field";
-const addbranch = async () => {
-    refForm.value.validate().then((success) => {
-        if (!success.valid) {
-            return;
-        }
-        else {
-            submitbranch()
-        }
-    });
 
-};
-const submitbranch = async () => {
+// Function to handle form submission
+const updatebranch = async () => {
+    const isValid = await refForm.value.validate();
+    if (!isValid) return;
+
     const branchData = {
         name: branchName.value,
+        country_id: countryName.value,
     };
 
     try {
         isLoading.value = true;
-        await commonFunctionStore.updateIntake(id.value, branchData);
+        await commonFunctionStore.updateBranch(id.value, branchData);
         isLoading.value = false;
         branchName.value = "";
+        countryName.value = null;
         emits("update:isNavDrawerOpen", false);
     } catch (error) {
-        console.error("Failed to add branch:", error);
+        console.error("Failed to update branch:", error);
     }
-}
+};
 </script>
+
 <template>
     <VNavigationDrawer v-model="props.isNavDrawerOpen" temporary touchless border="none" location="end" width="400"
         elevation="10" :scrim="false" class="app-customizer">
@@ -63,7 +77,6 @@ const submitbranch = async () => {
             <div>
                 <h6 class="text-h6">Update Branch</h6>
             </div>
-
             <div class="d-flex align-center gap-1">
                 <VBtn icon variant="text" color="medium-emphasis" size="small"
                     @click="emits('update:isNavDrawerOpen', false)">
@@ -73,13 +86,14 @@ const submitbranch = async () => {
         </div>
 
         <VDivider />
-        <VForm ref="refForm" @submit.prevent="addbranch" class="form-padding mt-4">
+        <VForm ref="refForm" @submit.prevent="updatebranch" class="form-padding mt-4">
+            <AppTextField v-model="branchName" label="Branch Name" :rules="[requiredValidator]" class="mb-2" />
+            <!-- Country Select Field -->
+            <AppAutocomplete v-model="countryName" :items="countriesName" :item-title="(item) => item.name"
+                :item-value="(item) => item.id" label="Country Name" placeholder="Select Country"
+                :rules="[requiredValidator]" clearable />
 
-            <AppTextField v-model="branchName" label="Intake Name" :rules="[requiredValidator]" class="mb-2" />
-            <AppSelect v-model="countryName" label="Country Name" :items="countries" item-value="id" item-text="name"
-                :rules="[requiredValidator]" class="mb-2" />
-
-            <VBtn :loading="isLoading" :disabled="isLoading" color="primary" @click="addbranch" class="mt-4" block>
+            <VBtn :loading="isLoading" :disabled="isLoading" color="primary" @click="updatebranch" class="mt-4" block>
                 Update
             </VBtn>
         </VForm>

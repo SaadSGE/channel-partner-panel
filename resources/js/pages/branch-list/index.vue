@@ -11,14 +11,8 @@ import { onMounted, ref } from "vue";
 import BranchAdd from "./add.vue";
 import BranchEdit from "./edit.vue";
 const commonFunctionStore = commonFunction();
-const countryToApply = ref("");
-const universityName = ref("");
-const universityAddress = ref("");
-const universityLogo = ref(null);
 const countries = ref([]);
 const branches = ref([]);
-const universities = ref([]);
-const courseTypes = ["Graduate", "Post Graduate"];
 const isNavDrawerOpen = ref(false)
 const isNavDrawerOpenEdit = ref(false)
 onMounted(async () => {
@@ -30,12 +24,11 @@ onMounted(async () => {
 
     branches.value = commonFunctionStore.branches;
     isLoading.value = false
-    console.log("branches: " + branches);
 });
 
 const headers = [
     { title: 'Branch Name', key: 'name' },
-    { title: 'Country Name', key: 'country_id' },
+    { title: 'Country Name', key: 'country.name' },
     { title: 'Actions', key: 'actions', sortable: false },
 ];
 const defaultItem = ref({
