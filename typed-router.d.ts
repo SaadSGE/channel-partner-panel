@@ -48,22 +48,15 @@ declare module 'vue-router/auto/routes' {
     'application-new': RouteRecordInfo<'application-new', '/application/new', Record<never, never>, Record<never, never>>,
     'application-student-information': RouteRecordInfo<'application-student-information', '/application/student-information', Record<never, never>, Record<never, never>>,
     'application-upload-document': RouteRecordInfo<'application-upload-document', '/application/upload-document', Record<never, never>, Record<never, never>>,
-    'application-india': RouteRecordInfo<'application-india', '/application-india', Record<never, never>, Record<never, never>>,
-    'application-india-course-details': RouteRecordInfo<'application-india-course-details', '/application-india/course-details', Record<never, never>, Record<never, never>>,
-    'application-india-details': RouteRecordInfo<'application-india-details', '/application-india/details', Record<never, never>, Record<never, never>>,
-    'application-india-details-document': RouteRecordInfo<'application-india-details-document', '/application-india/details-document', Record<never, never>, Record<never, never>>,
-    'application-india-new': RouteRecordInfo<'application-india-new', '/application-india/new', Record<never, never>, Record<never, never>>,
-    'application-india-student-information': RouteRecordInfo<'application-india-student-information', '/application-india/student-information', Record<never, never>, Record<never, never>>,
-    'application-india-upload-document': RouteRecordInfo<'application-india-upload-document', '/application-india/upload-document', Record<never, never>, Record<never, never>>,
     'application-request': RouteRecordInfo<'application-request', '/application-request', Record<never, never>, Record<never, never>>,
+    'apps-email-filter': RouteRecordInfo<'apps-email-filter', '/apps/email/:filter', { filter: ParamValue<true> }, { filter: ParamValue<false> }>,
+    'apps-email-label': RouteRecordInfo<'apps-email-label', '/apps/email/:label', { label: ParamValue<true> }, { label: ParamValue<false> }>,
     'compliance-request': RouteRecordInfo<'compliance-request', '/compliance-request', Record<never, never>, Record<never, never>>,
     'course-request': RouteRecordInfo<'course-request', '/course-request', Record<never, never>, Record<never, never>>,
-    'course-request-list': RouteRecordInfo<'course-request-list', '/course-request-list', Record<never, never>, Record<never, never>>,
     'dashboard': RouteRecordInfo<'dashboard', '/dashboard', Record<never, never>, Record<never, never>>,
     'email': RouteRecordInfo<'email', '/email', Record<never, never>, Record<never, never>>,
     'forgot-password': RouteRecordInfo<'forgot-password', '/forgot-password', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
-    'nigeria': RouteRecordInfo<'nigeria', '/nigeria', Record<never, never>, Record<never, never>>,
     'not-authorized': RouteRecordInfo<'not-authorized', '/not-authorized', Record<never, never>, Record<never, never>>,
     'notifications': RouteRecordInfo<'notifications', '/notifications', Record<never, never>, Record<never, never>>,
     'permissions': RouteRecordInfo<'permissions', '/permissions', Record<never, never>, Record<never, never>>,
@@ -117,6 +110,73 @@ declare module 'vue-router/auto' {
 
   /**
    * Type safe version of `RouteLocationRaw` . Allows passing the name of the route to be passed as a generic.
+   */
+  export type RouteLocationRaw<Name extends keyof RouteNamedMap = keyof RouteNamedMap> =
+    | RouteLocationAsString<RouteNamedMap>
+    | RouteLocationAsRelativeTypedList<RouteNamedMap>[Name]
+    | RouteLocationAsPathTypedList<RouteNamedMap>[Name]
+
+  /**
+   * Generate a type safe params for a route location. Requires the name of the route to be passed as a generic.
+   */
+  export type RouteParams<Name extends keyof RouteNamedMap> = RouteNamedMap[Name]['params']
+  /**
+   * Generate a type safe raw params for a route location. Requires the name of the route to be passed as a generic.
+   */
+  export type RouteParamsRaw<Name extends keyof RouteNamedMap> = RouteNamedMap[Name]['paramsRaw']
+
+  export function useRouter(): RouterTyped
+  export function useRoute<Name extends keyof RouteNamedMap = keyof RouteNamedMap>(name?: Name): RouteLocationNormalizedLoadedTypedList<RouteNamedMap>[Name]
+
+  export const useLink: UseLinkFnTyped<RouteNamedMap>
+
+  export function onBeforeRouteLeave(guard: NavigationGuard<RouteNamedMap>): void
+  export function onBeforeRouteUpdate(guard: NavigationGuard<RouteNamedMap>): void
+
+  export const RouterLink: RouterLinkTyped<RouteNamedMap>
+  export const RouterLinkProps: RouterLinkPropsTyped<RouteNamedMap>
+
+  // Experimental Data Fetching
+
+  export function defineLoader<
+    P extends Promise<any>,
+    Name extends keyof RouteNamedMap = keyof RouteNamedMap,
+    isLazy extends boolean = false,
+  >(
+    name: Name,
+    loader: (route: RouteLocationNormalizedLoaded<Name>) => P,
+    options?: _DefineLoaderOptions<isLazy>,
+  ): _DataLoader<Awaited<P>, isLazy>
+  export function defineLoader<
+    P extends Promise<any>,
+    isLazy extends boolean = false,
+  >(
+    loader: (route: RouteLocationNormalizedLoaded) => P,
+    options?: _DefineLoaderOptions<isLazy>,
+  ): _DataLoader<Awaited<P>, isLazy>
+
+  export {
+    _definePage as definePage,
+    _HasDataLoaderMeta as HasDataLoaderMeta,
+    _setupDataFetchingGuard as setupDataFetchingGuard,
+    _stopDataFetchingScope as stopDataFetchingScope,
+  } from 'unplugin-vue-router/runtime'
+}
+
+declare module 'vue-router' {
+  import type { RouteNamedMap } from 'vue-router/auto/routes'
+
+  export interface TypesConfig {
+    beforeRouteUpdate: NavigationGuard<RouteNamedMap>
+    beforeRouteLeave: NavigationGuard<RouteNamedMap>
+
+    $route: RouteLocationNormalizedLoadedTypedList<RouteNamedMap>[keyof RouteNamedMap]
+    $router: _RouterTyped<RouteNamedMap>
+
+    RouterLink: RouterLinkTyped<RouteNamedMap>
+  }
+}
+. Allows passing the name of the route to be passed as a generic.
    */
   export type RouteLocationRaw<Name extends keyof RouteNamedMap = keyof RouteNamedMap> =
     | RouteLocationAsString<RouteNamedMap>
