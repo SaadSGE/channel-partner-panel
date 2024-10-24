@@ -350,7 +350,6 @@ export const commonFunction = defineStore({
                     method: 'POST',
                     body: branch,
                   });
-                  console.log(response);
                 this.branches.push(response.data);
             } catch (error) {
                 console.error('Error adding branch:', error);
@@ -364,7 +363,7 @@ export const commonFunction = defineStore({
                 method: 'PUT',
                 body: updatedData,
               });
-              console.log(response);
+
 
               // Update the local branches array with the updated branch data
               const index = this.branches.findIndex(branch => branch.id === id);

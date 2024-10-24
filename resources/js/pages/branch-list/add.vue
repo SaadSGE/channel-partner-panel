@@ -10,9 +10,10 @@ const countriesName = ref([]); // List of countries
 const isLoading = ref(false);
 const props = defineProps({
     isNavDrawerOpen: Boolean,
+    updateBranches: Function,
 });
 const refForm = ref(null);
-const emits = defineEmits(["update:isNavDrawerOpen"]);
+const emits = defineEmits(["update:isNavDrawerOpen", "updateBranches"]);
 
 // Validation rule for required fields
 const requiredValidator = (value) => !!value || "Required field";
@@ -49,6 +50,7 @@ const addBranch = async () => {
         branchName.value = "";
         countryName.value = null;
         emits("update:isNavDrawerOpen", false);
+        emits("updateBranches");
     } catch (error) {
         console.error("Failed to add branch:", error);
     }

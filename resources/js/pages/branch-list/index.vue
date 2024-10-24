@@ -11,20 +11,19 @@ import { onMounted, ref } from "vue";
 import BranchAdd from "./add.vue";
 import BranchEdit from "./edit.vue";
 const commonFunctionStore = commonFunction();
-const countries = ref([]);
 const branches = ref([]);
 const isNavDrawerOpen = ref(false)
 const isNavDrawerOpenEdit = ref(false)
 onMounted(async () => {
+    await getAllBranches();
+});
+
+const getAllBranches = async () => {
     isLoading.value = true
-
-    if (commonFunctionStore.branches.length === 0) {
-        await commonFunctionStore.getBranches();
-    }
-
+    await commonFunctionStore.getBranches();
     branches.value = commonFunctionStore.branches;
     isLoading.value = false
-});
+}
 
 const headers = [
     { title: 'Branch Name', key: 'name' },
@@ -35,7 +34,6 @@ const defaultItem = ref({
     id: '',
     name: '',
 })
-const editedIndex = ref(-1)
 const isLoading = ref(false)
 const editedItem = ref(defaultItem.value)
 const editItem = item => {
@@ -83,7 +81,8 @@ const deleteItem = async (item) => {
 <template>
 
 
-    <BranchAdd :isNavDrawerOpen="isNavDrawerOpen" @update:isNavDrawerOpen="isNavDrawerOpen = $event" />
+    <BranchAdd :isNavDrawerOpen="isNavDrawerOpen" @update:isNavDrawerOpen="isNavDrawerOpen = $event"
+        @updateBranches="getAllBranches" />
     <BranchEdit :isNavDrawerOpen="isNavDrawerOpenEdit" @update:isNavDrawerOpen="isNavDrawerOpenEdit = $event"
         :editedItem="editedItem" />
     <VCard :loading="isLoading">
@@ -99,7 +98,7 @@ const deleteItem = async (item) => {
 
             </VRow>
         </VCardText>
-        <VDataTable :headers="headers" :items="branches || []" :items-per-page="5"
+        <VDataTable :headers="headers" :items="branches || []" :items-per-page="10"
             class="text-no-wrap color-black table-padding">
 
             <template #item.actions="{ item }">
