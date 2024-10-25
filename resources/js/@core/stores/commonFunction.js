@@ -4,6 +4,7 @@ export const commonFunction = defineStore({
     id: "common-function",
     state: () => ({
       countries: [],
+      allCountries: [],
       courses: [],
       intakes: [],
       errors: [],
@@ -332,6 +333,64 @@ export const commonFunction = defineStore({
             }
           },
 
+          async getAllCountries() {
+            try {
+                const response = await $api('/countries', { method: 'GET' });
+                this.allCountries = response.data;
+                
+            } catch (error) {
+                console.error('Error fetching countries:', error);
+                this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+        },
+
+        async addAllCountry(country) {
+                      try {
+                const response = await $api('/countries', {
+                    method: 'POST',
+                    body: country,
+                  });
+                  
+                  this.allCountries.push(response.data);
+            } catch (error) {
+                console.error('Error adding country:', error);
+                this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+        },
+
+        async updateAllCountry(id, updatedData) {
+            try {
+              const response = await $api(`/countries/${id}`, {
+                method: 'PUT',
+                body: updatedData,
+              });
+              console.log(response);
+
+              // Update the local branches array with the updated branch data
+              const index = this.allCountries.findIndex(country => country.id === id);
+              if (index !== -1) {
+                this.allCountries.splice(index, 1, response.data);
+              }
+            } catch (error) {
+              console.error('Error updating country:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+          },
+
+        async deleteAllCountry(id) {
+            try {
+              await $api(`/countries/${id}`, {
+                method: 'DELETE',
+              });
+
+              this.allCountries = this.allCountries.filter(country => country.id !== id);
+            } catch (error) {
+              console.error('Error deleting country:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+          },
+
+        
 
 
     }

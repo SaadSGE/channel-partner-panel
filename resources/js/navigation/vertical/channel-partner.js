@@ -76,6 +76,14 @@ export default [
   },
 
   {
+    title: 'Country List',
+    to: 'country-list',
+    icon: { icon: 'tabler-command' },
+    action: 'read',
+    subject: 'dashboard',
+  },
+
+  {
     title: 'Record',
     icon: { icon: 'tabler-files' },
     action: 'read',
