@@ -4,6 +4,8 @@ export const commonFunction = defineStore({
     id: "common-function",
     state: () => ({
       countries: [],
+      countriesName: [],
+      branches: [],
       courses: [],
       intakes: [],
       errors: [],
@@ -315,7 +317,7 @@ export const commonFunction = defineStore({
                 this.intakes.splice(index, 1, response.data);
               }
             } catch (error) {
-              console.error('Error updating university:', error);
+              console.error('Error updating intake:', error);
               this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
             }
           },
@@ -331,8 +333,72 @@ export const commonFunction = defineStore({
               this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
             }
           },
+          async getBranches() {
+            try {
+                const response = await $api('/branches', { method: 'GET' });
+                this.branches = response.data;
+
+            } catch (error) {
+                console.error('Error fetching branches:', error);
+                this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+        },
+
+        async addBranch(branch) {
+            try {
+                const response = await $api('/branches', {
+                    method: 'POST',
+                    body: branch,
+                  });
+                this.branches.push(response.data);
+            } catch (error) {
+                console.error('Error adding branch:', error);
+                this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+        },
+
+        async updateBranch(id, updatedData) {
+            try {
+              const response = await $api(`/branches/${id}`, {
+                method: 'PUT',
+                body: updatedData,
+              });
 
 
+              // Update the local branches array with the updated branch data
+              const index = this.branches.findIndex(branch => branch.id === id);
+              if (index !== -1) {
+                this.branches.splice(index, 1, response.data);
+              }
+            } catch (error) {
+              console.error('Error updating branch:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+          },
+
+        async deleteBranch(id) {
+            try {
+              await $api(`/branches/${id}`, {
+                method: 'DELETE',
+              });
+
+              this.branches = this.branches.filter(branch => branch.id !== id);
+            } catch (error) {
+              console.error('Error deleting branch:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+          },
+
+         async getBranchesCountries() {
+            try {
+                const response = await $api('/countries', { method: 'GET' });
+                this.countriesName = response.data;
+
+            } catch (error) {
+                console.error('Error fetching countries name:', error);
+                this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+            }
+        },
 
     }
 });

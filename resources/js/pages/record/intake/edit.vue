@@ -1,4 +1,4 @@
-<script  setup>
+<script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { defineEmits, defineProps, ref, watch } from "vue";
 const loadings = ref([]);
@@ -48,14 +48,14 @@ const addintake = async () => {
   });
 
 };
-const submitintake = async() =>{
+const submitintake = async () => {
   const intakeData = {
     name: intakeName.value,
   };
 
   try {
     isLoading.value = true;
-    await commonFunctionStore.updateIntake(id.value,intakeData);
+    await commonFunctionStore.updateIntake(id.value, intakeData);
     isLoading.value = false;
     intakeName.value = "";
     emits("update:isNavDrawerOpen", false);
@@ -65,59 +65,28 @@ const submitintake = async() =>{
 }
 </script>
 <template>
-  <VNavigationDrawer
-    v-model="props.isNavDrawerOpen"
-    temporary
-    touchless
-    border="none"
-    location="end"
-    width="400"
-    elevation="10"
-    :scrim="false"
-    class="app-customizer"
-  >
+  <VNavigationDrawer v-model="props.isNavDrawerOpen" temporary touchless border="none" location="end" width="400"
+    elevation="10" :scrim="false" class="app-customizer">
     <div class="customizer-heading d-flex align-center justify-space-between">
       <div>
         <h6 class="text-h6">Update Intake</h6>
       </div>
 
       <div class="d-flex align-center gap-1">
-        <VBtn
-          icon
-          variant="text"
-          color="medium-emphasis"
-          size="small"
-          @click="emits('update:isNavDrawerOpen', false)"
-        >
+        <VBtn icon variant="text" color="medium-emphasis" size="small" @click="emits('update:isNavDrawerOpen', false)">
           <VIcon icon="tabler-x" color="high-emphasis" size="24" />
         </VBtn>
       </div>
     </div>
 
     <VDivider />
-    <VForm
-      ref="refForm"
-      @submit.prevent="addintake"
-      class="form-padding mt-4"
-    >
+    <VForm ref="refForm" @submit.prevent="addintake" class="form-padding mt-4">
 
-      <AppTextField
-        v-model="intakeName"
-        label="Intake Name"
-        :rules="[requiredValidator]"
-        class="mb-2"
-      />
+      <AppTextField v-model="intakeName" label="Intake Name" :rules="[requiredValidator]" class="mb-2" />
 
 
-      <VBtn
-        :loading="isLoading"
-        :disabled="isLoading"
-        color="primary"
-        @click="addintake"
-        class="mt-4"
-        block
-        >Update</VBtn
-      >
+      <VBtn :loading="isLoading" :disabled="isLoading" color="primary" @click="addintake" class="mt-4" block>Update
+      </VBtn>
     </VForm>
   </VNavigationDrawer>
 </template>
@@ -170,10 +139,8 @@ const submitintake = async() =>{
     .custom-input.active {
       .customizer-skins-icon-wrapper {
         background-color:
- rgba(
-          var(--v-global-theme-primary),
-          var(--v-selected-opacity)
-        );
+          rgba(var(--v-global-theme-primary),
+            var(--v-selected-opacity));
       }
     }
   }

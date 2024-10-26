@@ -32,8 +32,6 @@ export default [
     subject: 'compliance-request',
   },
 
-
-
   {
     title: 'Application List',
     icon: { icon: 'tabler-apps' },
@@ -56,6 +54,15 @@ export default [
     icon: { icon: 'tabler-command' },
     action: 'read',
     subject: 'course-request',
+  },
+  
+  {
+    title: 'Branch List',
+    icon: { icon: 'tabler-apps' },
+    to: 'branch-list',
+    action: 'read',
+    subject: 'dashboard',
+
   },
 
   {
