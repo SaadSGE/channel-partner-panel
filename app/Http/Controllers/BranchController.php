@@ -14,7 +14,7 @@ class BranchController extends Controller
      */
     public function index(): JsonResponse
     {
-        $branches = Branch::with('country')->get();
+        $branches = Branch::with('country')->latest()->get();
         return $this->successJsonResponse('Branches retrieved successfully', $branches);
     }
 

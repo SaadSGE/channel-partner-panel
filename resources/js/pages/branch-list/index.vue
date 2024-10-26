@@ -8,37 +8,32 @@ definePage({
 import { commonFunction } from "@/@core/stores/commonFunction";
 import Swal from 'sweetalert2';
 import { onMounted, ref } from "vue";
-import CountryAdd from './add.vue';
-import CountryEdit from './edit.vue';
+import BranchAdd from "./add.vue";
+import BranchEdit from "./edit.vue";
 const commonFunctionStore = commonFunction();
-const allCountries = ref([]);
-
+const branches = ref([]);
 const isNavDrawerOpen = ref(false)
 const isNavDrawerOpenEdit = ref(false)
-
-
 onMounted(async () => {
-    await getAllCountries();
+    await getAllBranches();
 });
 
-const getAllCountries = async () => {
+const getAllBranches = async () => {
     isLoading.value = true
-    await commonFunctionStore.getAllCountries();
-    allCountries.value = commonFunctionStore.allCountries;
-    console.log(allCountries)
+    await commonFunctionStore.getBranches();
+    branches.value = commonFunctionStore.branches;
     isLoading.value = false
 }
-const headers = [
 
-    { title: 'Country Name', key: 'name' },
-    { title: 'Timezone', key: 'timezone' },
+const headers = [
+    { title: 'Branch Name', key: 'name' },
+    { title: 'Country Name', key: 'country.name' },
     { title: 'Actions', key: 'actions', sortable: false },
 ];
 const defaultItem = ref({
     id: '',
     name: '',
 })
-const editedIndex = ref(-1)
 const isLoading = ref(false)
 const editedItem = ref(defaultItem.value)
 const editItem = item => {
@@ -62,8 +57,8 @@ const deleteItem = async (item) => {
 
     if (result.isConfirmed) {
         try {
-            await commonFunctionStore.deleteAllCountry(data.id);
-            allCountries.value = commonFunctionStore.allCountries;
+            await commonFunctionStore.deleteBranch(data.id);
+            branches.value = commonFunctionStore.branches;
             Swal.fire(
                 'Deleted!',
                 'The item has been deleted.',
@@ -86,8 +81,9 @@ const deleteItem = async (item) => {
 <template>
 
 
-    <CountryAdd :isNavDrawerOpen="isNavDrawerOpen" @update:isNavDrawerOpen="isNavDrawerOpen = $event" />
-    <CountryEdit :isNavDrawerOpen="isNavDrawerOpenEdit" @update:isNavDrawerOpen="isNavDrawerOpenEdit = $event"
+    <BranchAdd :isNavDrawerOpen="isNavDrawerOpen" @update:isNavDrawerOpen="isNavDrawerOpen = $event"
+        @updateBranches="getAllBranches" />
+    <BranchEdit :isNavDrawerOpen="isNavDrawerOpenEdit" @update:isNavDrawerOpen="isNavDrawerOpenEdit = $event"
         :editedItem="editedItem" />
     <VCard :loading="isLoading">
         <VCardText>
@@ -102,7 +98,7 @@ const deleteItem = async (item) => {
 
             </VRow>
         </VCardText>
-        <VDataTable :headers="headers" :items="allCountries || []" :items-per-page="10"
+        <VDataTable :headers="headers" :items="branches || []" :items-per-page="10"
             class="text-no-wrap color-black table-padding">
 
             <template #item.actions="{ item }">
