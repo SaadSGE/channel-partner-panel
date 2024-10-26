@@ -14,7 +14,7 @@ class CountryController extends Controller
      */
     public function index(): JsonResponse
     {
-        $countries = Country::all();
+        $countries = Country::latest()->get();
         return $this->successJsonResponse('Countries retrieved successfully', $countries);
     }
 
