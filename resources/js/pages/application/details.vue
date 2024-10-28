@@ -12,6 +12,7 @@ import AcoAoCommunication from '@/components/AcoAoCommunication.vue';
 import AcoCoCommunication from '@/components/AcoCoCommunication.vue';
 import ApplicationOfficerAssignments from '@/components/ApplicationOfficerAssignments.vue';
 import ComplianceOfficerAssignments from '@/components/ComplianceOfficerAssignments.vue';
+import StudentInfoEditDialog from "@/components/dialogs/StudentInfoEditDialog.vue";
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { onMounted, ref } from "vue";
@@ -30,7 +31,7 @@ const showCommentModal = ref(false) // Modal visibility state for comments
 const showUniversityCommModal = ref(false) // Modal visibility state for university communications
 const newStatus = ref("") // Selected new status
 const newComment = ref("") // New comment
-
+const isStudentInfoEditDialogVisible = ref(false)
 const newUniversityComm = ref({
   subject: "",
   message: "",
@@ -313,6 +314,12 @@ const handleAddUniversityComm = async () => {
         <VWindow v-model="currentTab">
           <!-- Student/Course Details Tab -->
           <VWindowItem value="student-course-details">
+            <div class='icon-right'>
+              <IconBtn @click="isStudentInfoEditDialogVisible = !isStudentInfoEditDialogVisible">
+                <VIcon icon="tabler-edit" />
+              </IconBtn>
+              <StudentInfoEditDialog v-model:is-dialog-visible="isStudentInfoEditDialogVisible" />
+            </div>
             <VRow>
               <VCol cols="12">
                 <VTable>
@@ -538,5 +545,13 @@ const handleAddUniversityComm = async () => {
   overflow: auto;
   block-size: 250px;
   max-block-size: 250px;
+}
+
+.icon-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
 }
 </style>
