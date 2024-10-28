@@ -97,7 +97,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/course-requests/{id}/complete', [CourseRequestController::class, 'complete']);
 
 });
-
+Route::apiResource('students', StudentController::class);
 Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');
 Route::get('/download/{fileName}', [FileController::class, 'download'])->name('file.download');
