@@ -46,7 +46,14 @@ export default [
     to: 'university-list',
     action: 'read',
     subject: 'dashboard',
+  },
 
+  {
+    title: 'Course List',
+    to: 'course',
+    icon: { icon: 'tabler-command' },
+    action: 'read',
+    subject: 'course-request',
   },
   
   {
@@ -69,19 +76,18 @@ export default [
 
   {
     title: 'Course Request',
+    to: 'course-request',
     icon: { icon: 'tabler-command' },
     action: 'read',
     subject: 'course-request',
-    children: [
-      {
-        title: 'Course',
-        to: 'course-request',
-        action: 'read',
-        subject: 'course-request',
+  },
 
-      },
-
-    ],
+  {
+    title: 'Country List',
+    to: 'country-list',
+    icon: { icon: 'tabler-command' },
+    action: 'read',
+    subject: 'dashboard',
   },
 
   {

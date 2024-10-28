@@ -578,7 +578,7 @@ class ApplicationController extends Controller
             'intake_id' => 'required',
             'university_id' => 'required',
             'course_details_id' => 'required',
-            'student_passport_no' => 'required|string|unique:students,passport_no',
+            'student_passport_no' => 'required|string',
             'date_of_birth' => 'required|date',
             'student_first_name' => 'required|string',
             'student_last_name' => 'required|string',
@@ -599,6 +599,17 @@ class ApplicationController extends Controller
 
     private function createStudent(array $data)
     {
+        // Check if the student already exists by email or passport number
+        $existingStudent = Student::where('passport_no', $data['student_passport_no'])
+            ->orWhere('email', $data['student_email'])
+            ->first();
+
+        // If the student exists, return the existing student
+        if ($existingStudent) {
+            return $existingStudent;
+        }
+
+        // If the student does not exist, create a new one
         return Student::create([
             'student_id' => Str::random(10),
             'first_name' => $data['student_first_name'],
@@ -623,7 +634,7 @@ class ApplicationController extends Controller
         $courseDetails = CourseDetails::findOrFail($data['course_details_id']);
 
         \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
-        //if channel_partner_email is not null then create a new channel partner user
+        $channelPartner = null;
         if ($data['channel_partner_email']) {
             $channelPartner = User::where('email', $data['channel_partner_email'])->first();
             if (!$channelPartner) {
