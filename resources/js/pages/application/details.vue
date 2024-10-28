@@ -121,6 +121,7 @@ const refreshData = async () => {
   allStatuses.value = store.allStatuses.filter(
     status => status.id !== applicationData.value.status,
   )
+  // console.log(studentData);
 }
 
 const isStatusLoading = ref(false)
@@ -318,7 +319,10 @@ const handleAddUniversityComm = async () => {
               <IconBtn @click="isStudentInfoEditDialogVisible = !isStudentInfoEditDialogVisible">
                 <VIcon icon="tabler-edit" />
               </IconBtn>
-              <StudentInfoEditDialog v-model:is-dialog-visible="isStudentInfoEditDialogVisible" />
+              <StudentInfoEditDialog v-model:is-dialog-visible="isStudentInfoEditDialogVisible"
+                :first_name="studentData.first_name" :last_name="studentData.last_name" :email="studentData.email"
+                :passport_no="studentData.passport_no" :dob="studentData.date_of_birth"
+                :studentId="studentData.student_id" />
             </div>
             <VRow>
               <VCol cols="12">
