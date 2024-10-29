@@ -1,4 +1,3 @@
-
 <script lang="js" setup>
 definePage({
   meta: {
@@ -53,9 +52,9 @@ const courseDetails = ref({
   courseDuration: "",
   courseLabel: "",
   location: "",
-universityLogo:"",
-academicRequirement:"",
-englishRequirement:"",
+  universityLogo: "",
+  academicRequirement: "",
+  englishRequirement: "",
 
 });
 const refForm = ref(null);
@@ -156,94 +155,58 @@ const resetForm = () => {
 <template>
   <div v-if="showAppllicationForm">
     <VCard title="New Application">
-      <VForm ref="refForm" @submit.prevent="() => {}" class="form-padding">
+      <VForm ref="refForm" @submit.prevent="() => { }" class="form-padding">
         <VRow>
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="country"
-              :items="countries"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Country to Apply"
-              placeholder="Select Country"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="country" :items="countries" :item-title="(item) => item.name"
+              :item-value="(item) => item.id" label="Country to Apply" placeholder="Select Country"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="intake"
-              :items="intakes"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="Intake"
-              placeholder="Select Intake"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="intake" :items="intakes" :item-title="(item) => item.name"
+              :item-value="(item) => item.id" label="Intake" placeholder="Select Intake" :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="courseType"
-              :items="courseTypes"
-              label="Course Type"
-              placeholder="Select Course Type"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="courseType" :items="courseTypes" label="Course Type"
+              placeholder="Select Course Type" :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppAutocomplete
-              v-model="university"
-              :items="universities"
-              :item-title="(item) => item.name"
-              :item-value="(item) => item.id"
-              label="University"
-              placeholder="Select University"
-              :rules="[requiredValidator]"
-            />
+            <AppAutocomplete v-model="university" :items="universities" :item-title="(item) => item.name"
+              :item-value="(item) => item.id" label="University" placeholder="Select University"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <!-- University -->
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="course"
-              label="Course Name."
-              placeholder="BSC in Machine Learning"
-              :rules="[requiredValidator]"
-            />
+            <AppTextField v-model="course" label="Course Name." placeholder="BSC in Machine Learning"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <!-- Course -->
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="tutionFee"
-              label="Tuttion Fee (Mention euro or dollar)"
-              placeholder="1000 euro"
-              :rules="[requiredValidator]"
-            />
+            <AppTextField v-model="tutionFee" label="Tuttion Fee (Mention euro or dollar)" placeholder="1000 euro"
+              :rules="[requiredValidator]" />
           </VCol>
 
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="courseDuration"
-              label="Course Duration (Mention years)"
-              placeholder="2 years"
-              :rules="[requiredValidator]"
-            />
+            <AppTextField v-model="courseDuration" label="Course Duration (Mention years)" placeholder="2 years"
+              :rules="[requiredValidator]" />
           </VCol>
           <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">Academic Requirement</VLabel>
-            <QuillEditor theme="snow"  v-model:content="academicRequirementEditor" content-type="html"/>
+            <QuillEditor theme="snow" v-model:content="academicRequirementEditor" content-type="html" />
           </VCol>
 
           <VCol cols="12" md="12" style="margin: auto;">
             <VLabel class="mb-2">English Requirement</VLabel>
-            <QuillEditor theme="snow" v-model:content="englishRequirementEditor" content-type="html"/>
+            <QuillEditor theme="snow" v-model:content="englishRequirementEditor" content-type="html" />
           </VCol>
 
           <!-- Submit and Reset Buttons -->
-          <VCol cols="12" >
+          <VCol cols="12">
             <VBtn @click="submit()" type="submit" color="primary" block> Submit </VBtn>
           </VCol>
         </VRow>

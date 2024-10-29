@@ -91,6 +91,22 @@ export default [
   },
 
   {
+    title: 'Student Record',
+    to: 'student-record',
+    icon: { icon: 'tabler-command' },
+    action: 'read',
+    subject: 'dashboard',
+  },
+
+  // {
+  //   title: 'Student details',
+  //   to: '/student-record/:id',
+  //   icon: { icon: 'tabler-command' },
+  //   action: 'read',
+  //   subject: 'dashboard',
+  // },
+
+  {
     title: 'Record',
     icon: { icon: 'tabler-files' },
     action: 'read',
