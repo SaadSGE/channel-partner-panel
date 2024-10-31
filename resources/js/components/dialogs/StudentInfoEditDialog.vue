@@ -1,6 +1,7 @@
 <script setup>
+import { useApplicationStore } from "@/@core/stores/submitApplication";
+import Swal from 'sweetalert2';
 import { defineEmits, defineProps, ref } from 'vue';
-
 const props = defineProps({
     isDialogVisible: Boolean,
     first_name: String,
@@ -8,16 +9,18 @@ const props = defineProps({
     email: String,
     passport_no: String,
     dob: String,
-    studentId: String,
+    id: String,
+    refreshUpdateInfo: Function
 });
-
+const applicationStore = useApplicationStore()
 const studentPassportNo = ref("");
 const dateOfBirth = ref("");
 const studentFirstName = ref("");
 const studentLastName = ref("");
 const studentEmail = ref("");
-const studentId = ref("");
+const id = ref("");
 const isSwalVisible = ref(false);
+const isLoading = ref(false)
 
 // Initialize form fields when dialog opens
 watch(() => props.isDialogVisible, (newVal) => {
@@ -27,11 +30,11 @@ watch(() => props.isDialogVisible, (newVal) => {
         studentEmail.value = props.email;
         studentPassportNo.value = props.passport_no;
         dateOfBirth.value = props.dob;
-        studentId.value = props.studentId
+        id.value = props.id
     }
 });
 
-const emit = defineEmits(['update:isDialogVisible']);
+const emit = defineEmits(['update:isDialogVisible', 'refreshUpdateInfo']);
 const dialogVisibleUpdate = (val) => {
     emit('update:isDialogVisible', val);
 };
@@ -50,25 +53,54 @@ const openDialog = async () => {
 };
 
 // Final submission after confirmation
-const submit = () => {
-    // Submit the form data here, e.g., call an API or update data
-    console.log("Form data submitted:", {
+const submit = async () => {
+    isLoading.value = true
+    const updatedData = {
         passport_no: studentPassportNo.value,
         date_of_birth: dateOfBirth.value,
         student_first_name: studentFirstName.value,
         student_last_name: studentLastName.value,
         student_email: studentEmail.value,
-        student_id: studentId.value
-    });
+    };
+    console.log("Field data updated:", updatedData, id.value);
+
+    try {
+        await applicationStore.updateApplication(updatedData, id.value);
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Update Successful',
+            text: 'Application updated successfully!',
+            confirmButtonText: 'OK',
+        });
+
+        // Reset values after update
+        studentPassportNo.value = '';
+        dateOfBirth.value = '';
+        studentFirstName.value = '';
+        studentLastName.value = '';
+        studentEmail.value = '';
+
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: error,
+            confirmButtonText: 'OK',
+        });
+    } finally {
+        isLoading.value = false;
+    }
 
     // Close confirmation dialog and the main dialog
     isSwalVisible.value = false;
     dialogVisibleUpdate(false);
+    emit('refreshUpdateInfo');
 };
 </script>
 
 <template>
-    <VDialog :model-value="props.isDialogVisible" :width="$vuetify.display.smAndDown ? 'auto' : 1200"
+    <VDialog :model-value="props.isDialogVisible" persistent :width="$vuetify.display.smAndDown ? 'auto' : 1200"
         @update:model-value="dialogVisibleUpdate">
         <!-- 👉 Dialog close btn -->
         <DialogCloseBtn @click="$emit('update:isDialogVisible', false)" />
