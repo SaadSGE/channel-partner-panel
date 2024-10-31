@@ -59,7 +59,7 @@ onMounted(fetchCommunications);
             <VTimeline :density="dense">
               <VTimelineItem v-for="(comm, index) in acoCoCommunications" :key="index" dot-color="primary" size="small">
                 <template #opposite>
-                  <div class="text-caption">{{ formatDate(comm.created_at) }}</div>
+                  <div class="text-caption">{{ comm.created_at }}</div>
                 </template>
                 <VCard class="elevation-1">
                   <VCardTitle class="text-subtitle-1">
