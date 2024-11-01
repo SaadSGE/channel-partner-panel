@@ -22,10 +22,6 @@ const studentCity = ref('');
 const studentCountry = ref('');
 const countryToApply = ref('');
 const courseType = ref('');
-const degree = ref('');
-const institution = ref('');
-const passingYear = ref('');
-const result = ref('');
 const proficiencyTitle = ref('');
 const overallScore = ref('');
 const reading = ref('');
@@ -36,6 +32,7 @@ const refForm = ref(null);
 const course = ref(null);
 const intake = ref(null);
 const university = ref(null);
+
 const commonFunctionStore = commonFunction();
 const countries = ref([
     "Bangladesh",
@@ -97,6 +94,50 @@ watch(course, (newVal) => {
         commonFunctionStore.selectedCourseDetailsId = newVal;
     }
 });
+const interestedUniversity = ref([{ countryToApply: '', courseType: '', intake: '', university: '', course: '' }])
+const educationalHistory = ref([{ degree: '', institution: '', passingYear: '', result: '' }]);
+const englishProficiency = ref([{ proficiencyTitle: '', overallScore: '', reading: '', writing: '', speaking: '', listening: '' }])
+const employmentHistory = ref([{ companyName: '', designation: '' }]);
+
+function addInterestedUniversity() {
+    interestedUniversity.value.push({ countryToApply: '', courseType: '', intake: '', university: '', course: '' })
+}
+
+function removeInterestedUniversity(index) {
+    if (index !== 0) {
+        interestedUniversity.value.splice(index, 1)
+    }
+}
+
+function addEducationalHistory() {
+    educationalHistory.value.push({ degree: '', institution: '', passingYear: '', result: '' });
+}
+
+function removeEducationalHistory(index) {
+    if (index !== 0) {
+        educationalHistory.value.splice(index, 1);
+    }
+}
+
+function addEnglishProficiency() {
+    englishProficiency.value.push({ proficiencyTitle: '', overallScore: '', reading: '', writing: '', speaking: '', listening: '' })
+}
+
+function removeEnglishProficiency(index) {
+    if (index !== 0) {
+        englishProficiency.value.splice(index, 1);
+    }
+}
+
+function addEmploymentHistory() {
+    employmentHistory.value.push({ companyName: '', designation: '' });
+}
+
+function removeEmploymentHistory(index) {
+    if (index !== 0) {
+        employmentHistory.value.splice(index, 1);
+    }
+}
 </script>
 
 <template>
@@ -106,7 +147,7 @@ watch(course, (newVal) => {
             <VCardTitle class="text-center">Student Information</VCardTitle>
             <VForm ref="refForm" class="form-padding">
 
-                <VCard>
+                <VCard class="card-padding">
                     <VCardText>
                         <VCardTitle class="text-left padding-bottom">General Info</VCardTitle>
                         <VRow>
@@ -171,119 +212,141 @@ watch(course, (newVal) => {
                         </VRow>
                     </VCardText>
                 </VCard>
-                <VCard>
+                <VCard class="card-padding">
                     <VCardText>
                         <VCardTitle class="text-left padding-bottom">Interested University</VCardTitle>
                         <p class="text-center padding-bottom">Add interested University, Intake, Course</p>
-                        <VRow>
+                        <VRow v-for="(university, index) in interestedUniversity" :key="index">
 
                             <VCol cols="12" md="2">
-                                <AppAutocomplete v-model="countryToApply" :items="commonFunctionStore.countries"
-                                    item-title="name" item-value="id" label="Country to Apply"
-                                    placeholder="Select Country" :rules="[requiredValidator]" />
+                                <AppAutocomplete v-model="university.countryToApply"
+                                    :items="commonFunctionStore.countries" item-title="name" item-value="id"
+                                    label="Country to Apply" placeholder="Select Country"
+                                    :rules="[requiredValidator]" />
                             </VCol>
 
                             <VCol cols="12" md="2">
-                                <AppAutocomplete v-model="intake" :items="commonFunctionStore.intakes"
+                                <AppAutocomplete v-model="university.intake" :items="commonFunctionStore.intakes"
                                     item-title="intake_name" item-value="intake_id" label="Intake"
                                     placeholder="Select Intake" :rules="[requiredValidator]"
-                                    :disabled="!countryToApply" />
+                                    :disabled="!university.countryToApply" />
                             </VCol>
 
                             <VCol cols="12" md="2">
-                                <AppAutocomplete v-model="courseType" :items="commonFunctionStore.courseTypes"
-                                    item-title="name" item-value="id" label="Course Type"
-                                    placeholder="Select Course Type" :rules="[requiredValidator]" :disabled="!intake" />
+                                <AppAutocomplete v-model="university.courseType"
+                                    :items="commonFunctionStore.courseTypes" item-title="name" item-value="id"
+                                    label="Course Type" placeholder="Select Course Type" :rules="[requiredValidator]"
+                                    :disabled="!university.intake" />
                             </VCol>
 
                             <VCol cols="12" md="2">
-                                <AppAutocomplete v-model="university" :items="commonFunctionStore.universities"
-                                    item-title="university_name" item-value="university_id" label="University"
-                                    placeholder="Select University" :rules="[requiredValidator]"
-                                    :disabled="!courseType" />
+                                <AppAutocomplete v-model="university.university"
+                                    :items="commonFunctionStore.universities" item-title="university_name"
+                                    item-value="university_id" label="University" placeholder="Select University"
+                                    :rules="[requiredValidator]" :disabled="!university.courseType" />
                             </VCol>
 
                             <VCol cols="12" md="2">
-                                <AppAutocomplete v-model="course" :items="commonFunctionStore.courseDetails"
+                                <AppAutocomplete v-model="university.course" :items="commonFunctionStore.courseDetails"
                                     item-title="course_name" item-value="id" label="Course" placeholder="Select Course"
-                                    :rules="[requiredValidator]" :disabled="!university" />
+                                    :rules="[requiredValidator]" :disabled="!university.university" />
                             </VCol>
-
-                            <VCol cols="12" md="2" class="text-center addBtn">
-                                <VBtn color="primary">+</VBtn>
+                            <VCol v-if="index !== 0" cols="12" md="1" class="addBtn">
+                                <VBtn color="error" @click="removeInterestedUniversity(index)">Remove</VBtn>
+                            </VCol>
+                            <VCol cols="12" md="1" class="addBtn">
+                                <VBtn color="primary" @click="addInterestedUniversity">+</VBtn>
                             </VCol>
                         </VRow>
                     </VCardText>
                 </VCard>
-                <VCard>
+                <VCard class="card-padding">
                     <VCardText>
-                        <VCardTitle class="text-left padding-bottom">Educational History</VCardTitle>
-                        <p class="text-center padding-bottom">Add Educational History</p>
-                        <VRow>
+                        <VCardTitle>Educational History</VCardTitle>
+                        <p class="text-center">Add Educational History</p>
+                        <VRow v-for="(education, index) in educationalHistory" :key="index">
                             <VCol cols="12" md="3">
-                                <AppTextField v-model="degree" label="Degree" placeholder="Degree" />
+                                <AppTextField v-model="education.degree" label="Degree" placeholder="Degree" />
                             </VCol>
                             <VCol cols="12" md="3">
-                                <AppTextField v-model="institution" label="Institution" placeholder="Institution" />
+                                <AppTextField v-model="education.institution" label="Institution"
+                                    placeholder="Institution" />
                             </VCol>
                             <VCol cols="12" md="2">
-                                <AppTextField v-model="passingYear" label="Passing Year" placeholder="Passing year" />
+                                <AppTextField v-model="education.passingYear" label="Passing Year"
+                                    placeholder="Passing Year" />
                             </VCol>
                             <VCol cols="12" md="2">
-                                <AppTextField v-model="result" label="Result(in point)" placeholder="Result" />
+                                <AppTextField v-model="education.result" label="Result" placeholder="Result" />
                             </VCol>
-                            <VCol cols="12" md="2" class="text-center addBtn2">
-                                <VBtn color="primary">+</VBtn>
+                            <VCol v-if="index !== 0" cols="12" md="1">
+                                <VBtn color="error" class="addBtn2" @click="removeEducationalHistory(index)">Remove
+                                </VBtn>
+                            </VCol>
+                            <VCol cols="12" md="1">
+                                <VBtn color="primary" class="addBtn2" @click="addEducationalHistory">+</VBtn>
                             </VCol>
                         </VRow>
+
                     </VCardText>
                 </VCard>
-                <VCard>
+                <VCard class="card-padding">
                     <VCardText>
                         <VCardTitle class="text-left padding-bottom">English Proficiency</VCardTitle>
                         <p class="text-center padding-bottom">Add English Proficiency</p>
-                        <VRow>
-                            <VCol cols="12" md="2">
-                                <AppTextField v-model="proficiencyTitle" label="Proficiency Tiltle"
+                        <VRow v-for="(proficiency, index) in englishProficiency" :key="index">
+                            <VCol cols="12" md="3">
+                                <AppTextField v-model="proficiency.proficiencyTitle" label="Proficiency Tiltle"
                                     placeholder="Proficiency Tiltle" />
                             </VCol>
-                            <VCol cols="12" md="2">
-                                <AppTextField v-model="overallScore" label="Overall Score"
+                            <VCol cols="12" md="3">
+                                <AppTextField v-model="proficiency.overallScore" label="Overall Score"
                                     placeholder="Overall Score" />
                             </VCol>
-                            <VCol cols="12" md="2">
-                                <AppTextField v-model="listening" label="Listening" placeholder="Listening" />
-                            </VCol>
-                            <VCol cols="12" md="2">
-                                <AppTextField v-model="speaking" label="Speaking" placeholder="Speaking" />
+                            <VCol cols="12" md="1">
+                                <AppTextField v-model="proficiency.listening" label="Listening"
+                                    placeholder="Listening" />
                             </VCol>
                             <VCol cols="12" md="1">
-                                <AppTextField v-model="writing" label="Writing" placeholder="Writing" />
+                                <AppTextField v-model="proficiency.speaking" label="Speaking" placeholder="Speaking" />
                             </VCol>
                             <VCol cols="12" md="1">
-                                <AppTextField v-model="reading" label="Reading" placeholder="Reading" />
+                                <AppTextField v-model="proficiency.writing" label="Writing" placeholder="Writing" />
                             </VCol>
-                            <VCol cols="12" md="2" class="text-center addBtn2">
-                                <VBtn color="primary">+</VBtn>
+                            <VCol cols="12" md="1">
+                                <AppTextField v-model="proficiency.reading" label="Reading" placeholder="Reading" />
+                            </VCol>
+                            <VCol v-if="index !== 0" cols="12" md="1" class="addBtn2">
+                                <VBtn color="error" @click="removeEnglishProficiency(index)">Remove</VBtn>
+                            </VCol>
+                            <VCol cols="12" md="1" class="addBtn2">
+                                <VBtn color="primary" @click="addEnglishProficiency">+</VBtn>
                             </VCol>
                         </VRow>
                     </VCardText>
                 </VCard>
-                <VCard>
+                <VCard class="card-padding">
                     <VCardText>
-                        <VCardTitle class="text-left padding-bottom">English Proficiency</VCardTitle>
-                        <p class="text-center padding-bottom">Employment with payment</p>
-                        <VRow>
+                        <VCardTitle>Employment History</VCardTitle>
+                        <p class="text-center">Add Employment with Payment</p>
+                        <VRow v-for="(employment, index) in employmentHistory" :key="index" class="mt-4">
                             <VCol cols="12" md="5">
-                                <AppTextField v-model="companyName" label="Company Name" placeholder="Company Name" />
+                                <AppTextField v-model="employment.companyName" label="Company Name"
+                                    placeholder="Company Name" />
                             </VCol>
                             <VCol cols="12" md="5">
-                                <AppTextField v-model="designation" label="Designation" placeholder="Designation" />
+                                <AppTextField v-model="employment.designation" label="Designation"
+                                    placeholder="Designation" />
                             </VCol>
-                            <VCol cols="12" md="2" class="text-center addBtn2">
-                                <VBtn color="primary">+</VBtn>
+                            <VCol v-if="index !== 0" cols="12" md="1" class="addBtn2">
+                                <VBtn color="error" @click="removeEmploymentHistory(index)">Remove
+                                </VBtn>
+                            </VCol>
+                            <VCol cols="12" md="1">
+                                <VBtn color="primary" class="addBtn2" @click="addEmploymentHistory">+</VBtn>
                             </VCol>
                         </VRow>
+
                     </VCardText>
                 </VCard>
                 <div class="submit-btn-flex">
@@ -317,5 +380,9 @@ watch(course, (newVal) => {
 
 .padding-bottom {
     padding-bottom: 30px;
+}
+
+.card-padding {
+    padding-bottom: 180px;
 }
 </style>

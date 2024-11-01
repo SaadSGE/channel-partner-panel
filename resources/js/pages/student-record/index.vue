@@ -1,5 +1,4 @@
 <script setup>
-import { commonFunction } from "@/@core/stores/commonFunction";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css";
@@ -17,31 +16,7 @@ definePage({
     },
 })
 
-const firstName = ref('');
-const lastName = ref('');
-const email = ref('');
-const mobile = ref('');
-const dob = ref('');
-const gender = ref('');
-const passportNo = ref('');
-const visaRefusal = ref('');
-const address = ref('');
-const studentCity = ref('');
-const studentCountry = ref('');
-const refForm = ref(null);
-const course = ref(null);
-const intake = ref(null);
-const university = ref(null);
-const commonFunctionStore = commonFunction();
-const countries = ref([
-    "Bangladesh",
-    "Nigeria",
-    "Sri Lanka",
-    "India",
-    "Bhutan",
-    "Ghana",
-    "Pakistan",
-])
+const isLoading = ref(false);
 const FilePond = VueFilePond(
     FilePondPluginFileValidateType,
     FilePondPluginImagePreview,
@@ -54,8 +29,14 @@ const FilePond = VueFilePond(
 const router = useRouter();
 const dynamicId = ref('1');
 const targetRoute = 'student-record';
-function goToNextPage() {
-    router.push({ path: `/${targetRoute}/${dynamicId.value}` });
+
+async function goToNextPage() {
+    isLoading.value = true;
+    try {
+        await router.push({ path: `/${targetRoute}/${dynamicId.value}` });
+    } finally {
+        isLoading.value = false;
+    }
 }
 </script>
 <template>
@@ -68,7 +49,7 @@ function goToNextPage() {
             <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
         </VCardText>
     </VCard>
-    <VCard>
+    <VCard :loading="isLoading">
         <VCardTitle>Academic Reference Letter(*)</VCardTitle>
         <VCardText>
             <file-pond ref="pond" name="academic_letter" :allow-multiple="false" allowRemove="true"
@@ -112,7 +93,9 @@ function goToNextPage() {
                 </div>
                 <div>
                     <VBtn color="primary" @click="goToNextPage">Continue Without Document</VBtn>
-                    <VBtn color="primary" class="btn-margin" @click="goToNextPage">Continue</VBtn>
+                    <VBtn color="primary" class="btn-margin" @click="goToNextPage">
+                        continue
+                    </VBtn>
                 </div>
             </div>
         </VCardText>
