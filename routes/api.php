@@ -32,7 +32,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('course', CourseController::class);
     Route::apiResource('users', UserController::class);
     Route::post('/users/{id}/set-parent', [UserController::class, 'setParent']);
-    Route::get('all-user', [UserController::class,'allUser']);
+    Route::get('all-user', [UserController::class, 'allUser']);
     Route::apiResource('intake', IntakeController::class);
 
     Route::get('getUniqueCountry', [CourseDetailsController::class, 'getUniqueCountry']);
@@ -44,32 +44,33 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/course-details/{intakeId}/{universityId}/{courseType}', [CourseDetailsController::class, 'getCourseDetails']);
 
     Route::apiResource('university', UniversityController::class);
-    Route::post('request-record', [CourseDetailsController::class,'requestRecord']);
+    Route::post('request-record', [CourseDetailsController::class, 'requestRecord']);
     Route::apiResource('course-detail', CourseDetailsController::class);
     Route::apiResource('roles', RoleController::class);
     Route::post('/roles/{roleName}/permissions', [RoleController::class, 'store']);
     Route::apiResource('permissions', PermissionController::class);
-    Route::get('all-permissions', [PermissionController::class,'allPermission']);
+    Route::get('all-permissions', [PermissionController::class, 'allPermission']);
 
     Route::apiResource('application', ApplicationController::class);
 
-    Route::get('get-country-intake-university-course', [CourseDetailsController::class,'countryIntakeUniversityCourse']);
-    Route::post('update-application-file', [ApplicationController::class,'updateApplicationFile']);
-    Route::get('application-statuses/{id}', [ApplicationController::class,'applicationStatuses']);
-    Route::get('application-all-statuses', [ApplicationController::class,'getAllApplicationStatuses']);
+
+    Route::get('get-country-intake-university-course', [CourseDetailsController::class, 'countryIntakeUniversityCourse']);
+    Route::post('update-application-file', [ApplicationController::class, 'updateApplicationFile']);
+    Route::get('application-statuses/{id}', [ApplicationController::class, 'applicationStatuses']);
+    Route::get('application-all-statuses', [ApplicationController::class, 'getAllApplicationStatuses']);
     Route::post('/application/{id}/status', [ApplicationController::class, 'updateStatus']);
     Route::post('/application/{id}/comment', [ApplicationController::class, 'addComment']);
     Route::get('/application/{id}/university-communications', [ApplicationController::class, 'getUniversityCommunications']);
     Route::post('/application/{id}/university-communication', [ApplicationController::class, 'addUniversityCommunication']);
-    Route::get('/user/profile', [UserController::class,'getProfile']);
+    Route::get('/user/profile', [UserController::class, 'getProfile']);
     Route::put('/user/profile', [UserController::class, 'updateProfile']);
     Route::post('/user/change-password', [UserController::class, 'changePassword']);
-    Route::get('dashboard', [DashboardController::class,'index']);
+    Route::get('dashboard', [DashboardController::class, 'index']);
 
     Route::get('emails/received', [EmailController::class, 'receivedEmails']);
     Route::get('emails/sent', [EmailController::class, 'sentEmails']);
     Route::post('emails/send', [EmailController::class, 'sendEmail']);
-    Route::get('fetch-all-user', [UserController::class,'fetchAllUser']);
+    Route::get('fetch-all-user', [UserController::class, 'fetchAllUser']);
     Route::get('/user/login-activity', [AuthController::class, 'getLoginActivity']);
     Route::get('/users/{user}/activity-logs', [UserController::class, 'getActivityLogs']);
     Route::get('/applications/{id}/activity-logs', [ApplicationController::class, 'getActivityLogs']);
@@ -95,20 +96,19 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/fetch-compliance-officers', [UserController::class, 'fetchComplianceOfficers']);
     Route::get('/course-requests', [CourseRequestController::class, 'index']);
     Route::post('/course-requests/{id}/complete', [CourseRequestController::class, 'complete']);
-
 });
 Route::apiResource('students', StudentController::class);
-Route::post('university-logo-upload', [UniversityController::class,'logoUpload']);
+Route::post('university-logo-upload', [UniversityController::class, 'logoUpload']);
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');
 Route::get('/download/{fileName}', [FileController::class, 'download'])->name('file.download');
-Route::post('student-document-upload', [StudentFileController::class,'upload']);
-Route::post('student-document-upload-existing-application', [StudentFileController::class,'uploadExistingApplication']);
+Route::post('student-document-upload', [StudentFileController::class, 'upload']);
+Route::post('student-document-upload-existing-application', [StudentFileController::class, 'uploadExistingApplication']);
 
-Route::post('register', [AuthController::class,'register']);
-Route::post('login', [AuthController::class,'login']);
-Route::get('course-detail-all2', [CourseDetailsController::class,'courseDetailsAll2']);
-Route::get('course-detail-all', [CourseDetailsController::class,'courseDetailsAll']);
-Route::post('reset-password', [AuthController::class,'resetPassword']);
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
+Route::get('course-detail-all2', [CourseDetailsController::class, 'courseDetailsAll2']);
+Route::get('course-detail-all', [CourseDetailsController::class, 'courseDetailsAll']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
 Route::post('applications/{id}/restore', [ApplicationController::class, 'restore'])->name('applications.restore');
 

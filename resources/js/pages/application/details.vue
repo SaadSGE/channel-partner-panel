@@ -121,6 +121,8 @@ const refreshData = async () => {
   allStatuses.value = store.allStatuses.filter(
     status => status.id !== applicationData.value.status,
   )
+
+  console.log(studentData);
 }
 
 const isStatusLoading = ref(false)

@@ -233,7 +233,6 @@ const tableHeight = computed(() => {
             </IconBtn>
           </div>
         </template>
-
         <!-- pagination -->
         <template #bottom>
           <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalApplications" />

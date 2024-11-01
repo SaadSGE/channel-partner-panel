@@ -58,11 +58,10 @@ const submit = async () => {
     const updatedData = {
         passport_no: studentPassportNo.value,
         date_of_birth: dateOfBirth.value,
-        student_first_name: studentFirstName.value,
-        student_last_name: studentLastName.value,
-        student_email: studentEmail.value,
+        first_name: studentFirstName.value,
+        last_name: studentLastName.value,
+        email: studentEmail.value,
     };
-    console.log("Field data updated:", updatedData, id.value);
 
     try {
         await applicationStore.updateApplication(updatedData, id.value);
@@ -75,11 +74,11 @@ const submit = async () => {
         });
 
         // Reset values after update
-        studentPassportNo.value = '';
-        dateOfBirth.value = '';
-        studentFirstName.value = '';
-        studentLastName.value = '';
-        studentEmail.value = '';
+        // studentPassportNo.value = '';
+        // dateOfBirth.value = '';
+        // studentFirstName.value = '';
+        // studentLastName.value = '';
+        // studentEmail.value = '';
 
     } catch (error) {
         Swal.fire({
