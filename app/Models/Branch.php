@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Branch extends Model
 {
     protected $fillable = ['name', 'country_id'];
+    protected $appends = ['branch_name_with_country'];
 
     protected $casts = [
         'created_at' => 'datetime',
@@ -16,5 +17,10 @@ class Branch extends Model
     public function country()
     {
         return $this->belongsTo(Country::class);
+    }
+
+    public function getBranchNameWithCountryAttribute()
+    {
+        return $this->name . ' ( ' . $this->country->name . ' )';
     }
 }
