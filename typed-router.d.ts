@@ -56,8 +56,6 @@ declare module 'vue-router/auto/routes' {
     'application-india-student-information': RouteRecordInfo<'application-india-student-information', '/application-india/student-information', Record<never, never>, Record<never, never>>,
     'application-india-upload-document': RouteRecordInfo<'application-india-upload-document', '/application-india/upload-document', Record<never, never>, Record<never, never>>,
     'application-request': RouteRecordInfo<'application-request', '/application-request', Record<never, never>, Record<never, never>>,
-    'apps-email-filter': RouteRecordInfo<'apps-email-filter', '/apps/email/:filter', { filter: ParamValue<true> }, { filter: ParamValue<false> }>,
-    'apps-email-label': RouteRecordInfo<'apps-email-label', '/apps/email/:label', { label: ParamValue<true> }, { label: ParamValue<false> }>,
     'branch-list': RouteRecordInfo<'branch-list', '/branch-list', Record<never, never>, Record<never, never>>,
     'branch-list-add': RouteRecordInfo<'branch-list-add', '/branch-list/add', Record<never, never>, Record<never, never>>,
     'branch-list-edit': RouteRecordInfo<'branch-list-edit', '/branch-list/edit', Record<never, never>, Record<never, never>>,
