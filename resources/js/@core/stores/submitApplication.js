@@ -56,7 +56,28 @@ export const useApplicationStore = defineStore( {
       } catch (error) {
         handleErrorResponse(error)
       }
-    }
+    },
 
+
+   async updateApplication(updatedData, studentID) {
+  try {
+    const response = await $api(`/students/${studentID}`, {
+      method: 'PATCH', // Use PATCH for partial updates
+      body: JSON.stringify(updatedData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log("Updated application:", updatedData, studentID);
+    this.errors = {};
+    this.successMessage = 'Application updated successfully';
+    return response.data;
+
+  } catch (error) {
+    console.error("Update error:", error);
+    handleErrorResponse(error);
+  }
+}
   },
 });

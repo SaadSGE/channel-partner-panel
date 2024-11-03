@@ -32,8 +32,6 @@ export default [
     subject: 'compliance-request',
   },
 
-
-
   {
     title: 'Application List',
     icon: { icon: 'tabler-apps' },
@@ -57,6 +55,15 @@ export default [
     action: 'read',
     subject: 'course-request',
   },
+  
+  {
+    title: 'Branch List',
+    icon: { icon: 'tabler-apps' },
+    to: 'branch-list',
+    action: 'read',
+    subject: 'dashboard',
+
+  },
 
   {
     title: 'Course Request List',
@@ -73,6 +80,14 @@ export default [
     icon: { icon: 'tabler-command' },
     action: 'read',
     subject: 'course-request',
+  },
+
+  {
+    title: 'Country List',
+    to: 'country-list',
+    icon: { icon: 'tabler-command' },
+    action: 'read',
+    subject: 'dashboard',
   },
 
   {

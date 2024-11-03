@@ -113,4 +113,39 @@ class StudentController extends Controller
             return $this->exceptionJsonResponse('Failed to retrieve student details', $e);
         }
     }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'first_name' => 'sometimes|required|string|max:255',
+                'last_name' => 'sometimes|required|string|max:255',
+                'email' => 'sometimes|required|email|unique:students,email,' . $id,
+                'passport_no' => 'sometimes|required|string|max:50|unique:students,passport_no,' . $id,
+                'date_of_birth' => 'sometimes|required|date',
+            ]);
+
+            $student = Student::findOrFail($id);
+
+            // Update only the allowed fields
+            $student->update($validated);
+
+            // Log the activity
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($student)
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'updated_fields' => array_keys($validated),
+                ])
+                ->log('student_update');
+
+            return $this->successJsonResponse('Student updated successfully', $student);
+        } catch (\Exception $e) {
+            Log::error('Failed to update student', ['error' => $e->getMessage(), 'id' => $id]);
+            return $this->exceptionJsonResponse('Failed to update student', $e);
+        }
+    }
 }
