@@ -121,6 +121,7 @@ class UserController extends Controller
             'recruit_countries' => 'nullable|array',
             'agreement' => 'nullable',
             'commission_structure' => 'nullable',
+            'branch_id' => 'nullable',
         ]);
 
         try {
@@ -140,6 +141,7 @@ class UserController extends Controller
             $user->post_code = $validatedData['post_code'] ?? null;
             $user->country = $validatedData['country'] ?? null;
             $user->role = $validatedData['role'];
+            $user->branch_id = $validatedData['branch_id'] ?? null;
 
             // Update recruit_countries
             $user->recruit_countries = isset($validatedData['recruit_countries']) ? json_encode($validatedData['recruit_countries']) : null;

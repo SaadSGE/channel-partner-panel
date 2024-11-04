@@ -429,9 +429,6 @@ export const commonFunction = defineStore({
               method: 'PUT',
               body: updatedData,
             });
-            console.log(response);
-
-            // Update the local branches array with the updated branch data
             const index = this.allCountries.findIndex(country => country.id === id);
             if (index !== -1) {
               this.allCountries.splice(index, 1, response.data);

@@ -22,6 +22,7 @@ const getAllBranches = async () => {
     isLoading.value = true
     await commonFunctionStore.getBranches();
     branches.value = commonFunctionStore.branches;
+    console.log(branches);
     isLoading.value = false
 }
 

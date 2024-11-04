@@ -55,12 +55,12 @@ export default [
     action: 'read',
     subject: 'course-request',
   },
-  
+
   {
     title: 'Branch List',
     icon: { icon: 'tabler-apps' },
     to: 'branch-list',
-    action: 'read',
+    action: 'create',
     subject: 'dashboard',
 
   },
@@ -86,7 +86,7 @@ export default [
     title: 'Country List',
     to: 'country-list',
     icon: { icon: 'tabler-command' },
-    action: 'read',
+    action: 'create',
     subject: 'dashboard',
   },
 

@@ -60,6 +60,7 @@ class AuthController extends Controller
             'createForm' => 'nullable',
             'agreement' => 'nullable',
             'commission_structure' => 'nullable',
+            'branch_id' => 'nullable',
         ]);
     }
 
@@ -95,6 +96,7 @@ class AuthController extends Controller
             'status' => $status,
             'recruit_countries' => isset($data['recruitCountries']) ? json_encode($data['recruitCountries']) : null,
             'password' => bcrypt($data['password']),
+            'branch_id' => $data['branch_id'] ?? null,
         ];
 
         return User::create($userData);
