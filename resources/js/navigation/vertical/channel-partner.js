@@ -98,13 +98,7 @@ export default [
     subject: 'dashboard',
   },
 
-  // {
-  //   title: 'Student details',
-  //   to: '/student-record/:id',
-  //   icon: { icon: 'tabler-command' },
-  //   action: 'read',
-  //   subject: 'dashboard',
-  // },
+  
 
   {
     title: 'Record',
