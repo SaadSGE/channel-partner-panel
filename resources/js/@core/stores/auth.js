@@ -9,6 +9,7 @@ export const useAuthStore = defineStore({
   }),
   actions: {
     async register(form) {
+      
       try {
         const response = await $api('/register', {
           method: 'POST',
