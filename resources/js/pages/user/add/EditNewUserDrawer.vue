@@ -14,6 +14,10 @@ const props = defineProps({
   editedUser: {
     type: Object,
   },
+  branches: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 const emit = defineEmits([
@@ -34,6 +38,7 @@ const form = ref({
   email: '',
   mobileNumber: '',
   whatsappNumber: '',
+  branch_id: '',
   companyName: '',
   website: '',
   address: '',
@@ -59,6 +64,7 @@ const updateFormWithEditedUser = (user) => {
       lastName: user.last_name,
       email: user.email,
       mobileNumber: user.mobile_number,
+      branch_id: user.branch_id,
       whatsappNumber: user.whatsapp_number,
       companyName: user.company_name,
       website: user.website,
@@ -106,7 +112,7 @@ const onSubmit = async () => {
       try {
         // Pass the entire form to the store's updateUser method
         const user = await authStore.updateUser(form.value);
-
+        console.log("Selected branch_id:", form.value.branch_id);
         Swal.fire({
           icon: 'success',
           title: 'User Updated Successfully',
@@ -144,19 +150,10 @@ const lowerCase = (name) => {
 </script>
 
 <template>
-  <VNavigationDrawer
-    temporary
-    :width="400"
-    location="end"
-    class="scrollable-content"
-    :model-value="props.isDrawerOpen"
-    @update:model-value="handleDrawerModelValueUpdate"
-  >
+  <VNavigationDrawer temporary :width="400" location="end" class="scrollable-content" :model-value="props.isDrawerOpen"
+    @update:model-value="handleDrawerModelValueUpdate">
     <!-- 👉 Title -->
-    <AppDrawerHeaderSection
-      title="Edit User"
-      @cancel="closeNavigationDrawer"
-    />
+    <AppDrawerHeaderSection title="Edit User" @cancel="closeNavigationDrawer" />
     <VDivider />
     <PerfectScrollbar :options="{ wheelPropagation: false }">
       <VCard flat>
@@ -166,154 +163,102 @@ const lowerCase = (name) => {
             <VRow>
               <!-- 👉 First Name -->
               <VCol cols="12" md="6">
-                <AppTextField
-                  v-model="form.firstName"
-                  :rules="[requiredValidator]"
-                  label="First Name"
-                  placeholder="John"
-                />
+                <AppTextField v-model="form.firstName" :rules="[requiredValidator]" label="First Name"
+                  placeholder="John" />
               </VCol>
 
               <!-- 👉 Last Name -->
               <VCol cols="12" md="6">
-                <AppTextField
-                  v-model="form.lastName"
-                  :rules="[requiredValidator]"
-                  label="Last Name"
-                  placeholder="Doe"
-                />
+                <AppTextField v-model="form.lastName" :rules="[requiredValidator]" label="Last Name"
+                  placeholder="Doe" />
               </VCol>
 
               <!-- 👉 Email -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="form.email"
-                  :rules="[requiredValidator, emailValidator]"
-                  label="Email"
-                  placeholder="johndoe@email.com"
-                />
+                <AppTextField v-model="form.email" :rules="[requiredValidator, emailValidator]" label="Email"
+                  placeholder="johndoe@email.com" />
               </VCol>
 
               <!-- 👉 Mobile Number -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="form.mobileNumber"
-                  label="Mobile Number"
-                  type="tel"
-                  placeholder="+1-541-754-3010"
-                />
+                <AppTextField v-model="form.mobileNumber" label="Mobile Number" type="tel"
+                  placeholder="+1-541-754-3010" />
               </VCol>
 
               <!-- 👉 WhatsApp Number -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="form.whatsappNumber"
-                  label="WhatsApp Number"
-                  type="tel"
-                  placeholder="+1-541-754-3010"
-                />
+                <AppTextField v-model="form.whatsappNumber" label="WhatsApp Number" type="tel"
+                  placeholder="+1-541-754-3010" />
+              </VCol>
+              <!-- 👉 Branch -->
+              <VCol cols="12">
+                <AppSelect v-model="form.branch_id" label="Select Branch" placeholder="Select Branch"
+                  :rules="[requiredValidator]" :items="props.branches"
+                  :item-title="(item) => item.branch_name_with_country" :item-value="(item) => item.id" />
               </VCol>
 
               <!-- 👉 Role -->
               <VCol cols="12">
-                <AppSelect
-                  v-model="form.role"
-                  label="Select Role"
-                  placeholder="Select Role"
-                  :rules="[requiredValidator]"
-                  :items="roles"
-                  :item-title="(item) => item.role"
-                  :item-value="(item) => item.role"
-                />
+                <AppSelect v-model="form.role" label="Select Role" placeholder="Select Role"
+                  :rules="[requiredValidator]" :items="roles" :item-title="(item) => item.role"
+                  :item-value="(item) => item.role" />
               </VCol>
 
               <!-- Conditional Fields for Channel Partner Role -->
               <template v-if="lowerCase(form.role) === 'channel partner'">
                 <VCol cols="12">
-                  <VFileInput
-                    v-model="form.agreement"
-                    label="Upload Agreement"
-
-                  />
+                  <VFileInput v-model="form.agreement" label="Upload Agreement" />
                 </VCol>
 
                 <!-- 👉 Commission Structure File -->
                 <VCol cols="12">
-                  <VFileInput
-                    v-model="form.commission_structure"
-                    label="Upload Commission Structure"
-
-                  />
+                  <VFileInput v-model="form.commission_structure" label="Upload Commission Structure" />
                 </VCol>
                 <!-- 👉 Company Name -->
                 <VCol cols="12">
-                  <AppTextField
-                    v-model="form.companyName"
-                    :rules="[requiredValidator]"
-                    label="Company Name"
-                    placeholder="Enter company name"
-                  />
+                  <AppTextField v-model="form.companyName" :rules="[requiredValidator]" label="Company Name"
+                    placeholder="Enter company name" />
                 </VCol>
 
                 <!-- 👉 Website -->
                 <VCol cols="12">
-                  <AppTextField
-                    v-model="form.website"
-                    label="Website"
-                    placeholder="Enter website URL"
-                  />
+                  <AppTextField v-model="form.website" label="Website" placeholder="Enter website URL" />
                 </VCol>
 
                 <!-- 👉 Address -->
                 <VCol cols="12">
-                  <AppTextField
-                    v-model="form.address"
-                    :rules="[requiredValidator]"
-                    label="Address"
-                    placeholder="Enter address"
-                  />
+                  <AppTextField v-model="form.address" :rules="[requiredValidator]" label="Address"
+                    placeholder="Enter address" />
                 </VCol>
 
                 <!-- 👉 City -->
                 <VCol cols="12">
-                  <AppTextField
-                    v-model="form.city"
-                    :rules="[requiredValidator]"
-                    label="City"
-                    placeholder="Enter city"
-                  />
+                  <AppTextField v-model="form.city" :rules="[requiredValidator]" label="City"
+                    placeholder="Enter city" />
                 </VCol>
 
                 <!-- 👉 Post Code -->
                 <VCol cols="12">
-                  <AppTextField
-                    v-model="form.postCode"
-                    :rules="[requiredValidator]"
-                    label="Post Code"
-                    placeholder="Enter post code"
-                  />
+                  <AppTextField v-model="form.postCode" :rules="[requiredValidator]" label="Post Code"
+                    placeholder="Enter post code" />
                 </VCol>
 
                 <!-- 👉 Country -->
                 <VCol cols="12">
-                  <AppAutocomplete
-                    v-model="form.country"
-                    label="Select Country"
-                    placeholder="Select Country"
+                  <AppAutocomplete v-model="form.country" label="Select Country" placeholder="Select Country"
                     :rules="[requiredValidator]"
-                    :items="['India', 'Bangladesh', 'Nigeria', 'Nepal', 'Bhutan', 'Ghana', 'Sri Lanka']"
-                  />
+                    :items="['India', 'Bangladesh', 'Nigeria', 'Nepal', 'Bhutan', 'Ghana', 'Sri Lanka']" />
                 </VCol>
 
                 <!-- 👉 Country Recruit For (multi-checkbox) -->
                 <VCol cols="12">
                   <label>Country Recruit For</label>
                   <VCheckbox value="Nigeria" label="Nigeria" v-model="form.recruitCountries" />
-                  <VCheckbox value="India" label="India" v-model="form.recruitCountries"/>
-                  <VCheckbox value="Bangladesh" label="Bangladesh" v-model="form.recruitCountries"/>
-                  <VCheckbox value="Nepal" label="Nepal" v-model="form.recruitCountries"/>
-                  <VCheckbox value="Bhutan" label="Bhutan" v-model="form.recruitCountries"/>
-                  <VCheckbox value="Ghana" label="Ghana" v-model="form.recruitCountries"/>
+                  <VCheckbox value="India" label="India" v-model="form.recruitCountries" />
+                  <VCheckbox value="Bangladesh" label="Bangladesh" v-model="form.recruitCountries" />
+                  <VCheckbox value="Nepal" label="Nepal" v-model="form.recruitCountries" />
+                  <VCheckbox value="Bhutan" label="Bhutan" v-model="form.recruitCountries" />
+                  <VCheckbox value="Ghana" label="Ghana" v-model="form.recruitCountries" />
                   <VCheckbox value="Sri Lanka" label="Sri Lanka" v-model="form.recruitCountries" />
                 </VCol>
               </template>

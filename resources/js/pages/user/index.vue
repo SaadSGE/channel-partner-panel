@@ -1,5 +1,6 @@
 <script setup>
 import Filters from "@/@core/components/Filters.vue";
+import { commonFunction } from "@/@core/stores/commonFunction";
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
 import { useUserStore } from "@/@core/stores/user.js";
 import AddNewUserDrawer from "@/pages/user/add/AddNewUserDrawer.vue";
@@ -21,6 +22,7 @@ const tableHeight = computed(() => {
 });
 const userStore = useUserStore();
 const roleStore = useRolePermissionStore();
+const commonFunctionStore = commonFunction();
 const isAddNewUserDrawerVisible = ref(false);
 const users = ref([]);
 const totalUsers = ref(0);
@@ -42,6 +44,7 @@ const isParentDialogVisible = ref(false);
 const parentId = ref(null);
 const userToSetParent = ref(null);
 const isAdmin = ref(getUserRole() === 'admin');
+const branches = ref([]);
 // Methods
 const setParent = (user) => {
   userToSetParent.value = user;
@@ -184,15 +187,24 @@ onMounted(async () => {
   roles.value = roleStore.roles;
   await userStore.fetchParentUsers(); // Fetch parent users on mount from the Pinia store
   fetchUsers(); // Fetch the main user list
+  getAllBranches();
 });
 
 watch([searchQuery, selectedRole, selectedParent, selectedUserStatus], () => {
   fetchUsers();
 });
+
+// Fetch branches from API
+const getAllBranches = async () => {
+  isLoading.value = true
+  await commonFunctionStore.getBranches();
+  branches.value = commonFunctionStore.branches;
+  isLoading.value = false
+}
 </script>
 
 <template>
-  <EditNewUserDrawer :isDrawerOpen="isEditUserDrawerVisible" :editedUser="selectedUser"
+  <EditNewUserDrawer :isDrawerOpen="isEditUserDrawerVisible" :editedUser="selectedUser" :branches="branches"
     @update:isDrawerOpen="isEditUserDrawerVisible = $event" @userUpdated="handleUserUpdate" />
   <section>
 
@@ -315,6 +327,6 @@ watch([searchQuery, selectedRole, selectedParent, selectedUserStatus], () => {
       <!-- SECTION -->
     </VCard>
     <!-- 👉 Add New User -->
-    <AddNewUserDrawer v-model:isDrawerOpen="isAddNewUserDrawerVisible" @user-data="addUser" />
+    <AddNewUserDrawer v-model:isDrawerOpen="isAddNewUserDrawerVisible" :branches="branches" @user-data="addUser" />
   </section>
 </template>

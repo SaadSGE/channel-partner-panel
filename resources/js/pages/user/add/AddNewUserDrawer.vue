@@ -1,6 +1,5 @@
 <script setup>
 import { useAuthStore } from '@/@core/stores/auth';
-import { commonFunction } from '@/@core/stores/commonFunction';
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
 import Swal from 'sweetalert2';
 import { nextTick, onMounted, ref } from 'vue';
@@ -13,6 +12,10 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+  branches: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 const emit = defineEmits([
@@ -23,17 +26,12 @@ const emit = defineEmits([
 // Store and Router
 const roleStore = useRolePermissionStore();
 const authStore = useAuthStore();
-const commonFunctionStore = commonFunction();
 const router = useRouter();
 
 // Form Refs and State
 const isFormValid = ref(false);
 const refForm = ref();
 const roles = ref([]);
-const countriesName = ref([]);
-const branches = ref([]);
-const formattedBranches = ref([]);
-const isLoading = ref(false);
 // Main Form Data
 const form = ref({
   firstName: '',
@@ -68,60 +66,9 @@ const recruitForm = ref({
 onMounted(async () => {
   await roleStore.getAllRoles();
   roles.value = roleStore.roles;
-  await getCountries();
-  await getAllBranches();
-  combineBranchCountryData();
-
 });
 
-// Fetch countries from API
-const getCountries = async () => {
-  try {
-    await commonFunctionStore.getAllCountries();
-    countriesName.value = commonFunctionStore.allCountries;
-  } catch (error) {
-    console.error("Error fetching countries:", error);
-  }
-};
 
-const getAllBranches = async () => {
-  isLoading.value = true;
-  await getCountries();
-  await commonFunctionStore.getBranches();
-  branches.value = commonFunctionStore.branches;
-  console.log(branches);
-  isLoading.value = false;
-};
-
-const combineBranchCountryData = async () => {
-  try {
-    // Fetch branches and countries and store them in reactive variables
-    isLoading.value = true;
-    // await commonFunctionStore.getBranches();
-    // branches.value = commonFunctionStore.branches || [];
-
-    // await commonFunctionStore.getAllCountries();
-    // countriesName.value = commonFunctionStore.allCountries || [];
-
-    // Log the values to verify they are populated
-    console.log("Fetched Branches:", branches.value);
-    console.log("Fetched Countries:", countriesName.value);
-
-    // Map through branches and associate each branch with its country name
-    formattedBranches.value = branches.value.map(branch => {
-      const country = countriesName.value.find(country => country.id === branch.country_id);
-      return {
-        id: branch.id,
-        name: branch.name || "Unnamed Branch",  // Fallback for missing branch name
-        countryName: country ? country.name : "Unknown"  // Fallback for missing country
-      };
-
-    });
-    isLoading.value = false;
-  } catch (error) {
-    console.error("Error combining branch and country data:", error);
-  }
-};
 // Close Drawer Function
 const closeNavigationDrawer = () => {
   emit('update:isDrawerOpen', false);
@@ -265,8 +212,8 @@ const handleDrawerModelValueUpdate = val => {
               <!-- 👉 Branch -->
               <VCol cols="12">
                 <AppSelect v-model="form.branch_id" label="Select Branch" placeholder="Select Branch"
-                  :rules="[requiredValidator]" :items="formattedBranches"
-                  :item-title="(item) => `${item.name} (${item.countryName})`" :item-value="(item) => item.id" />
+                  :rules="[requiredValidator]" :items="props.branches"
+                  :item-title="(item) => item.branch_name_with_country" :item-value="(item) => item.id" />
               </VCol>
 
               <!-- 👉 Role -->

@@ -387,17 +387,6 @@ export const commonFunction = defineStore({
             }
           },
 
-        //  async getBranchesCountries() {
-        //     try {
-        //         const response = await $api('/countries', { method: 'GET' });
-        //         this.countriesName = response.data;
-
-        //     } catch (error) {
-        //         console.error('Error fetching countries name:', error);
-        //         this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-        //     }
-        // },
-
         async getAllCountries() {
           try {
               const response = await $api('/countries', { method: 'GET' });
