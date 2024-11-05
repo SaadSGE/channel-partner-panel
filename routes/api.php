@@ -126,4 +126,5 @@ Route::get('/notifications/all', [NotificationController::class, 'getAllNotifica
 Route::post('/nigeria-students', [NigeriaStudentController::class, 'store']);
 Route::apiResource('branches', BranchController::class);
 Route::apiResource('countries', CountryController::class);
+Route::post('/generate', [AIController::class, 'generateResponse']);
 Route::apiResource('students', StudentController::class);

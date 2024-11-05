@@ -8,7 +8,8 @@ export const useFileStore = defineStore('fileStore', {
   state: () => ({
     files: [],
     filePaths: [],
-    errors: []
+    errors: [],
+    documents: [],
   }),
   actions: {
     async downloadAllFiles(documents = null) {
@@ -79,14 +80,16 @@ export const useFileStore = defineStore('fileStore', {
       const fileId = generateUniqueId();
       const fileData = {
         id: fileId,
-        filename: file.name,
+        filename: file.name || 'unnamed_file',
         progress: 0,
         path: ''
       };
       this.addFile(fileData);
 
       const formData = new FormData();
-      formData.append(fieldName, file);
+      formData.append('student_document', file);
+      formData.append('document_name', fieldName);
+      formData.append('filename', file.name || `${fieldName}_document`);
 
       try {
         const response = await $api('/student-document-upload', {
@@ -101,13 +104,37 @@ export const useFileStore = defineStore('fileStore', {
         });
 
         this.updateFilePath(fileId, response.data);
+        this.addDocument(fieldName, response.data);
 
-        return fileId;  // Return the fileId instead of the response data
+        return fileId;
       } catch (error) {
         console.error('Error uploading file:', error);
         this.errors.push(error.response ? error.response.data.errors : ['An unexpected error occurred']);
         throw error;
       }
-    }
+    },
+    addDocument(name, path) {
+      // Convert field name to display name
+      const displayName = name
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      this.documents.push({
+        name: displayName,
+        path,
+      });
+    },
+    removeDocument(name, path) {
+      const index = this.documents.findIndex(doc =>
+        doc.name === name && doc.path === path
+      );
+      if (index !== -1) {
+        this.documents.splice(index, 1);
+      }
+    },
+    clearDocuments() {
+      this.documents = [];
+    },
   }
 });

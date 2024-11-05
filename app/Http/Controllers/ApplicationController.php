@@ -33,6 +33,7 @@ use App\Models\ApplicationOfficerAssignment;
 use App\Models\AcoAoCommunication;
 use App\Models\ComplianceOfficerAssignment;
 use App\Models\AcoCoCommunication;
+use App\Services\StudentService;
 
 class ApplicationController extends Controller
 {
@@ -106,7 +107,7 @@ class ApplicationController extends Controller
     }
 
 
-    public function store(Request $request, EmailService $emailService)
+    public function store(Request $request, EmailService $emailService, StudentService $studentService)
     {
         try {
             DB::beginTransaction();
@@ -118,7 +119,8 @@ class ApplicationController extends Controller
             } else {
                 // Handle new student application
                 $validatedData = $this->validateApplicationData($request);
-                $student = $this->createStudent($validatedData);
+
+                $student = $studentService->createStudent(['general_info' => $validatedData]);
                 $application = $this->createApplication($student, $validatedData);
                 $this->handleDocumentUploads($validatedData, $student, $application);
             }
