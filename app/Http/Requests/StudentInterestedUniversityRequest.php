@@ -14,10 +14,24 @@ class StudentInterestedUniversityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'country_id' => 'nullable|exists:application_countries,id',
-            'intake_id' => 'nullable|exists:intakes,id',
-            'university_id' => 'nullable|exists:universities,id',
-            'course_id' => 'nullable|exists:courses,id',
+            'interested_university' => 'required|array',
+            'interested_university.*.country_id' => 'nullable|exists:application_countries,id',
+            'interested_university.*.intake_id' => 'nullable|exists:intakes,id',
+            'interested_university.*.university_id' => 'nullable|exists:universities,id',
+            'interested_university.*.course_id' => 'nullable|exists:courses,id',
         ];
+    }
+    public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        $flattenedErrors = collect($validator->errors())->flatten()->all();
+
+        throw new \Illuminate\Http\Exceptions\HttpResponseException(
+            response()->json([
+                'status' => false,
+                'message' => 'Validation Error',
+                'data' => $flattenedErrors,
+                'total' => 0,
+            ], 422)
+        );
     }
 }
