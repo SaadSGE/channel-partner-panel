@@ -23,6 +23,7 @@ use App\Http\Controllers\CourseRequestController;
 use App\Http\Controllers\NigeriaStudentController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\LeadController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -127,3 +128,4 @@ Route::post('/nigeria-students', [NigeriaStudentController::class, 'store']);
 Route::apiResource('branches', BranchController::class);
 Route::apiResource('countries', CountryController::class);
 Route::apiResource('students', StudentController::class);
+Route::apiResource('leads', LeadController::class);
