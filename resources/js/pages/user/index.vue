@@ -197,9 +197,14 @@ watch([searchQuery, selectedRole, selectedParent, selectedUserStatus], () => {
 // Fetch branches from API
 const getAllBranches = async () => {
   isLoading.value = true
-  await commonFunctionStore.getBranches();
-  branches.value = commonFunctionStore.branches;
-  isLoading.value = false
+  try {
+    await commonFunctionStore.getBranches();
+    branches.value = commonFunctionStore.branches;
+  } catch (error) {
+    console.error("Error fetching branches:", error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>
 
