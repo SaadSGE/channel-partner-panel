@@ -112,7 +112,6 @@ const onSubmit = async () => {
       try {
         // Pass the entire form to the store's updateUser method
         const user = await authStore.updateUser(form.value);
-        console.log("Selected branch_id:", form.value.branch_id);
         Swal.fire({
           icon: 'success',
           title: 'User Updated Successfully',
