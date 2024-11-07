@@ -92,13 +92,24 @@ export default [
 
   {
     title: 'Student Record',
-    to: 'student-record',
-    icon: { icon: 'tabler-command' },
+    icon: { icon: 'tabler-files' },
     action: 'read',
     subject: 'dashboard',
+    children: [
+      {
+        title: 'Add Record',
+        to: 'student-record',
+        action: 'read',
+        subject: 'dashboard'
+      },
+      {
+        title: 'All Record',
+        to: 'student-record-all-record',
+        action: 'read',
+        subject: 'dashboard'
+      }
+    ]
   },
-
-  
 
   {
     title: 'Record',

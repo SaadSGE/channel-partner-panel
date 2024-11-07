@@ -87,6 +87,8 @@ declare module 'vue-router/auto/routes' {
     'roles': RouteRecordInfo<'roles', '/roles', Record<never, never>, Record<never, never>>,
     'student-record': RouteRecordInfo<'student-record', '/student-record', Record<never, never>, Record<never, never>>,
     'student-record-id': RouteRecordInfo<'student-record-id', '/student-record/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
+    'student-record-all-record': RouteRecordInfo<'student-record-all-record', '/student-record/all-record', Record<never, never>, Record<never, never>>,
+    'student-record-details-id': RouteRecordInfo<'student-record-details-id', '/student-record/details/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'university-list': RouteRecordInfo<'university-list', '/university-list', Record<never, never>, Record<never, never>>,
     'user': RouteRecordInfo<'user', '/user', Record<never, never>, Record<never, never>>,
     'user-add-add-new-user-drawer': RouteRecordInfo<'user-add-add-new-user-drawer', '/user/add/AddNewUserDrawer', Record<never, never>, Record<never, never>>,

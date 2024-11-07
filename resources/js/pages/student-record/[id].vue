@@ -32,7 +32,7 @@ const refForm = ref(null);
 const course = ref(null);
 const intake = ref(null);
 const university = ref(null);
-
+const isLoading = ref(false);
 const commonFunctionStore = commonFunction();
 const countries = ref([
     "Bangladesh",
