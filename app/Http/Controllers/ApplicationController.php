@@ -1135,51 +1135,65 @@ class ApplicationController extends Controller
             'message' => 'required|string',
         ]);
 
-        $application = ApplicationList::where('application_id', $id)->first();
-        if (!$application) {
-            return $this->exceptionJsonResponse('Application not found', null, 404);
-        }
+        try {
+            $application = ApplicationList::where('application_id', $id)->first();
+            if (!$application) {
+                return $this->exceptionJsonResponse('Application not found', null, 404);
+            }
 
-        $communication = new AcoAoCommunication();
-        $communication->application_id = $application->id;
-        $communication->message = $request->message;
-        $communication->created_by = auth('api')->user()->id;
-        $communication->save();
+            $communication = new AcoAoCommunication();
+            $communication->application_id = $application->id;
+            $communication->message = $request->message;
+            $communication->created_by = auth('api')->user()->id;
+            $communication->save();
 
-        activity()
-            ->performedOn($application)
-            ->causedBy(auth('api')->user())
-            ->withProperties([
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'application_id' => $application->application_id,
-                'student_email' => $application->student->email,
-                'university_name' => $application->university->name,
-                'intake_name' => $application->intake->name,
+            activity()
+                ->performedOn($application)
+                ->causedBy(auth('api')->user())
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'application_id' => $application->application_id,
+                    'student_email' => $application->student->email,
+                    'university_name' => $application->university->name,
+                    'intake_name' => $application->intake->name,
+                    'message' => $communication->message,
+                    'communication_id' => $communication->id,
+                ])
+                ->log('aco_ao_communication_added');
+
+            // Notify relevant users (you may need to adjust this based on your requirements)
+            $adminUsers = User::where('role', 'admin')->get();
+            $additionalDetails = [
                 'message' => $communication->message,
-                'communication_id' => $communication->id,
-            ])
-            ->log('aco_ao_communication_added');
+            ];
+            $officerId = auth('api')->user()->id == $application->application_control_officer
+            ? $application->application_officer
+                : $application->application_control_officer;
 
-        // Notify relevant users (you may need to adjust this based on your requirements)
-        $adminUsers = User::where('role', 'admin')->get();
-        $additionalDetails = [
-            'message' => $communication->message,
-        ];
-        $user = User::findOrFail(
-            auth('api')->user()->id == $application->application_control_officer
-                ? $application->application_officer
-                : $application->application_control_officer
-        );
-        $recipients = $adminUsers->push($user);
-        $senderId = auth('api')->user()->id;
-        $senderName = auth('api')->user()->full_name;
-        $senderEmail = auth('api')->user()->email;
+            $user = User::findOrFail($officerId);
+            $recipients = $adminUsers->push($user);
+            $senderId = auth('api')->user()->id;
+            $senderName = auth('api')->user()->full_name;
+            $senderEmail = auth('api')->user()->email;
 
-        $emailService->sendApplicationNotification('aco_ao_communication_added', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
+            $emailService->sendApplicationNotification('aco_ao_communication_added', $application, $additionalDetails, $recipients, $senderId, $senderName, $senderEmail);
 
-        return $this->successJsonResponse('ACO & AO Communication added successfully', $communication);
+            return $this->successJsonResponse('ACO & AO Communication added successfully', $communication);
+        } catch (\Exception $e) {
+            // Log the error with details
+            \Log::error('Failed to add ACO & AO Communication', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth('api')->user()->id ?? 'N/A',
+                'application_id' => $id,
+                'request_data' => $request->all(),
+            ]);
+
+            return $this->exceptionJsonResponse('An error occurred while adding ACO & AO Communication', null, 500);
+        }
     }
+
 
     public function assignComplianceOfficer(Request $request, $id, EmailService $emailService)
     {

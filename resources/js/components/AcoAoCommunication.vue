@@ -36,8 +36,18 @@ const fetchCommunications = async () => {
   acoAoCommunications.value = store.acoAoCommunications;
 };
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString();
+  if (dateString && !dateString.includes("T")) {
+    dateString = dateString.replace(" ", "T");
+  }
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+
+  return date.toLocaleDateString();
 };
+
 onMounted(fetchCommunications);
 </script>
 
@@ -59,7 +69,7 @@ onMounted(fetchCommunications);
             <VTimeline :density="dense">
               <VTimelineItem v-for="(comm, index) in acoAoCommunications" :key="index" dot-color="primary" size="small">
                 <template #opposite>
-                  <div class="text-caption">{{ formatDate(comm.created_at) }}</div>
+                  <div class="text-caption">{{ comm.created_at }}</div>
                 </template>
                 <VCard class="elevation-1">
                   <VCardTitle class="text-subtitle-1">

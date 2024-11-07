@@ -24,8 +24,8 @@ onMounted(async () => {
 // Fetch countries from API
 const getCountries = async () => {
     try {
-        await commonFunctionStore.getBranchesCountries();
-        countriesName.value = await commonFunctionStore.countriesName;
+        await commonFunctionStore.getAllCountries();
+        countriesName.value = await commonFunctionStore.allCountries;
     } catch (error) {
         console.error("Error fetching countries:", error);
     }

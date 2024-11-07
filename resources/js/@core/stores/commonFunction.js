@@ -4,7 +4,7 @@ export const commonFunction = defineStore({
     id: "common-function",
     state: () => ({
       countries: [],
-      countriesName: [],
+      allCountries: [],
       branches: [],
       courses: [],
       intakes: [],
@@ -389,17 +389,6 @@ export const commonFunction = defineStore({
               this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
             }
           },
-
-         async getBranchesCountries() {
-            try {
-                const response = await $api('/countries', { method: 'GET' });
-                this.countriesName = response.data;
-
-            } catch (error) {
-                console.error('Error fetching countries name:', error);
-                this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
-            }
-        },
 
         async getAllCountries() {
           try {
