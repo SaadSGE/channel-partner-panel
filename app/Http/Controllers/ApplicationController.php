@@ -120,7 +120,7 @@ class ApplicationController extends Controller
                 // Handle new student application
                 $validatedData = $this->validateApplicationData($request);
 
-                $student = $studentService->createStudent(['general_info' => $validatedData]);
+                $student = $studentService->storeGeneralInfo($validatedData);
                 $application = $this->createApplication($student, $validatedData);
                 $this->handleDocumentUploads($validatedData, $student, $application);
             }

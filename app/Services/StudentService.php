@@ -10,106 +10,103 @@ use App\Models\StudentEmploymentHistory;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\StudentDocument;
+use App\Jobs\GenerateStudentDocumentsZip;
 
 class StudentService
 {
-    public function createStudent(array $data)
+    public function storeGeneralInfo(array $data): Student
     {
-        try {
-            DB::beginTransaction();
+        Log::info(json_encode($data));
+        return Student::updateOrCreate(
+            ['id' => $data['id'] ?? null],
+            [
+                'student_id' => Str::random(10),
+                'first_name' => $data['student_first_name'],
+                'last_name' => $data['student_last_name'],
+                'passport_no' => $data['student_passport_no'],
+                'whatsapp_number' => $data['student_whatsapp_number'] ?? null,
+                'email' => $data['student_email'],
+                'address' => $data['student_address'] ?? null,
+                'city' => $data['student_city'] ?? null,
+                'country' => $data['student_country'] ?? null,
+                'region' => null,
+                'state' => $data['student_region_state'] ?? null,
+                'date_of_birth' => $data['date_of_birth'],
+                'gender' => $data['gender'],
+                'visa_refusal' => $data['visa_refusal'],
+            ]
+        );
+    }
 
-            $student = $this->storeGeneralInfo($data['general_info']);
-
-            if (!empty($data['interested_university'])) {
-                $this->storeInterestedUniversity($student, $data['interested_university']);
-            }
-
-            if (!empty($data['education_history'])) {
-                $this->storeEducationalHistory($student, $data['education_history']);
-            }
-
-            if (!empty($data['english_proficiency'])) {
-                $this->storeEnglishProficiency($student, $data['english_proficiency']);
-            }
-
-            if (!empty($data['employment_history'])) {
-                $this->storeEmploymentHistory($student, $data['employment_history']);
-            }
-
-            DB::commit();
-            return $student;
-
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            Log::error('Student creation failed', [
-                'error' => $th->getMessage(),
-                'trace' => $th->getTraceAsString()
-            ]);
-            throw $th;
+    public function storeInterestedUniversities(Student $student, array $universitiesData): void
+    {
+        foreach ($universitiesData as &$data) {
+            $data['student_id'] = $student->id;
         }
+        StudentInterestedUniversity::upsert(
+            $universitiesData,
+            ['id'],
+            ['student_id', 'country_id', 'intake_id', 'university_id', 'course_id', 'updated_at']
+        );
     }
 
-    private function storeGeneralInfo(array $data): Student
+    public function storeEducationalHistories(Student $student, array $historiesData): void
     {
-        return Student::create([
-            'student_id' => Str::random(10),
-            'first_name' => $data['student_first_name'],
-            'last_name' => $data['student_last_name'],
-            'passport_no' => $data['student_passport_no'],
-            'whatsapp_number' => $data['student_whatsapp_number'] ?? null,
-            'email' => $data['student_email'],
-            'address' => $data['student_address'] ?? null,
-            'city' => $data['student_city'] ?? null,
-            'country' => $data['student_country'] ?? null,
-            'region' => null,
-            'state' => $data['student_region_state'] ?? null,
-            'date_of_birth' => $data['date_of_birth'],
-            'gender' => $data['gender'],
-            'visa_refusal' => $data['visa_refusal'],
-        ]);
+        foreach ($historiesData as &$data) {
+            $data['student_id'] = $student->id;
+        }
+        StudentEducationalHistory::upsert(
+            $historiesData,
+            ['id'],
+            ['student_id', 'degree_name', 'institution_name', 'passing_year', 'result', 'updated_at']
+        );
     }
 
-    private function storeInterestedUniversity(Student $student, array $data): void
+    public function storeEnglishProficiencies(Student $student, array $proficienciesData): void
     {
-        StudentInterestedUniversity::create([
-            'student_id' => $student->id,
-            'country_id' => $data['country_id'] ?? null,
-            'intake_id' => $data['intake_id'] ?? null,
-            'university_id' => $data['university_id'] ?? null,
-            'course_id' => $data['course_id'] ?? null,
-        ]);
+        foreach ($proficienciesData as &$data) {
+            $data['student_id'] = $student->id;
+        }
+        StudentEnglishProficiency::upsert(
+            $proficienciesData,
+            ['id'],
+            ['student_id', 'proficiency_title', 'overall_score', 'listening', 'speaking', 'writing', 'reading', 'updated_at']
+        );
     }
 
-    private function storeEducationalHistory(Student $student, array $data): void
+    public function storeEmploymentHistories(Student $student, array $employmentData): void
     {
-        StudentEducationalHistory::create([
-            'student_id' => $student->id,
-            'degree_name' => $data['degree_name'] ?? null,
-            'institution_name' => $data['institution_name'] ?? null,
-            'passing_year' => $data['passing_year'] ?? null,
-            'result' => $data['result'] ?? null,
-        ]);
+        foreach ($employmentData as &$data) {
+            $data['student_id'] = $student->id;
+        }
+        StudentEmploymentHistory::upsert(
+            $employmentData,
+            ['id'],
+            ['student_id', 'company_name', 'designation', 'updated_at']
+        );
     }
 
-    private function storeEnglishProficiency(Student $student, array $data): void
+    public function handleDocumentUploads(Student $student, array $documentPaths, ?int $applicationId = null): void
     {
-        StudentEnglishProficiency::create([
-            'student_id' => $student->id,
-            'proficiency_title' => $data['proficiency_title'] ?? null,
-            'overall_score' => $data['overall_score'] ?? null,
-            'listening' => $data['listening'] ?? null,
-            'speaking' => $data['speaking'] ?? null,
-            'writing' => $data['writing'] ?? null,
-            'reading' => $data['reading'] ?? null,
-        ]);
-    }
+        foreach ($documentPaths as $path) {
+            $filename = basename($path['path']);
+            $newPath = "channelPartnerPanel/studentDocument/{$student->email}/{$student->email}_{$filename}";
 
-    private function storeEmploymentHistory(Student $student, array $data): void
-    {
-        StudentEmploymentHistory::create([
-            'student_id' => $student->id,
-            'company_name' => $data['company_name'] ?? null,
-            'designation' => $data['designation'] ?? null,
-        ]);
+            Storage::disk('do_spaces')->move($path['path'], $newPath);
+
+            StudentDocument::updateOrCreate(
+                ['id' => $path['id'] ?? null],
+                [
+                    'student_id' => $student->id,
+                    'application_id' => $applicationId,
+                    'path' => $newPath,
+                    'updated_at' => now(),
+                ]
+            );
+        }
+
+        GenerateStudentDocumentsZip::dispatch($student);
     }
 }

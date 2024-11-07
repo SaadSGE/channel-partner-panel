@@ -14,12 +14,26 @@ class StudentEnglishProficiencyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'proficiency_title' => 'nullable|string|max:255',
-            'overall_score' => 'nullable|numeric',
-            'listening' => 'nullable|numeric',
-            'speaking' => 'nullable|numeric',
-            'writing' => 'nullable|numeric',
-            'reading' => 'nullable|numeric',
+            'english_proficiency' => 'required|array',
+            'english_proficiency.*.proficiency_title' => 'nullable|string|max:255',
+            'english_proficiency.*.overall_score' => 'nullable|numeric',
+            'english_proficiency.*.listening' => 'nullable|numeric',
+            'english_proficiency.*.speaking' => 'nullable|numeric',
+            'english_proficiency.*.writing' => 'nullable|numeric',
+            'english_proficiency.*.reading' => 'nullable|numeric',
         ];
+    }
+    public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        $flattenedErrors = collect($validator->errors())->flatten()->all();
+
+        throw new \Illuminate\Http\Exceptions\HttpResponseException(
+            response()->json([
+                'status' => false,
+                'message' => 'Validation Error',
+                'data' => $flattenedErrors,
+                'total' => 0,
+            ], 422)
+        );
     }
 }
