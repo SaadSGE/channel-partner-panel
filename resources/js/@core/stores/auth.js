@@ -9,7 +9,7 @@ export const useAuthStore = defineStore({
   }),
   actions: {
     async register(form) {
-      
+
       try {
         const response = await $api('/register', {
           method: 'POST',
@@ -57,14 +57,14 @@ export const useAuthStore = defineStore({
       try {
         // Create FormData object
         const formData = new FormData();
-console.log(form.branch_id);
+
         // Append basic user data to FormData
         formData.append('first_name', form.firstName);
         formData.append('last_name', form.lastName);
         formData.append('email', form.email);
         formData.append('mobile_number', form.mobileNumber);
         formData.append('whatsapp_number', form.whatsappNumber);
-        formData.append('branch_id', form.branch_id);
+        formData.append('branch_id', form.branch_id || '');
         formData.append('company_name', form.companyName);
         formData.append('website', form.website);
         formData.append('address', form.address);
