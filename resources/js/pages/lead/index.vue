@@ -7,11 +7,11 @@ definePage({
 })
 
 import ShowMore from "@/@core/components/ShowMore.vue";
-import { commonFunction } from "@/@core/stores/commonFunction";
+import { useLeadStore } from "@/@core/stores/leadStore";
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { ref } from "vue";
 
-const leadStore = commonFunction();
+const leadStore = useLeadStore();
 // Reactive state
 const leads = ref([]);
 const total = ref();
@@ -25,8 +25,7 @@ const headers = [
     { title: 'Email', key: 'email' },
     { title: 'Name', key: 'name' },
     { title: 'Phone', key: 'phone' },
-    { title: 'Interested Course', key: 'interested_course' },
-    { title: 'Interested Country', key: 'interested_country' },
+    { title: 'Interested Course & Country', key: 'course_country' },
     { title: 'Status', key: 'status' },
     { title: 'Assigned Branch', key: 'assigned_branch' },
     { title: 'Assigned User', key: 'assigned_user' },
@@ -103,36 +102,45 @@ const getStatusColor = (status) => {
             <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :loading="isLoading"
                 :items-length="total" :headers="headers" :items="leads" item-value="total"
                 class="text-no-wrap text-sm rounded-0">
-                <!-- Slot for 'notes' column with ShowMore component -->
+
+                <!-- Slot for 'course_country' column with combined Interested Course and Country -->
+                <template #item.course_country="{ item }">
+                    <div class="d-flex flex-column ms-3">
+                        <span class="d-block font-weight-medium text-truncate text-high-emphasis">
+                            {{ item.interested_course }}
+                        </span>
+                        <span class="text-md">{{ item.interested_country }}</span>
+                    </div>
+                </template>
+
+                <!-- Other slots and configurations remain the same -->
                 <template #item.notes="{ item }">
                     <ShowMore :text="item.notes" :lines="3" />
                 </template>
-                <!-- Slot for 'status' column with dynamic color -->
+
                 <template #item.status="{ item }">
                     <span :class="getStatusColor(item.status)">{{ item.status }}</span>
                 </template>
 
-                <!-- Slot for handling null values in 'assigned_branch' and 'assigned_user' -->
                 <template #item.assigned_branch="{ item }">
                     <span>{{ item.assigned_branch || 'Not Assigned' }}</span>
                 </template>
+
                 <template #item.assigned_user="{ item }">
                     <span>{{ item.assigned_user || 'Not Assigned' }}</span>
                 </template>
 
-                <!-- Slot for actions column with edit and delete buttons -->
                 <template #item.actions="{ item }">
                     <div class="d-flex gap-1">
                         <IconBtn @click="editItem(item)">
-                            <VIcon icon="tabler-edit" />
+                            <VIcon icon="tabler-analyze" />
                         </IconBtn>
                         <IconBtn @click="deleteItem(item)">
-                            <VIcon icon="tabler-trash" />
+                            <VIcon icon="tabler-clipboard-text" />
                         </IconBtn>
                     </div>
                 </template>
 
-                <!-- Bottom slot for pagination -->
                 <template #bottom>
                     <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="total" />
                 </template>
