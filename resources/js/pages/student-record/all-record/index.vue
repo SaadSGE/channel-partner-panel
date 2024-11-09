@@ -1,9 +1,6 @@
 <script setup>
+import { useApplicationListStore } from '@/@core/stores/applicationList';
 import { commonFunction } from '@/@core/stores/commonFunction';
-import { resolveStatusColor, resolveStatusName } from '@/@core/utils/helpers';
-import { router } from '@/plugins/1.router';
-import Swal from 'sweetalert2';
-import { onMounted } from 'vue';
 definePage({
     meta: {
         action: 'read',
@@ -20,6 +17,11 @@ const itemsPerPage = ref(10);
 const students = ref([]);
 const isLoading = ref(false);
 const commonFunctionStore = commonFunction();
+const selectedDateFrom = ref(null);
+const selectedDateTo = ref(null);
+const store = useApplicationListStore();
+const studentLists = ref([]);
+
 
 onMounted(async () => {
     await getAllStudents();
@@ -32,6 +34,7 @@ const getAllStudents = async () => {
     console.log(students)
     isLoading.value = false
 }
+
 const viewStudentDetail = studentId => {
     router.push({ name: 'student-record-details-id', params: { id: studentId } })
 }
@@ -80,17 +83,55 @@ const headers = ref([
     { title: 'Status', key: 'status' },
     { title: 'Action', key: 'action', sortable: false },
 ])
+
+const fetchStudents = async () => {
+    isLoading.value = true
+    try {
+        const response = await store.getStudentList(
+
+            page.value,
+            itemsPerPage.value,
+            search.value,
+            selectedDateFrom.value,
+            selectedDateTo.value,
+        )
+        studentLists.value = response.data
+        totalStudents.value = response.total
+
+    } catch (error) {
+        console.error('Error fetching applications:', error)
+    } finally {
+        isLoading.value = false
+    }
+}
+
+watch([
+    search,
+    selectedDateFrom,
+    selectedDateTo,
+], () => {
+    fetchStudents()
+})
+
+// Mounted Hook
+onMounted(() => {
+
+    fetchStudents()
+})
+
+
 </script>
 <template>
     <div class="student-list-container">
         <AppCardActions title="Student List" :loading="isLoading" no-actions>
-            <!-- New Filters Section -->
+
             <VCardText>
                 <VRow>
-
+                    <Filters :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
+                        @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event"></Filters>
                 </VRow>
             </VCardText>
-            <!-- Search and Pagination -->
+
             <VCardText class="d-flex flex-wrap gap-4">
                 <div class="me-3 d-flex gap-3">
                     <AppSelect :model-value="itemsPerPage" :items="[
@@ -104,7 +145,7 @@ const headers = ref([
                 <VSpacer />
 
                 <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-                    <!-- 👉 Search  -->
+
                     <div style="inline-size: 15.625rem;">
                         <AppTextField v-model="search" placeholder="Search Student" />
                     </div>
@@ -113,9 +154,10 @@ const headers = ref([
 
 
 
-            <!-- Data Table -->
+
             <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="students"
-                :headers="headers" class="text-no-wrap color-black student-table" :height="tableHeight">
+                :items-length="totalStudents" :headers="headers" class="text-no-wrap color-black student-table"
+                :height="tableHeight">
                 <template #item.first_name="{ item }">
                     <p>{{ item.first_name }}</p>
                 </template>
@@ -151,7 +193,7 @@ const headers = ref([
                         </IconBtn>
                     </div>
                 </template>
-                <!-- pagination -->
+
                 <template #bottom>
                     <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalStudents" />
                 </template>

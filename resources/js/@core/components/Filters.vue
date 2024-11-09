@@ -179,87 +179,135 @@ watch(localSelectedUserStatus, (newValue) => {
 
 const fetchFilterOptions = async () => {
   try {
+    // Conditionally fetch universities if selectedUniversity or selectedUniversity2 is provided
+    if (props.selectedUniversity !== undefined || props.selectedUniversity2 !== undefined) {
+      const universityList = await commonFunctionStore.getUniversities();
+      universities.value = universityList.data.map(university => ({
+        id: university.id,
+        name: university.name
+      }));
+    }
 
-    const universityList = await commonFunctionStore.getUniversities();
+    // Conditionally fetch channel partners if selectedChannelPartner is provided
+    if (props.selectedChannelPartner !== undefined) {
+      const channelPartnersResponse = await userStore.fetchUsers(1, '', 'channel partner', '', true);
+      channelPartners.value = channelPartnersResponse.data.map(user => ({
+        id: user.id,
+        name: user.company_name_with_email
+      }));
+    }
 
-    universities.value = universityList.data.map(university => ({
-      id: university.id,
-      name: university.name
-    }));
-
-    const channelPartnersResponse = await userStore.fetchUsers(1, '', 'channel partner', '', true);
-    channelPartners.value = channelPartnersResponse.data.map(user => ({
-      id: user.id,
-      name: user.company_name_with_email
-    }));
-
-    const applicationOfficersResponse = await userStore.fetchUsers(1, '', 'application control officer', '', true);
-    applicationOfficers.value = applicationOfficersResponse.data.map(user => ({
-      id: user.id,
-      name: user.name_with_email
-    }));
+    // Conditionally fetch application officers if selectedApplicationOfficer is provided
+    if (props.selectedApplicationOfficer !== undefined) {
+      const applicationOfficersResponse = await userStore.fetchUsers(1, '', 'application control officer', '', true);
+      applicationOfficers.value = applicationOfficersResponse.data.map(user => ({
+        id: user.id,
+        name: user.name_with_email
+      }));
+    }
 
   } catch (error) {
     console.error('Error fetching filter options:', error);
   }
 };
 
-onMounted(() => {
-  fetchFilterOptions();
+onMounted(async () => {
+  if (props.selectedChannelPartner !== undefined || props.selectedApplicationOfficer !== undefined) {
+    await fetchFilterOptions();
+  }
 
 });
 
 onMounted(async () => {
 
-  await loadFilterOptions();
-  await editorStore.getEditors();
+  if (
+    props.selectedCountry !== undefined ||
+    props.selectedIntake !== undefined ||
+    props.selectedUniversity !== undefined ||
+    props.selectedUniversity2 !== undefined
+  ) {
+    await loadFilterOptions();
+  }
+  if (props.selectedEditor !== undefined) {
+    await editorStore.getEditors();
+  }
 });
 
 const loadFilterOptions = async () => {
-  if (commonFunctionStore.countries.length === 0) await commonFunctionStore.getCountries();
-  if (commonFunctionStore.intakes.length === 0) await commonFunctionStore.getIntakes();
-  if (commonFunctionStore.universities.length === 0) await commonFunctionStore.getUniversities();
+  try {
+    // Conditionally load countries if selectedCountry is provided
+    if (props.selectedCountry !== undefined && commonFunctionStore.countries.length === 0) {
+      await commonFunctionStore.getCountries();
+      countries.value = commonFunctionStore.countries;
+    }
 
-  countries.value = commonFunctionStore.countries;
-  intakes.value = commonFunctionStore.intakes;
-  universities.value = commonFunctionStore.universities;
+    // Conditionally load intakes if selectedIntake is provided
+    if (props.selectedIntake !== undefined && commonFunctionStore.intakes.length === 0) {
+      await commonFunctionStore.getIntakes();
+      intakes.value = commonFunctionStore.intakes;
+    }
+
+    // Conditionally load universities if selectedUniversity or selectedUniversity2 is provided
+    if ((props.selectedUniversity !== undefined || props.selectedUniversity2 !== undefined) && commonFunctionStore.universities.length === 0) {
+      await commonFunctionStore.getUniversities();
+      universities.value = commonFunctionStore.universities;
+    }
+  } catch (error) {
+    console.error("Error loading filter options:", error);
+  }
 };
 
 
 const fetchUsers = async () => {
-  isLoading.value = true;
-  try {
-    const response = await userStore.fetchUsers(
-
-      selectedRole.value,
-      selectedParent.value,
-
-    );
-    users.value = response.data;
-    totalUsers.value = response.total;
-  } catch (error) {
-    console.error("Error fetching users:", error);
-  } finally {
-    isLoading.value = false;
+  if (selectedRole.value || selectedParent.value) { // Ensure at least one prop is selected
+    isLoading.value = true;
+    try {
+      const response = await userStore.fetchUsers(
+        selectedRole.value,
+        selectedParent.value
+      );
+      users.value = response.data;
+      totalUsers.value = response.total;
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      isLoading.value = false;
+    }
   }
 };
+
+// Watch for changes to specific props and fetch users conditionally
 watch([selectedRole, selectedParent], () => {
-  fetchUsers();
+  if (selectedRole.value || selectedParent.value) {
+    fetchUsers();
+  }
 });
 
 onMounted(async () => {
-  await roleStore.getAllRoles();
-  roles.value = roleStore.roles;
-  await userStore.fetchParentUsers(); // Fetch parent users on mount from the Pinia store
-  fetchUsers(); // Fetch the main user list
+  if (props.selectedRole !== undefined) {
+    await roleStore.getAllRoles();
+    roles.value = roleStore.roles;
+  }
+  if (props.selectedParent !== undefined) {
+    await userStore.fetchParentUsers();
+  }
 });
 onMounted(async () => {
-  await loadEditors();
+  if (props.selectedEditor !== undefined) {
+    await loadEditors();
+  }
 });
 
 const loadEditors = async () => {
-  if (editorStore.editors.length === 0) await editorStore.getEditors();
-  editors.value = editorStore.editors;
+  try {
+    // Conditionally load editors if selectedEditor is provided and editors have not been loaded
+    if (props.selectedEditor !== undefined && editorStore.editors.length === 0) {
+      await editorStore.getEditors();
+      editors.value = editorStore.editors;
+    }
+  } catch (error) {
+    console.error("Error loading editors:", error);
+  }
 };
 
 

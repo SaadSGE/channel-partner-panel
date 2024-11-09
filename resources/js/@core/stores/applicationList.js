@@ -475,5 +475,35 @@ export const useApplicationListStore = defineStore({
         throw error
       }
     },
+
+    async getStudentList(
+      id = null,
+      page = 1,
+      itemsPerPage = 10,
+      searchQuery = '',
+      dateFrom = null,
+      dateTo = null,
+    ) {
+      try {
+        return await $api('/students', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          params: {
+            id,
+            page,
+            perPage: itemsPerPage,
+            searchQuery,
+            dateFrom,
+            dateTo,
+          },
+        })
+      } catch (error) {
+        console.error('Error getting student list:', error)
+        this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred']
+        throw error
+      }
+    },
   },
 })
