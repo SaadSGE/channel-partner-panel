@@ -192,8 +192,8 @@ const lowerCase = (name) => {
               <!-- 👉 Branch -->
               <VCol cols="12">
                 <AppSelect v-model="form.branch_id" label="Select Branch" placeholder="Select Branch"
-                  :rules="[requiredValidator]" :items="props.branches"
-                  :item-title="(item) => item.branch_name_with_country" :item-value="(item) => item.id" />
+                  :items="props.branches" :item-title="(item) => item.branch_name_with_country"
+                  :item-value="(item) => item.id" />
               </VCol>
 
               <!-- 👉 Role -->
