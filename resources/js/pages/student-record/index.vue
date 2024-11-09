@@ -9,6 +9,7 @@ import "filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.min.css";
 import "filepond/dist/filepond.min.css";
 import VueFilePond from 'vue-filepond';
 import { useRouter } from "vue-router";
+import Info from './info.vue';
 
 definePage({
   meta: {
@@ -68,78 +69,82 @@ const files = ref([]);
 const router = useRouter();
 const dynamicId = ref('1');
 const targetRoute = 'student-record';
+const showDocumentUpload = ref(true)
+
 function goToNextPage() {
-  router.push({ path: '/student-record/2' });
-  console.log('Final Documents:', fileStore.documents);
+  showDocumentUpload.value = false
+  console.log('Final Documents:', fileStore.documents)
 }
 </script>
 <template>
-  <VCard>
-    <VCardTitle class="text-center">Upload Necessary Document</VCardTitle>
-    <VCardTitle>Passport(*)</VCardTitle>
-    <VCardText>
-      <file-pond ref="pond" name="passport" :allow-multiple="false" allowRemove="true"
-        label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
-        :files="files" />
-      <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-    </VCardText>
-  </VCard>
-  <VCard>
-    <VCardTitle>Academic Reference Letter(*)</VCardTitle>
-    <VCardText>
-      <file-pond ref="pond" name="academic_letter" :allow-multiple="false" allowRemove="true"
-        label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
-        :files="files" />
-      <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-    </VCardText>
-  </VCard>
-  <VCard>
-    <VCardTitle>Professional Reference Letter</VCardTitle>
-    <VCardText>
-      <file-pond ref="pond" name="professional_letter" :allow-multiple="false" allowRemove="true"
-        label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
-        :files="files" />
-      <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-    </VCardText>
-  </VCard>
-  <VCard>
-    <VCardTitle>CV/Resume</VCardTitle>
-    <VCardText>
-      <file-pond ref="pond" name="cv-resume" :allow-multiple="false" allowRemove="true"
-        label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
-        :files="files" />
-      <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-    </VCardText>
-  </VCard>
-  <VCard>
-    <VCardTitle>SOP</VCardTitle>
-    <VCardText>
-      <file-pond ref="pond" name="sop" :allow-multiple="false" allowRemove="true"
-        label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
-        :files="files" />
-      <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-    </VCardText>
-  </VCard>
-  <VCard>
-    <VCardTitle>Supporting Document</VCardTitle>
-    <VCardText>
-      <file-pond ref="pond" name="supporting_document" :allow-multiple="true" allowRemove="true"
-        label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
-        :files="files" />
-      <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-      <div class="btn-flex">
-        <div>
-          <VBtn color="secondary">Cancel</VBtn>
+  <div v-if="showDocumentUpload">
+    <VCard>
+      <VCardTitle class="text-center">Upload Necessary Document</VCardTitle>
+      <VCardTitle>Passport(*)</VCardTitle>
+      <VCardText>
+        <file-pond ref="pond" name="passport" :allow-multiple="false" allowRemove="true"
+          label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
+          :files="files" />
+        <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
+      </VCardText>
+    </VCard>
+    <VCard>
+      <VCardTitle>Academic Reference Letter(*)</VCardTitle>
+      <VCardText>
+        <file-pond ref="pond" name="academic_letter" :allow-multiple="false" allowRemove="true"
+          label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
+          :files="files" />
+        <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
+      </VCardText>
+    </VCard>
+    <VCard>
+      <VCardTitle>Professional Reference Letter</VCardTitle>
+      <VCardText>
+        <file-pond ref="pond" name="professional_letter" :allow-multiple="false" allowRemove="true"
+          label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
+          :files="files" />
+        <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
+      </VCardText>
+    </VCard>
+    <VCard>
+      <VCardTitle>CV/Resume</VCardTitle>
+      <VCardText>
+        <file-pond ref="pond" name="cv-resume" :allow-multiple="false" allowRemove="true"
+          label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
+          :files="files" />
+        <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
+      </VCardText>
+    </VCard>
+    <VCard>
+      <VCardTitle>SOP</VCardTitle>
+      <VCardText>
+        <file-pond ref="pond" name="sop" :allow-multiple="false" allowRemove="true"
+          label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
+          :files="files" />
+        <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
+      </VCardText>
+    </VCard>
+    <VCard>
+      <VCardTitle>Supporting Document</VCardTitle>
+      <VCardText>
+        <file-pond ref="pond" name="supporting_document" :allow-multiple="true" allowRemove="true"
+          label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
+          :files="files" />
+        <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
+        <div class="btn-flex">
+          <div>
+            <VBtn color="secondary">Cancel</VBtn>
+          </div>
+          <div>
+            <VBtn color="primary" @click="goToNextPage">Continue Without Document</VBtn>
+            <VBtn color="primary" class="btn-margin" @click="goToNextPage">Continue</VBtn>
+          </div>
         </div>
-        <div>
-          <VBtn color="primary" @click="goToNextPage">Continue Without Document</VBtn>
-          <VBtn color="primary" class="btn-margin" @click="goToNextPage">Continue</VBtn>
-        </div>
-      </div>
-    </VCardText>
-  </VCard>
+      </VCardText>
+    </VCard>
+  </div>
 
-
+  <Info v-else @back="showDocumentUpload = true" />
 </template>
 <style>
 .btn-flex {
