@@ -481,6 +481,8 @@ export const useApplicationListStore = defineStore({
       page = 1,
       itemsPerPage = 10,
       searchQuery = '',
+      sortBy = '',
+      orderBy = '',
       dateFrom = null,
       dateTo = null,
     ) {
@@ -495,6 +497,8 @@ export const useApplicationListStore = defineStore({
             page,
             perPage: itemsPerPage,
             searchQuery,
+            sortBy,
+            orderBy,
             dateFrom,
             dateTo,
           },

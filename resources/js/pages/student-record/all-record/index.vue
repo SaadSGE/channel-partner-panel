@@ -7,6 +7,12 @@ definePage({
         subject: 'dashboard',
     },
 })
+const props = defineProps({
+    userId: {
+        type: String,
+        default: null,
+    },
+})
 const tableHeight = computed(() => {
     return `calc(100vh - 200px)` // Adjust this value as needed
 });
@@ -14,7 +20,8 @@ const totalStudents = ref(0);
 const page = ref(1);
 const search = ref('');
 const itemsPerPage = ref(10);
-const students = ref([]);
+const sortBy = ref();
+const orderBy = ref();
 const isLoading = ref(false);
 const commonFunctionStore = commonFunction();
 const selectedDateFrom = ref(null);
@@ -23,17 +30,7 @@ const store = useApplicationListStore();
 const studentLists = ref([]);
 
 
-onMounted(async () => {
-    await getAllStudents();
-});
 
-const getAllStudents = async () => {
-    isLoading.value = true
-    await commonFunctionStore.getAllStudents();
-    students.value = commonFunctionStore.students;
-    console.log(students)
-    isLoading.value = false
-}
 
 const viewStudentDetail = studentId => {
     router.push({ name: 'student-record-details-id', params: { id: studentId } })
@@ -83,15 +80,21 @@ const headers = ref([
     { title: 'Status', key: 'status' },
     { title: 'Action', key: 'action', sortable: false },
 ])
-
+const updateOptions = options => {
+    sortBy.value = options.sortBy[0]?.key
+    orderBy.value = options.sortBy[0]?.order
+    fetchStudents()
+}
 const fetchStudents = async () => {
     isLoading.value = true
     try {
         const response = await store.getStudentList(
-
+            props.userId,
             page.value,
             itemsPerPage.value,
             search.value,
+            sortBy.value,
+            orderBy.value,
             selectedDateFrom.value,
             selectedDateTo.value,
         )
@@ -155,9 +158,9 @@ onMounted(() => {
 
 
 
-            <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="students"
+            <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="studentLists"
                 :items-length="totalStudents" :headers="headers" class="text-no-wrap color-black student-table"
-                :height="tableHeight">
+                :height="tableHeight" @update:options="updateOptions">
                 <template #item.first_name="{ item }">
                     <p>{{ item.first_name }}</p>
                 </template>
