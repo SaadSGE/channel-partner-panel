@@ -28,7 +28,7 @@ const selectedDateFrom = ref(null);
 const selectedDateTo = ref(null);
 const store = useApplicationListStore();
 const studentLists = ref([]);
-
+const selectedStatus = ref(null);
 
 
 
@@ -95,6 +95,7 @@ const fetchStudents = async () => {
             search.value,
             sortBy.value,
             orderBy.value,
+            selectedStatus.value,
             selectedDateFrom.value,
             selectedDateTo.value,
         )
@@ -110,6 +111,7 @@ const fetchStudents = async () => {
 
 watch([
     search,
+    selectedStatus,
     selectedDateFrom,
     selectedDateTo,
 ], () => {
@@ -130,7 +132,8 @@ onMounted(() => {
 
             <VCardText>
                 <VRow>
-                    <Filters :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
+                    <Filters :selected-status="selectedStatus" @update-status="selectedStatus = $event"
+                        :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
                         @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event"></Filters>
                 </VRow>
             </VCardText>

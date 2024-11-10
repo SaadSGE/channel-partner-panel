@@ -483,6 +483,7 @@ export const useApplicationListStore = defineStore({
       searchQuery = '',
       sortBy = '',
       orderBy = '',
+      status = null,
       dateFrom = null,
       dateTo = null,
     ) {
@@ -499,6 +500,7 @@ export const useApplicationListStore = defineStore({
             searchQuery,
             sortBy,
             orderBy,
+            status,
             dateFrom,
             dateTo,
           },
