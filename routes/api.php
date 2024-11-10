@@ -129,3 +129,4 @@ Route::apiResource('branches', BranchController::class);
 Route::apiResource('countries', CountryController::class);
 Route::apiResource('students', StudentController::class);
 Route::apiResource('leads', LeadController::class);
+Route::post('/application/{id}/aco-ao-communication', [ApplicationController::class, 'addAcoAoCommunication']);

@@ -57,6 +57,8 @@ declare global {
   const getApplicationStatusInfo: typeof import('./resources/js/@core/utils/helpers.js')['getApplicationStatusInfo']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getLeadStatus: typeof import('./resources/js/@core/utils/helpers.js')['getLeadStatus']
+  const getLeadStatusColor: typeof import('./resources/js/@core/utils/helpers.js')['getLeadStatusColor']
   const getUserRole: typeof import('./resources/js/@core/utils/helpers.js')['getUserRole']
   const h: typeof import('vue')['h']
   const handleErrorResponse: typeof import('./resources/js/@core/utils/helpers.js')['handleErrorResponse']
@@ -419,6 +421,8 @@ declare module 'vue' {
     readonly getApplicationStatusInfo: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getApplicationStatusInfo']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getLeadStatus: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getLeadStatus']>
+    readonly getLeadStatusColor: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getLeadStatusColor']>
     readonly getUserRole: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getUserRole']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly handleErrorResponse: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['handleErrorResponse']>
@@ -774,6 +778,8 @@ declare module '@vue/runtime-core' {
     readonly getApplicationStatusInfo: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getApplicationStatusInfo']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getLeadStatus: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getLeadStatus']>
+    readonly getLeadStatusColor: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getLeadStatusColor']>
     readonly getUserRole: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['getUserRole']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly handleErrorResponse: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['handleErrorResponse']>
