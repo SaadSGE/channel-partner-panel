@@ -76,17 +76,19 @@ const headers = ref([
     { title: 'Last Name', key: 'last_name' },
     { title: 'Student Email', key: 'email' },
     { title: 'Passport No', key: 'passport_no' },
-    { title: 'University', key: 'interested_universities[0].university.name' },
+    { title: 'University', key: 'interested_universities[0]?.university.name' },
     { title: 'Status', key: 'status' },
     { title: 'Action', key: 'action', sortable: false },
 ])
+
 const updateOptions = options => {
     sortBy.value = options.sortBy[0]?.key
     orderBy.value = options.sortBy[0]?.order
-    fetchStudents()
 }
+
 const fetchStudents = async () => {
     isLoading.value = true
+
     try {
         const response = await store.getStudentList(
             props.userId,
@@ -158,9 +160,6 @@ onMounted(() => {
                 </div>
             </VCardText>
 
-
-
-
             <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="studentLists"
                 :items-length="totalStudents" :headers="headers" class="text-no-wrap color-black student-table"
                 :height="tableHeight" @update:options="updateOptions">
@@ -176,10 +175,10 @@ onMounted(() => {
                 <template #item.passport_no="{ item }">
                     <p>{{ item.passport_no }}</p>
                 </template>
-                <template #item.interested_universities[0].university.name="{ item }">
+                <template #item.interested_universities[0]?.university.name="{ item }">
                     <div class="d-flex flex-column ms-3">
                         <span class="d-block font-weight-medium text-truncate text-high-emphasis">
-                            {{ item.interested_universities[0].university.name }}
+                            {{ item.interested_universities[0]?.university.name }}
                         </span>
                     </div>
                 </template>
@@ -204,6 +203,7 @@ onMounted(() => {
                     <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalStudents" />
                 </template>
             </VDataTableServer>
+
         </AppCardActions>
     </div>
 </template>
