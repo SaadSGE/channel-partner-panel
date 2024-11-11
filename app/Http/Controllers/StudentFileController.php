@@ -33,22 +33,22 @@ class StudentFileController extends Controller
             // Construct the public URL
             $publicUrl = env('DO_URL') . $path;
 
-            // Get shortened URL
-            // $response = Http::get('https://ulvis.net/api.php', [
-            //     'url' => $publicUrl,
-            // ]);
-            // $temporaryShrinkUrl = $response->successful() ? $response->body() : $publicUrl;
+
+            $response = Http::post('http://134.122.104.232:82/api/shortener-url', [
+                'original_url' => $publicUrl,
+            ]);
+            $temporaryShrinkUrl = $response->successful() ? json_decode($response->body())->data->short_url : $publicUrl;
 
             // $extractedData = null;
-            // Additional processing for extracted data if needed
+
             // if ($request->document_name === 'passport') {
-            //     $extractedData = $this->processPassportImage($publicUrl);
+            //     $extractedData = $this->processPassportImage($temporaryShrinkUrl);
             // }
 
             return $this->successJsonResponse('File uploaded successfully', [
                 'path' => $path,
                 'originalFileName' => $originalFileName,
-
+                'temporaryShrinkUrl' => $temporaryShrinkUrl,
             ]);
 
         } catch (\Throwable $th) {
