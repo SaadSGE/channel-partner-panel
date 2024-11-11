@@ -7,101 +7,30 @@ use Illuminate\Support\Facades\Storage;
 use Throwable;
 use Log;
 use App\Services\FileUploadService;
-use Illuminate\Support\Facades\Http;
-use App\Http\Controllers\AIController;
-use Spatie\PdfToImage\Pdf;
 
 class StudentFileController extends Controller
 {
     //
     public function upload(Request $request)
     {
+
+
         try {
             $file = $request->file('student_document');
-            $filePath = 'channelPartnerPanel/tempStudentDocument';
+            $filePath = 'channelPartnerPanel/studentDocument/';
             $originalFileName = $file->getClientOriginalName();
-
-            // Check if the file is a PDF and convert to image if necessary
-            if ($file->getClientOriginalExtension() === 'pdf') {
-                $file = $this->convertPdfToImage($file);
-            }
-
-            // Upload file (either the converted image or original file)
             $fileUploadService = new FileUploadService();
             $path = $fileUploadService->upload($filePath, $file);
 
-            // Construct the public URL
-            $publicUrl = env('DO_URL') . $path;
-
-
-            $response = Http::post('http://134.122.104.232:82/api/shortener-url', [
-                'original_url' => $publicUrl,
-            ]);
-            $temporaryShrinkUrl = $response->successful() ? json_decode($response->body())->data->short_url : $publicUrl;
-
-            // $extractedData = null;
-
-            // if ($request->document_name === 'passport') {
-            //     $extractedData = $this->processPassportImage($temporaryShrinkUrl);
-            // }
-
             return $this->successJsonResponse('File uploaded successfully', [
                 'path' => $path,
-                'originalFileName' => $originalFileName,
-                'temporaryShrinkUrl' => $temporaryShrinkUrl,
+                'originalFileName' => $originalFileName
             ]);
 
         } catch (\Throwable $th) {
             \Log::error('File upload error: ' . $th);
-            return $this->errorJsonResponse('File upload failed');
-        }
-    }
 
-    private function convertPdfToImage($pdfFile)
-    {
-        // Save PDF temporarily to convert it to an image
-        $originalFileName = $pdfFile->getClientOriginalName();
-        $tempPdfPath = storage_path('app/temp/' . $originalFileName);
-        $pdfFile->move(storage_path('app/temp/'), $originalFileName);
-
-        // Convert PDF to image
-        $pdf = new Pdf($tempPdfPath);
-        $imagePath = storage_path('app/temp/' . pathinfo($originalFileName, PATHINFO_FILENAME) . '.jpg');
-        $pdf->saveImage($imagePath);
-
-        // Load the converted image as a file for upload
-        $imageFile = new \Illuminate\Http\File($imagePath);
-
-        // Clean up temporary PDF file
-        if (file_exists($tempPdfPath)) {
-            unlink($tempPdfPath);
-        }
-
-        return $imageFile;
-    }
-
-    /**
-     * Process passport image using AI
-     *
-     * @param string $imageUrl
-     * @return string|null
-     */
-    private function processPassportImage($imageUrl)
-    {
-        try {
-            $aiController = new AIController();
-            $aiRequest = new Request([
-                'url' => $imageUrl
-            ]);
-
-            $aiResponse = $aiController->generateResponse($aiRequest);
-            $aiContent = json_decode($aiResponse->getContent());
-
-            return $aiContent->generated_response ?? null;
-
-        } catch (\Exception $e) {
-            \Log::error('Passport processing error: ' . $e->getMessage());
-            return null;
+            return $this->errorJsonResponse('File upload failed', $th);
         }
     }
 

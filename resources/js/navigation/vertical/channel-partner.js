@@ -56,14 +56,14 @@ export default [
     subject: 'course-request',
   },
 
-  {
-    title: 'Branch List',
-    icon: { icon: 'tabler-apps' },
-    to: 'branch-list',
-    action: 'create',
-    subject: 'dashboard',
+  // {
+  //   title: 'Branch List',
+  //   icon: { icon: 'tabler-apps' },
+  //   to: 'branch-list',
+  //   action: 'create',
+  //   subject: 'dashboard',
 
-  },
+  // },
 
   {
     title: 'Course Request List',
@@ -90,26 +90,26 @@ export default [
     subject: 'dashboard',
   },
 
-  {
-    title: 'Student Record',
-    icon: { icon: 'tabler-files' },
-    action: 'read',
-    subject: 'dashboard',
-    children: [
-      {
-        title: 'Add Record',
-        to: 'student-record',
-        action: 'read',
-        subject: 'dashboard'
-      },
-      {
-        title: 'All Record',
-        to: 'student-record-all-record',
-        action: 'read',
-        subject: 'dashboard'
-      }
-    ]
-  },
+  // {
+  //   title: 'Student Record',
+  //   icon: { icon: 'tabler-files' },
+  //   action: 'read',
+  //   subject: 'dashboard',
+  //   children: [
+  //     {
+  //       title: 'Add Record',
+  //       to: 'student-record',
+  //       action: 'read',
+  //       subject: 'dashboard'
+  //     },
+  //     {
+  //       title: 'All Record',
+  //       to: 'student-record-all-record',
+  //       action: 'read',
+  //       subject: 'dashboard'
+  //     }
+  //   ]
+  // },
 
   {
     title: 'Record',
