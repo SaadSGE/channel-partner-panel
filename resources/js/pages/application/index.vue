@@ -13,7 +13,6 @@ definePage({
   },
 })
 
-import Filters from '@/@core/components/Filters.vue';
 import { useApplicationListStore } from '@/@core/stores/applicationList';
 import { getUserRole, resolveStatusColor, resolveStatusName } from '@/@core/utils/helpers';
 import Swal from 'sweetalert2';

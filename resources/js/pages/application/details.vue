@@ -22,7 +22,7 @@ import Document from "./details-document.vue";
 const isAdmin = ref(getUserRole() === 'admin')
 const route = useRoute()
 const applicationId = route.params.id
-
+console.log(applicationId)
 const store = useApplicationListStore()
 
 const currentTab = ref("student-course-details")

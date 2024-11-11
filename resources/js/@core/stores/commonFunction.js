@@ -12,6 +12,7 @@ export const commonFunction = defineStore({
       universities: [],
       courseDetails: [],
       courseTypes: [],
+      students: [],
       countryIntakeUniversityCourse:[],
       selectedCountryId: null,
       selectedCourseId: null,
@@ -48,11 +49,12 @@ export const commonFunction = defineStore({
         };
       },
 
-      getFilteredCourseDetails: (state) => (countryId, courseId, intakeId, universityId) => {
+      getFilteredCourseDetails: (state) => (countryId, courseId, intakeId, universityId, studentId) => {
         state.selectedCountryId = countryId;
         state.selectedCourseId = courseId;
         state.selectedIntakeId = intakeId;
         state.selectedUniversityId = universityId;
+
 
         const filtered = state.countryIntakeUniversityCourse.find((detail) => {
             return (
@@ -60,6 +62,7 @@ export const commonFunction = defineStore({
                 parseInt(detail.course_id, 10) === courseId &&
                 parseInt(detail.intake_id, 10) === intakeId &&
                 parseInt(detail.university_id, 10) === universityId
+
             );
         });
        // console.log(filtered)
@@ -111,6 +114,7 @@ export const commonFunction = defineStore({
         try {
           const response = await $api(`/intakes/country/${countryId}`, { method: 'GET' });
           this.intakes = response.data;
+          return response.data;
         } catch (error) {
           console.error('Error fetching intakes:', error);
           this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -120,6 +124,7 @@ export const commonFunction = defineStore({
         try {
           const response = await $api(`/course-types/${countryId}/${intakeId}`, { method: 'GET' });
           this.courseTypes = response.data;
+          return response.data;
         } catch (error) {
           console.error('Error fetching course types:', error);
           this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -129,6 +134,7 @@ export const commonFunction = defineStore({
         try {
           const response = await $api(`/universities/${countryId}/${intakeId}/${courseType}`, { method: 'GET' });
           this.universities = response.data;
+          return response.data;
         } catch (error) {
           console.error('Error fetching universities:', error);
           this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -142,7 +148,7 @@ export const commonFunction = defineStore({
             this.courseDetails = response.data;
             this.selectedIntakeId = intakeId;
             this.selectedUniversityId = universityId;
-
+            return response.data;
         } catch (error) {
             console.error('Error fetching course details:', error);
             this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -168,7 +174,7 @@ export const commonFunction = defineStore({
 
           // Convert Map values to array
           this.countries = Array.from(countryMap.values());
-
+          return response.data;
 
       } catch (error) {
           console.error('Error fetching countries:', error);
@@ -182,6 +188,7 @@ export const commonFunction = defineStore({
                 const response = await $api('/application-country', { method: 'GET' });
 
                 this.countries = response.data;
+                return response.data;
             } catch (error) {
                 console.error('Error fetching countries:', error);
                 this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -192,6 +199,7 @@ export const commonFunction = defineStore({
                 const response = await $api('/course', { method: 'GET' });
 
                 this.courses = response.data;
+                return response.data;
             } catch (error) {
                 console.error('Error fetching courses:', error);
                 this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -202,6 +210,7 @@ export const commonFunction = defineStore({
                 const response = await $api('/intake', { method: 'GET' });
 
                 this.intakes = response.data;
+                return response.data;
             } catch (error) {
                 console.error('Error fetching intakes:', error);
                 this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -391,7 +400,7 @@ export const commonFunction = defineStore({
           try {
               const response = await $api('/countries', { method: 'GET' });
               this.allCountries = response.data;
-              
+
           } catch (error) {
               console.error('Error fetching countries:', error);
               this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
@@ -404,7 +413,7 @@ export const commonFunction = defineStore({
                   method: 'POST',
                   body: country,
                 });
-                
+
                 this.allCountries.unshift(response.data);
           } catch (error) {
               console.error('Error adding country:', error);
@@ -440,6 +449,41 @@ export const commonFunction = defineStore({
             this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
           }
         },
+
+        async getAllStudents() {
+          try {
+              const response = await $api('/students', { method: 'GET' });
+              this.students = response.data;
+
+          } catch (error) {
+              console.error('Error fetching students:', error);
+              this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+          }
+      },
+
+      async getStudentById(id) {
+        try {
+            const response = await $api(`/students/${id}`, { method: 'GET' });
+            this.students = response.data;
+            return response.data;
+            } catch (error) {
+            console.error('Error fetching student:', error);
+            this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        }
+    },
+      async deleteAllStudent(id) {
+        try {
+          await $api(`/students/${id}`, {
+            method: 'DELETE',
+          });
+
+          this.students = this.students.filter(student => student.id !== id);
+
+        } catch (error) {
+          console.error('Error deleting student:', error);
+          this.errors = error.response ? error.response.data.errors : ['An unexpected error occurred'];
+        }
+      },
 
     }
 });
