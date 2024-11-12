@@ -21,7 +21,7 @@ class LeadController extends Controller
         $query = Lead::query();
 
 
-
+        $query->with('notes.creator:id,first_name,last_name');
 
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
