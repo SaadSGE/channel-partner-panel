@@ -14,6 +14,7 @@ definePage({
 
 import Filters from "@/@core/components/Filters.vue";
 import { useLeadStore } from "@/@core/stores/leadStore";
+import { resolveLeadStatusName } from '@/@core/utils/helpers';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { ref } from "vue";
 
@@ -27,7 +28,7 @@ const page = ref(1)
 const sortBy = ref()
 const orderBy = ref()
 const search = ref('')
-const selectedStatus = ref(null)
+const selectedLeadStatus = ref(null)
 const selectedStatusId = ref(null)
 const selectedDateFrom = ref(null)
 const selectedDateTo = ref(null)
@@ -54,7 +55,7 @@ const headers = [
 // Watchers
 watch([
     search,
-    selectedStatus,
+    selectedLeadStatus,
     selectedDateFrom,
     selectedDateTo,
 ], () => {
@@ -96,7 +97,7 @@ const fetchLeads = async () => {
             search.value,
             sortBy.value,
             orderBy.value,
-            selectedStatus.value,
+            selectedLeadStatus.value,
             selectedDateFrom.value,
             selectedDateTo.value,
         )
@@ -163,9 +164,10 @@ const handleAddNote = async (leadId) => {
             <VCardText v-if="$can('filter', 'user')">
                 <VRow>
                     <!-- 👉 Select status -->
-                    <Filters :selected-status="selectedStatus" @update-status="selectedStatus = $event"
-                        :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
-                        @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
+                    <Filters :selected-lead-status="selectedLeadStatus"
+                        @update-lead-status="selectedLeadStatus = $event" :selected-dateFrom="selectedDateFrom"
+                        :selected-dateTo="selectedDateTo" @update-dateFrom="selectedDateFrom = $event"
+                        @update-dateTo="selectedDateTo = $event">
                     </Filters>
                 </VRow>
 
@@ -329,7 +331,7 @@ const handleAddNote = async (leadId) => {
             </VDataTableServer>
         </VCard>
         <!-- Change Status Dialog Component -->
-        <ChangeStatusDialog :showDialog="showDialog" :leadId="selectedLeadId" :statusId='selectedStatus'
+        <ChangeStatusDialog :showDialog="showDialog" :leadId="selectedLeadId" :statusId='selectedStatusId'
             @updateStatus="handleLeadStatusUpdate" @closeDialog="showDialog = false" />
     </section>
 </template>

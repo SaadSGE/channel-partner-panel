@@ -2,6 +2,7 @@
 import { defineEmits, onMounted, ref } from 'vue';
 import { commonFunction } from '../stores/commonFunction';
 
+import { leadStatuses } from '@/@core/utils/helpers';
 import { editor } from '../stores/editor';
 import { useRolePermissionStore } from '../stores/rolePermission';
 import { useUserStore } from '../stores/user';
@@ -35,6 +36,7 @@ const isLoading = ref(false);
 const selectedRole = ref();
 const selectedParent = ref(null);
 const selectedUserStatus = ref(null);
+const selectedLeadStatus = ref(null);
 const users = ref([]);
 const totalUsers = ref(0);
 const roleStore = useRolePermissionStore();
@@ -52,6 +54,10 @@ const props = defineProps({
     default: false,
   },
   selectedStatus: {
+    type: Number,
+    Required: false,
+  },
+  selectedLeadStatus: {
     type: Number,
     Required: false,
   },
@@ -113,9 +119,14 @@ const props = defineProps({
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus']);
-
+const emit = defineEmits([
+  'update-status', 'update-lead-status', 'update-channel-partner', 'update-university',
+  'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country',
+  'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent',
+  'update-editor', 'update-userStatus'
+]);
 const localSelectedStatus = ref(props.selectedStatus);
+const localSelectedLeadStatus = ref(props.selectedLeadStatus);
 const localSelectedChannelPartner = ref(props.selectedChannelPartner);
 const localSelectedUniversity = ref(props.selectedUniversity);
 const localSelectedApplicationOfficer = ref(props.selectedApplicationOfficer);
@@ -134,6 +145,10 @@ const localSelectedUserStatus = ref(props.selectedUserStatus);
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
 });
+watch(localSelectedLeadStatus, (newValue) => {
+  emit('update-lead-status', newValue);
+});
+
 watch(localSelectedChannelPartner, (newValue) => {
   emit('update-channel-partner', newValue);
 });
@@ -255,6 +270,7 @@ onMounted(async () => {
 });
 onMounted(async () => {
   await loadEditors();
+  console.log(selectedLeadStatus, localSelectedLeadStatus);
 });
 
 const loadEditors = async () => {
@@ -267,6 +283,10 @@ const loadEditors = async () => {
 
 
 <template>
+  <VCol cols="12" md="3" v-if="props.selectedLeadStatus !== undefined">
+    <AppAutocomplete v-model="localSelectedLeadStatus" :items="leadStatuses" :item-title="(item) => item.text"
+      :item-value="(item) => item.id" label="Lead Status" placeholder="Select Lead Status" clearable />
+  </VCol>
   <!-- Application history -->
 
   <VCol cols="12" md="3" v-if="props.selectedStatus !== undefined">
