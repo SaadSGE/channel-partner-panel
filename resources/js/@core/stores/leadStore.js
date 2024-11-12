@@ -51,7 +51,10 @@ export const useLeadStore = defineStore({
         console.log("Updating lead with data:", id, updatedData);
 
         const response = await $api(`/leads/${id}`, {
-          method: "PATCH",
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: updatedData,
         });
 
@@ -68,14 +71,15 @@ export const useLeadStore = defineStore({
       }
     },
 
-    async addNote(id, note) {
-      console.log("Adding note with:", note);
+    async addNote(id, notes) {
+      console.log("Adding note with:", notes);
       try {
         const response = await $api(`/leads/${id}`, {
-          method: "POST",
-          body: JSON.stringify({
-            note,
-          }),
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(notes),
         });
 
         return response.data;

@@ -28,6 +28,7 @@ const sortBy = ref()
 const orderBy = ref()
 const search = ref('')
 const selectedStatus = ref(null)
+const selectedStatusId = ref(null)
 const selectedDateFrom = ref(null)
 const selectedDateTo = ref(null)
 const showDialog = ref(false);
@@ -115,16 +116,19 @@ const updateOptions = options => {
 // Open dialog and set selected lead ID
 const openChangeStatusDialog = (leadId, statusId) => {
     selectedLeadId.value = leadId;
-    selectedStatus.value = statusId;
+    selectedStatusId.value = statusId;
     showDialog.value = true;
 };
 
 // Handle status update from dialog
 const handleLeadStatusUpdate = async ({ leadId, statusId }) => {
     console.log(leadId, statusId);
-    await leadStore.updateLeadStatus(leadId, statusId);
+    const updateStatus = {
+        status: statusId,
+    }
+    await leadStore.updateLeadStatus(leadId, updateStatus);
     console.log('Updated status');
-    fetchLeads(); // Refresh leads after updating status
+    await fetchLeads(); // Refresh leads after updating status
     showDialog.value = false;  // Close the dialog
 };
 
@@ -134,7 +138,10 @@ const handleAddNote = async (leadId) => {
         showAddNoteModal.value = true;
         isNoteLoading.value = true
         console.log(newNote.value);
-        await leadStore.addNote(leadId, newNote.value)
+        const noteData = {
+            notes: newNote.value
+        }
+        await leadStore.addNote(leadId, noteData)
         newNote.value = "" // Clear the note input
         showAddNoteModal.value = false // Close the note modal
     } catch (error) {
@@ -235,7 +242,9 @@ const handleAddNote = async (leadId) => {
                                 </VCol>
 
                                 <!-- Upload Button -->
-                                <VBtn @click="uploadFile" color="purple-lighten-4">Upload</VBtn>
+                                <VBtn prepend-icon="tabler-cloud-upload" @click="uploadFile" color="purple-lighten-4">
+                                    Upload
+                                </VBtn>
                             </VRow>
 
                             <!-- File Format Notice with Margin Top -->
@@ -246,7 +255,8 @@ const handleAddNote = async (leadId) => {
                             <!-- Download Sample Section with Bold Text Button -->
                             <VRow justify="center" align="center" class="mt-6 gap-2">
                                 <span class="text-lg font-bold">Download Sample Excel/CSV File</span>
-                                <VBtn prepend-icon="tabler-plus" @click="downloadSampleFile" class="ml-4 font-bold">
+                                <VBtn prepend-icon="tabler-cloud-download" @click="downloadSampleFile"
+                                    class="ml-4 font-bold">
                                     Download
                                 </VBtn>
                             </VRow>
@@ -302,7 +312,7 @@ const handleAddNote = async (leadId) => {
                                     </template>
                                     <VListItemTitle>Change Status</VListItemTitle>
                                 </VListItem>
-                                <VListItem @click="handleAddNote(item.id)">
+                                <VListItem @click="showAddNoteModal = true">
                                     <template #prepend>
                                         <VIcon icon=" tabler-clipboard-text" />
                                     </template>
@@ -317,7 +327,6 @@ const handleAddNote = async (leadId) => {
                 </template>
 
             </VDataTableServer>
-            <!-- SECTION -->
         </VCard>
         <!-- Change Status Dialog Component -->
         <ChangeStatusDialog :showDialog="showDialog" :leadId="selectedLeadId" :statusId='selectedStatus'
@@ -340,7 +349,7 @@ const handleAddNote = async (leadId) => {
 }
 
 .text-muted {
-    color: #6c757d;
+    color: #04c434;
 }
 
 .text-lg {

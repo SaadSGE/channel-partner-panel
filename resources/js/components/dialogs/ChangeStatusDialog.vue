@@ -34,6 +34,7 @@ const updateStatus = () => {
         closeDialog();
     }
 };
+
 </script>
 
 <template>
