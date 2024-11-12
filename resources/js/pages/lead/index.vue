@@ -16,7 +16,7 @@ import Filters from "@/@core/components/Filters.vue";
 import { useLeadStore } from "@/@core/stores/leadStore";
 import { resolveLeadStatusName } from '@/@core/utils/helpers';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 
 const leadStore = useLeadStore();
 // Reactive state
@@ -38,6 +38,12 @@ const showUploadCard = ref(false);
 const showAddNoteModal = ref(false) // Modal visibility state for comments
 const newNote = ref("") // New comment
 const isNoteLoading = ref(false)
+const showAllNotes = reactive({});
+
+// Function to toggle between showing all notes and only the first two for each lead
+const toggleShowNotes = (leadId) => {
+    showAllNotes[leadId] = !showAllNotes[leadId];
+}
 const headers = [
     { title: 'Name', key: 'name' },
     { title: 'Phone', key: 'phone' },
@@ -287,7 +293,25 @@ const handleAddNote = async (leadId) => {
 
                 <!-- Other slots and configurations remain the same -->
                 <template #item.notes="{ item }">
-                    <ShowMore :text="item.notes" :lines="3" />
+                    <ul style="list-style-type: disc; padding-inline-start: 20px;">
+                        <!-- Display first two notes or all notes based on showAllNotes toggle -->
+                        <template v-for="(note, index) in (showAllNotes[item.id] ? item.notes : item.notes.slice(0, 2))"
+                            :key="note.id">
+                            <li class="note" style="font-size: 1.1em; margin-block-end: 8px;">
+                                {{ note.note }}
+                                ( <small style="color: #757575;">
+                                    <span style="color: #007acc;">{{ note.created_by }}</span>,
+                                    <span style="color: orange;">{{ note.created_at ? new
+                                        Date(note.created_at).toLocaleDateString() : 'N/A' }}</span>
+                                </small> )
+                            </li>
+                        </template>
+                    </ul>
+                    <!-- Show More / Show Less link with custom style -->
+                    <p v-if="item.notes.length > 2" @click="toggleShowNotes(item.id)"
+                        style="color: blue; cursor: pointer; font-weight: bold; padding-inline-start: 10px; text-decoration: underline;">
+                        {{ showAllNotes[item.id] ? 'Show Less' : 'Show More' }}
+                    </p>
                 </template>
                 <template #item.status="{ item }">
                     <VChip :color="resolveLeadStatusColor(item.status)"
@@ -298,7 +322,6 @@ const handleAddNote = async (leadId) => {
                 <template #item.assigned_branch="{ item }">
                     <span>{{ item.assigned_branch || 'Not Assigned' }}</span>
                 </template>
-
                 <template #item.assigned_user="{ item }">
                     <span>{{ item.assigned_user || 'Not Assigned' }}</span>
                 </template>
