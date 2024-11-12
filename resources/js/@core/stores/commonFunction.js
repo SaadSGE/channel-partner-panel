@@ -512,19 +512,5 @@ export const commonFunction = defineStore({
           : ["An unexpected error occurred"];
       }
     },
-
-    async getLeads() {
-      try {
-        const response = await $api("/leads", { method: "GET" });
-        console.log(response);
-        return response;
-      } catch (error) {
-        console.error("Error getting leads:", error);
-        this.errors = error.response
-          ? error.response.data.errors
-          : ["An unexpected error occurred"];
-        throw error;
-      }
-    },
   },
 });

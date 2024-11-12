@@ -8,20 +8,6 @@ export const useLeadStore = defineStore({
     successMessage: "",
   }),
   actions: {
-    // async getLeads() {
-    //   try {
-    //     const response = await $api("/leads", { method: "GET" });
-    //     console.log(response);
-    //     return response;
-    //   } catch (error) {
-    //     console.error("Error getting leads:", error);
-    //     this.errors = error.response
-    //       ? error.response.data.errors
-    //       : ["An unexpected error occurred"];
-    //     throw error;
-    //   }
-    // },
-
     async getLeads(
       id = null,
       page = 1,
@@ -53,6 +39,48 @@ export const useLeadStore = defineStore({
         });
       } catch (error) {
         console.error("Error getting leads list:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+        throw error;
+      }
+    },
+
+    async updateLeadStatus(id, updatedData) {
+      try {
+        console.log("Updating lead with data:", id, updatedData);
+
+        const response = await $api(`/leads/${id}`, {
+          method: "PATCH",
+          body: updatedData,
+        });
+
+        console.log("Lead status updated successfully:", response);
+        return response.data;
+      } catch (error) {
+        console.error("Error updating lead status:", error);
+
+        // Capture and handle errors in a readable way
+        this.errors = error.response?.data?.errors || [
+          "An unexpected error occurred",
+        ];
+        throw error;
+      }
+    },
+
+    async addNote(id, note) {
+      console.log("Adding note with:", note);
+      try {
+        const response = await $api(`/leads/${id}`, {
+          method: "POST",
+          body: JSON.stringify({
+            note,
+          }),
+        });
+
+        return response.data;
+      } catch (error) {
+        console.error("Error adding note:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];

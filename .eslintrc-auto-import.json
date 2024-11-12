@@ -362,6 +362,10 @@
     "watchWithFilter": true,
     "whenever": true,
     "getLeadStatusColor": true,
-    "getLeadStatus": true
+    "getLeadStatus": true,
+    "LeadStatuses": true,
+    "resolveLeadStatusColor": true,
+    "resolveLeadStatusName": true,
+    "leadStatuses": true
   }
 }

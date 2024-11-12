@@ -21,7 +21,7 @@ const leadStore = useLeadStore();
 // Reactive state
 const leads = ref([]);
 const total = ref();
-const isLoading = ref();
+const isLoading = ref(false)
 const itemsPerPage = ref(10)
 const page = ref(1)
 const sortBy = ref()
@@ -32,9 +32,10 @@ const selectedDateFrom = ref(null)
 const selectedDateTo = ref(null)
 const showDialog = ref(false);
 const selectedLeadId = ref(null);
-// Upload Component Visibility
 const showUploadCard = ref(false);
-
+const showAddNoteModal = ref(false) // Modal visibility state for comments
+const newNote = ref("") // New comment
+const isNoteLoading = ref(false)
 const headers = [
     { title: 'Name', key: 'name' },
     { title: 'Phone', key: 'phone' },
@@ -61,7 +62,6 @@ watch([
 
 onMounted(async () => {
     await fetchLeads();
-    console.log(leads);
 });
 
 
@@ -113,17 +113,37 @@ const updateOptions = options => {
 }
 
 // Open dialog and set selected lead ID
-const openChangeStatusDialog = (leadId) => {
+const openChangeStatusDialog = (leadId, statusId) => {
     selectedLeadId.value = leadId;
+    selectedStatus.value = statusId;
     showDialog.value = true;
 };
 
 // Handle status update from dialog
-const handleStatusUpdate = async ({ leadId, status }) => {
-    await leadStore.updateLeadStatus(leadId, status);
-    fetchLead(); // Refresh leads after updating status
+const handleLeadStatusUpdate = async ({ leadId, statusId }) => {
+    console.log(leadId, statusId);
+    await leadStore.updateLeadStatus(leadId, statusId);
+    console.log('Updated status');
+    fetchLeads(); // Refresh leads after updating status
     showDialog.value = false;  // Close the dialog
 };
+
+
+const handleAddNote = async (leadId) => {
+    try {
+        showAddNoteModal.value = true;
+        isNoteLoading.value = true
+        console.log(newNote.value);
+        await leadStore.addNote(leadId, newNote.value)
+        newNote.value = "" // Clear the note input
+        showAddNoteModal.value = false // Close the note modal
+    } catch (error) {
+        console.error("Error adding note:", error)
+    } finally {
+        isNoteLoading.value = false
+        fetchLeads();
+    }
+}
 </script>
 
 <template>
@@ -141,6 +161,32 @@ const handleStatusUpdate = async ({ leadId, status }) => {
                         @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
                     </Filters>
                 </VRow>
+
+
+                <!-- Modal for adding a comment -->
+                <VDialog v-model="showAddNoteModal" max-width="500px">
+                    <VCard>
+                        <VCardTitle>Add a New Note</VCardTitle>
+                        <VCardText>
+                            <VForm @submit.prevent="handleAddNote">
+                                <VLabel class="mt-2">
+                                    New Note
+                                </VLabel>
+                                <AppTextarea v-model="newNote" placeholder="Add a new note" class="mt-2" />
+                            </VForm>
+                        </VCardText>
+                        <VCardActions>
+                            <VSpacer />
+                            <VBtn color="primary" :loading="isNoteLoading" :disabled="isNoteLoading"
+                                @click="handleAddNote">
+                                Submit Note
+                            </VBtn>
+                            <VBtn :disabled="isNoteLoading" @click="showAddNoteModal = false">
+                                Cancel
+                            </VBtn>
+                        </VCardActions>
+                    </VCard>
+                </VDialog>
             </VCardText>
 
             <VDivider />
@@ -162,38 +208,54 @@ const handleStatusUpdate = async ({ leadId, status }) => {
                         <AppTextField v-model="search" placeholder="Search Lead" />
                     </div>
 
-                    <!-- 👉 Export button -->
-
-                    <!-- 👉 Add user button -->
-                    <VBtn prepend-icon="tabler-plus" @click="toggleUploadCard" v-if="$can('create', 'user')">
+                    <!-- 👉 Upload lead button-->
+                    <VBtn prepend-icon="tabler-plus" @click="toggleUploadCard">
                         Upload Lead
                     </VBtn>
 
                 </div>
                 <!-- Upload Lead VCard (Initially Hidden) -->
-                <VCard v-if="showUploadCard" class="mt-4 upload-card full-width">
-                    <VRow justify="space-between" align="center" class="mb-2">
-                        <span class="font-weight-bold">Upload Lead Excel File</span>
-                        <VBtn icon @click="toggleUploadCard" class="close-btn">
-                            <VIcon icon="tabler-x" />
-                        </VBtn>
-                    </VRow>
-                    <VCardText class="d-flex flex-column align-center justify-center">
-                        <div class="form-padding text-center">
-                            <div class="d-flex flex-column align-center justify-center gap-2 mt-4">
-                                <!-- File Upload Input -->
-                                <input type="file" accept=".xlsx, .csv" @change="handleFileUpload" class="file-input" />
-                                <VBtn @click="uploadFile" color="primary" class="upload-btn">Upload</VBtn>
-                            </div>
-                            <p class="text-muted mt-2 text-center">Only excel/csv file support</p>
-                            <div class="d-flex justify-center mt-4 gap-4">
-                                <span class="sample-file-text">Download Sample Excel File</span>
-                                <VBtn @click="downloadSampleFile" variant="outlined" class="download-btn">Download
+                <VCard v-if="showUploadCard" class="mt-4 w-100 full-width-card">
+                    <VCardText>
+                        <!-- Card Header with Title and Close Button -->
+                        <VRow justify="space-between" class="align-center">
+                            <span>Upload Lead Excel/csv File</span>
+                            <VBtn icon @click="toggleUploadCard">
+                                <VIcon icon="tabler-x" />
+                            </VBtn>
+                        </VRow>
+
+                        <!-- Main Form Area -->
+                        <div class="form-padding mt-6">
+                            <VRow justify="center" align="center" class="gap-4">
+                                <!-- File Upload Input with Half Width -->
+                                <VCol cols="12" md="6">
+                                    <VFileInput accept=".xlsx, .csv" label="Upload Excel/CSV file"
+                                        @change="handleFileUpload" variant="outlined" color="purple-lighten-4" />
+                                </VCol>
+
+                                <!-- Upload Button -->
+                                <VBtn @click="uploadFile" color="purple-lighten-4">Upload</VBtn>
+                            </VRow>
+
+                            <!-- File Format Notice with Margin Top -->
+                            <VRow justify="center" class="mt-2">
+                                <p class="text-muted">Only Excel/CSV file support</p>
+                            </VRow>
+
+                            <!-- Download Sample Section with Bold Text Button -->
+                            <VRow justify="center" align="center" class="mt-6 gap-2">
+                                <span class="text-lg font-bold">Download Sample Excel/CSV File</span>
+                                <VBtn prepend-icon="tabler-plus" @click="downloadSampleFile" class="ml-4 font-bold">
+                                    Download
                                 </VBtn>
-                            </div>
+                            </VRow>
                         </div>
                     </VCardText>
                 </VCard>
+
+
+
             </VCardText>
             <VDivider />
             <!-- SECTION datatable -->
@@ -215,11 +277,12 @@ const handleStatusUpdate = async ({ leadId, status }) => {
                 <template #item.notes="{ item }">
                     <ShowMore :text="item.notes" :lines="3" />
                 </template>
-
                 <template #item.status="{ item }">
-                    <span :class="getLeadStatusColor(item.status)">{{ getLeadStatus(item.status) }}</span>
+                    <VChip :color="resolveLeadStatusColor(item.status)"
+                        :class="`text-${resolveStatusColor(item.status)}`" size="small" class="font-weight-medium">
+                        {{ resolveLeadStatusName(item.status) }}
+                    </VChip>
                 </template>
-
                 <template #item.assigned_branch="{ item }">
                     <span>{{ item.assigned_branch || 'Not Assigned' }}</span>
                 </template>
@@ -233,15 +296,15 @@ const handleStatusUpdate = async ({ leadId, status }) => {
                         <VMenu activator="parent">
                             <VList>
                                 <!-- Change Status option opens the dialog -->
-                                <VListItem @click="openChangeStatusDialog(item.status)" v-if="$can('edit', 'user')">
+                                <VListItem @click="openChangeStatusDialog(item.id, item.status)">
                                     <template #prepend>
                                         <VIcon icon="tabler-analyze" />
                                     </template>
                                     <VListItemTitle>Change Status</VListItemTitle>
                                 </VListItem>
-                                <VListItem @click="setParent(item)" v-if="$can('edit', 'user')">
+                                <VListItem @click="handleAddNote(item.id)">
                                     <template #prepend>
-                                        <VIcon icon="tabler-clipboard-text" />
+                                        <VIcon icon=" tabler-clipboard-text" />
                                     </template>
                                     <VListItemTitle>Add Note</VListItemTitle>
                                 </VListItem>
@@ -256,57 +319,36 @@ const handleStatusUpdate = async ({ leadId, status }) => {
             </VDataTableServer>
             <!-- SECTION -->
         </VCard>
-        <!-- 👉 Add New User -->
         <!-- Change Status Dialog Component -->
-        <ChangeStatusDialog :showDialog="showDialog" :leadId="selectedLeadId" @updateStatus="handleStatusUpdate"
-            @closeDialog="showDialog = false" />
+        <ChangeStatusDialog :showDialog="showDialog" :leadId="selectedLeadId" :statusId='selectedStatus'
+            @updateStatus="handleLeadStatusUpdate" @closeDialog="showDialog = false" />
     </section>
 </template>
 
 <style lang="scss">
-/* Upload Card Styles */
-.upload-card {
-    position: relative;
-    padding: 20px;
+.full-width-card {
+    padding: 10px;
     border-radius: 8px;
-    background-color: #f2e6ff;
+    margin: 0;
+    background-color: #f6f6fa;
+    inline-size: 100%;
+    max-inline-size: 100%;
 }
 
-.close-btn {
-    position: absolute;
-    inset-block-start: 8px;
-    inset-inline-end: 8px;
-}
-
-.form-padding {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.file-input {
-    padding: 12px;
-    border: none;
-    border-radius: 4px;
-    background-color: #d3d2d5;
-    inline-size: 300px;
-}
-
-.upload-btn {
-    background-color: #d1b3ff;
-    color: #000;
-}
-
-.download-btn {
-    background-color: #d1b3ff;
-    color: #000;
+.font-bold {
+    font-weight: bold;
 }
 
 .text-muted {
-    color: #666;
-    font-size: 0.9em;
-    text-align: center;
+    color: #6c757d;
+}
+
+.text-lg {
+    font-size: 1.25rem;
+}
+
+.font-medium {
+    font-weight: 500;
 }
 
 .sample-file-text {

@@ -1,47 +1,49 @@
 <script setup>
-import { getLeadStatus } from "@/@core/utils/helpers";
+import { leadStatuses, resolveLeadStatusName } from '@/@core/utils/helpers';
+import { ref, watch } from 'vue';
+
 const props = defineProps({
     showDialog: Boolean,
     leadId: Number,
+    statusId: Number,
 });
 
-const emit = defineEmits(["updateStatus", "closeDialog"]);
-const selectedStatus = ref('');
-const statusOptions = Array.from({ length: 15 }, (i) => ({
-    value: i + 1,
-    text: getLeadStatus(i + 1),
-}));
-console.log(statusOptions);
+const emit = defineEmits(['updateStatus', 'closeDialog']);
+const selectedStatus = ref(null); // Store selected status ID
+
+// Watch for dialog open to set current status
 watch(
     () => props.showDialog,
     (newVal) => {
         if (newVal) {
-            // Fetch and set the current lead's status
-            selectedStatus.value = getLeadStatus(props.leadId);
+            // Set the current status when the dialog is opened
+            selectedStatus.value = resolveLeadStatusName(props.statusId);
         }
     }
 );
 
 // Close dialog function
 const closeDialog = () => {
-    emit("closeDialog");
+    emit('closeDialog');
 };
 
-// Update status function
+// Emit updateStatus with leadId and selectedStatus ID
 const updateStatus = () => {
-    if (selectedStatus.value) {
-        emit("updateStatus", { leadId: props.leadId, status: selectedStatus.value });
+    if (selectedStatus.value !== null) {
+        emit('updateStatus', { leadId: props.leadId, statusId: selectedStatus.value });
         closeDialog();
     }
 };
 </script>
 
 <template>
-    <VDialog :model-value="props.showDialog" persistent :width="$vuetify.display.smAndDown ? 'auto' : 400">
+    <VDialog :model-value="props.showDialog" persistent :width="$vuetify.display.smAndDown ? 'auto' : 400"
+        @click:outside="closeDialog">
         <VCard>
             <VCardTitle>Select New Status</VCardTitle>
             <VCardText>
-                <AppAutocomplete v-model="selectedStatus" :items="statusOptions" :item-title="(item) => item.name"
+                <!-- Use leadStatuses as items in AppAutocomplete -->
+                <AppAutocomplete v-model="selectedStatus" :items="leadStatuses" :item-title="(item) => item.text"
                     :item-value="(item) => item.id" label="Status" placeholder="Select Status"
                     :rules="[requiredValidator]" clearable />
             </VCardText>
@@ -53,7 +55,3 @@ const updateStatus = () => {
         </VCard>
     </VDialog>
 </template>
-
-<style scoped>
-/* Style adjustments if needed */
-</style>

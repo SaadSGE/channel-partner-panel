@@ -116,45 +116,33 @@ export const getApplicationStatusInfo = (statusCode) => {
   );
 };
 
-// Get color based on status code
-export const getLeadStatusColor = (status) => {
-  const statusColors = {
-    1: "status-color-1",
-    2: "status-color-2",
-    3: "status-color-3",
-    4: "status-color-4",
-    5: "status-color-5",
-    6: "status-color-6",
-    7: "status-color-7",
-    8: "status-color-8",
-    9: "status-color-9",
-    10: "status-color-10",
-    11: "status-color-11",
-    12: "status-color-12",
-    13: "status-color-13",
-    14: "status-color-14",
-    15: "status-color-15",
-  };
-  return statusColors[status] || "default-status-color";
+// Define lead statuses as an array of objects
+export const leadStatuses = [
+  { id: 0, text: "New Lead", color: "status-color-1" },
+  { id: 1, text: "Contacted", color: "status-color-2" },
+  { id: 2, text: "Interested", color: "status-color-3" },
+  { id: 3, text: "Qualified", color: "status-color-4" },
+  { id: 4, text: "Proposal Sent", color: "status-color-5" },
+  { id: 5, text: "Negotiation", color: "status-color-6" },
+  { id: 6, text: "Closed Won", color: "status-color-7" },
+  { id: 7, text: "Closed Lost", color: "status-color-8" },
+  { id: 8, text: "Follow-Up", color: "status-color-9" },
+  { id: 9, text: "Reassigned", color: "status-color-10" },
+  { id: 10, text: "Pending", color: "status-color-11" },
+  { id: 11, text: "In Progress", color: "status-color-12" },
+  { id: 12, text: "On Hold", color: "status-color-13" },
+  { id: 13, text: "Completed", color: "status-color-14" },
+  { id: 14, text: "Archived", color: "status-color-15" },
+];
+
+// Get status color by status ID
+export const resolveLeadStatusColor = (statusId) => {
+  const status = leadStatuses.find((status) => status.id === statusId);
+  return status ? status.color : "#000";
 };
-// Function to get the status text based on status code
-export const getLeadStatus = (status) => {
-  const statusTexts = {
-    1: "New Lead",
-    2: "Contacted",
-    3: "Interested",
-    4: "Qualified",
-    5: "Proposal Sent",
-    6: "Negotiation",
-    7: "Closed Won",
-    8: "Closed Lost",
-    9: "Follow-Up",
-    10: "Reassigned",
-    11: "Pending",
-    12: "In Progress",
-    13: "On Hold",
-    14: "Completed",
-    15: "Archived",
-  };
-  return statusTexts[status] || "Unknown Status";
+
+// Get status name by status ID
+export const resolveLeadStatusName = (statusId) => {
+  const status = leadStatuses.find((status) => status.id === statusId);
+  return status ? status.text : "Unknown Status";
 };
