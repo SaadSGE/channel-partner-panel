@@ -45,6 +45,7 @@ declare module 'vue-router/auto/routes' {
     'application-course-details': RouteRecordInfo<'application-course-details', '/application/course-details', Record<never, never>, Record<never, never>>,
     'application-details': RouteRecordInfo<'application-details', '/application/details', Record<never, never>, Record<never, never>>,
     'application-details-document': RouteRecordInfo<'application-details-document', '/application/details-document', Record<never, never>, Record<never, never>>,
+    'application-find-student': RouteRecordInfo<'application-find-student', '/application/find-student', Record<never, never>, Record<never, never>>,
     'application-new': RouteRecordInfo<'application-new', '/application/new', Record<never, never>, Record<never, never>>,
     'application-student-information': RouteRecordInfo<'application-student-information', '/application/student-information', Record<never, never>, Record<never, never>>,
     'application-upload-document': RouteRecordInfo<'application-upload-document', '/application/upload-document', Record<never, never>, Record<never, never>>,

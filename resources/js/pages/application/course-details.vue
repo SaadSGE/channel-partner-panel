@@ -7,6 +7,7 @@ definePage({
 })
 import { useFileStore } from "@/@core/stores/fileStore";
 import { ref } from "vue";
+import { useRouter } from 'vue-router';
 import StudentInformation from "./student-information.vue";
 import UploadDocuemnt from "./upload-document.vue";
 const currentTab = ref("item-1");
@@ -30,10 +31,14 @@ const fileStore = useFileStore();
 const courseDetailsShow = ref(true)
 const uploadDocumentShow = ref(false)
 const studentFormShow = ref(false)
-const uploadDocument = ()=>{
+const uploadDocument = () => {
   fileStore.resetFiles()
-  uploadDocumentShow.value=true;
-  courseDetailsShow.value=false
+  uploadDocumentShow.value = true;
+  courseDetailsShow.value = false
+}
+const router = useRouter();
+const nextPage = () => {
+  router.push("/application/find-student")
 }
 </script>
 <template>
@@ -41,14 +46,8 @@ const uploadDocument = ()=>{
     <VCol md="3" sm="3">
       <VCard>
         <VCardText>
-          <div
-            class="d-flex justify-center align-start pb-0 px-3 pt-3 mb-4 bg-light rounded"
-          >
-            <VImg
-              :src="courseDetails.universityLogo"
-              width="145"
-              height="140"
-            />
+          <div class="d-flex justify-center align-start pb-0 px-3 pt-3 mb-4 bg-light rounded">
+            <VImg :src="courseDetails.universityLogo" width="145" height="140" />
           </div>
           <div style="color: black;">
             <div class="mb-4">
@@ -82,38 +81,37 @@ const uploadDocument = ()=>{
     </VCol>
 
     <VCol md="9" sm="9">
-      <div v-if="courseDetailsShow" >
+      <div v-if="courseDetailsShow">
         <VCard>
-        <VTabs v-model="currentTab">
-          <VTab>Academic Requirement</VTab>
-          <VTab>English Requirement</VTab>
-        </VTabs>
+          <VTabs v-model="currentTab">
+            <VTab>Academic Requirement</VTab>
+            <VTab>English Requirement</VTab>
+          </VTabs>
 
-        <VCardText>
-          <VWindow v-model="currentTab">
-            <VWindowItem value="item-1">
-              <div v-html="courseDetails.academicRequirement"></div>
-            </VWindowItem>
-            <VWindowItem value="item-2">
-              <div v-html="courseDetails.englishRequirement"></div>
-            </VWindowItem>
-          </VWindow>
+          <VCardText>
+            <VWindow v-model="currentTab">
+              <VWindowItem value="item-1">
+                <div v-html="courseDetails.academicRequirement"></div>
+              </VWindowItem>
+              <VWindowItem value="item-2">
+                <div v-html="courseDetails.englishRequirement"></div>
+              </VWindowItem>
+            </VWindow>
+          </VCardText>
+        </VCard>
+        <VCardText class="d-flex justify-space-between flex-wrap gap-4">
+          <VBtn color="secondary" @click="back()">Back</VBtn>
+          <VBtn color="primary" @click="uploadDocument">New student</VBtn>
+          <VBtn color="primary" @click="nextPage">Existing student</VBtn>
         </VCardText>
-      </VCard>
-      <VCardText class="d-flex justify-space-between flex-wrap gap-4">
-              <VBtn color="secondary" @click="back()" >Back</VBtn>
-              <VBtn color="primary" @click="uploadDocument">Next</VBtn>
-            </VCardText>
       </div>
       <div v-if="uploadDocumentShow">
-        <UploadDocuemnt
-         @update:uploadDocumentShow="uploadDocumentShow = $event"
-         @update:studentFormShow="studentFormShow = $event"
-        />
+        <UploadDocuemnt @update:uploadDocumentShow="uploadDocumentShow = $event"
+          @update:studentFormShow="studentFormShow = $event" />
       </div>
 
       <div v-if="studentFormShow">
-        <StudentInformation/>
+        <StudentInformation />
       </div>
 
     </VCol>

@@ -1,28 +1,23 @@
 <template>
   <!-- <VCard class="mb-6">
-    <VCardTitle>Select Existing Student</VCardTitle>
-    <VCardText>
-      <AppAutocomplete
-        v-model="selectedStudent"
-        :items="students"
-        item-title="student_name_with_email"
-        item-value="id"
-        label="Search Existing Student"
-        placeholder="Start typing to search..."
-      >
-      </AppAutocomplete>
-      <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-      <div class="d-flex justify-end mt-4">
-        <VBtn color="primary" @click="submitApplication">Next</VBtn>
-      </div>
-    </VCardText>
-  </VCard> -->
+        <VCardTitle>Select Existing Student</VCardTitle>
+        <VCardText>
+            <AppAutocomplete v-model="selectedStudent" :items="students" item-title="student_name_with_email"
+                item-value="id" label="Search Existing Student" placeholder="Start typing to search...">
+            </AppAutocomplete>
+            <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
+            <div class="d-flex justify-end mt-4">
+                <VBtn color="primary" @click="submitApplication">Next</VBtn>
+            </div>
+        </VCardText>
+    </VCard> -->
 
   <!-- <div class="d-flex align-center my-6">
     <VDivider></VDivider>
     <span class="mx-4">OR</span>
     <VDivider></VDivider>
   </div> -->
+
 
   <VCard>
     <VCardTitle>Please upload only color scan copy files for new student</VCardTitle>
