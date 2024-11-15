@@ -14,7 +14,7 @@ class StudentEnglishProficiencyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'english_proficiency' => 'required|array',
+            'english_proficiency' => 'nullable|array',
             'english_proficiency.*.proficiency_title' => 'nullable|string|max:255',
             'english_proficiency.*.overall_score' => 'nullable|numeric',
             'english_proficiency.*.listening' => 'nullable|numeric',

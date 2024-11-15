@@ -3,38 +3,38 @@
     <VCardText>
       <VCardTitle class="text-left padding-bottom">Interested University</VCardTitle>
       <p class="text-center padding-bottom">Add interested University, Intake, Course</p>
-      <VRow v-for="(university, index) in interestedUniversity" :key="index">
+      <VRow v-for="(university, index) in props.universityEntry" :key="index">
         <VCol cols="12" md="2">
-          <AppAutocomplete v-model="university.countryToApply" :items="commonFunctionStore.countries" item-title="name"
+          <AppAutocomplete v-model="university.country_id" :items="commonFunctionStore.countries" item-title="name"
             item-value="id" label="Country to Apply" placeholder="Select Country" :rules="[requiredValidator]"
             @update:modelValue="onCountryChange(index)" density="compact" class="small-dropdown" />
         </VCol>
 
         <VCol cols="12" md="2">
-          <AppAutocomplete v-model="university.intake" :items="university.intakes" item-title="intake_name"
+          <AppAutocomplete v-model="university.intake_id" :items="university.intakes" item-title="intake_name"
             item-value="intake_id" label="Intake" placeholder="Select Intake" :rules="[requiredValidator]"
-            :disabled="!university.countryToApply" @update:modelValue="onIntakeChange(index)" density="compact"
+            :disabled="!university.country_id" @update:modelValue="onIntakeChange(index)" density="compact"
             class="small-dropdown" />
         </VCol>
 
         <VCol cols="12" md="2">
-          <AppAutocomplete v-model="university.courseType" :items="university.courseTypes" item-title="name"
+          <AppAutocomplete v-model="university.course_type" :items="university.courseTypes" item-title="name"
             item-value="id" label="Course Type" placeholder="Select Course Type" :rules="[requiredValidator]"
-            :disabled="!university.intake" @update:modelValue="onCourseTypeChange(index)" density="compact"
+            :disabled="!university.intake_id" @update:modelValue="onCourseTypeChange(index)" density="compact"
             class="small-dropdown" />
         </VCol>
 
         <VCol cols="12" md="2">
-          <AppAutocomplete v-model="university.university" :items="university.universities" item-title="university_name"
-            item-value="university_id" label="University" placeholder="Select University" :rules="[requiredValidator]"
-            :disabled="!university.courseType" @update:modelValue="onUniversityChange(index)" density="compact"
-            class="small-dropdown" />
+          <AppAutocomplete v-model="university.university_id" :items="university.universities"
+            item-title="university_name" item-value="university_id" label="University" placeholder="Select University"
+            :rules="[requiredValidator]" :disabled="!university.course_type"
+            @update:modelValue="onUniversityChange(index)" density="compact" class="small-dropdown" />
         </VCol>
 
         <VCol cols="12" md="3">
-          <AppAutocomplete v-model="university.course" :items="university.courses" item-title="course_name"
+          <AppAutocomplete v-model="university.course_id" :items="university.courses" item-title="course_name"
             item-value="id" label="Course" placeholder="Select Course" :rules="[requiredValidator]"
-            :disabled="!university.university" density="compact" class="small-dropdown" />
+            :disabled="!university.university_id" density="compact" class="small-dropdown" />
         </VCol>
 
         <VCol cols="12" md="1" class="d-flex align-center mt-6">
@@ -49,97 +49,128 @@
 
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
-import { ref } from 'vue';
+import { watch } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
 const commonFunctionStore = commonFunction();
-const interestedUniversity = ref([{
-  countryToApply: '',
-  intake: null,
-  courseType: null,
-  university: null,
-  course: null,
-  intakes: [],
-  courseTypes: [],
-  universities: [],
-  courses: []
-}]);
 
+const props = defineProps({
+  universityEntry: {
+    type: Array,
+    required: true,
+    default: () => [{
+      country_id: '',
+      intake_id: '',
+      course_type: '',
+      university_id: '',
+      course_id: '',
+      // Additional properties for UI state
+      intakes: [],
+      courseTypes: [],
+      universities: [],
+      courses: []
+    }]
+  }
+});
+
+const emit = defineEmits(['updateUniversityEntry']);
+
+// Watch for changes and emit updates
+watch(() => props.universityEntry, (newValue) => {
+  emit('updateUniversityEntry', newValue);
+}, { deep: true });
 
 const onCountryChange = async (index) => {
+  const entry = props.universityEntry[index];
+  // Reset dependent fields
+  entry.intake_id = null;
+  entry.course_type = null;
+  entry.university_id = null;
+  entry.course_id = null;
 
-  const university = interestedUniversity.value[index];
-  university.intake = null;
-  university.courseType = null;
-  university.university = null;
-  university.course = null;
-  university.intakes = await commonFunctionStore.getIntakesByCountry(university.countryToApply);
-
+  // Fetch new intakes
+  entry.intakes = await commonFunctionStore.getIntakesByCountry(entry.country_id);
+  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const onIntakeChange = async (index) => {
-  console.log(index + " intake changed");
-  const university = interestedUniversity.value[index];
-  university.courseType = null;
-  university.university = null;
-  university.course = null;
-  university.courseTypes = await commonFunctionStore.getCourseTypesByCountryIntake(university.countryToApply, university.intake);
+  const entry = props.universityEntry[index];
+  // Reset dependent fields
+  entry.course_type = null;
+  entry.university_id = null;
+  entry.course_id = null;
+
+  // Fetch course types
+  entry.courseTypes = await commonFunctionStore.getCourseTypesByCountryIntake(
+    entry.country_id,
+    entry.intake_id
+  );
+  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const onCourseTypeChange = async (index) => {
-  console.log(index + " course type changed");
-  const university = interestedUniversity.value[index];
-  university.university = null;
-  university.course = null;
-  university.universities = await commonFunctionStore.getUniversitiesByCountryIntakeCourseType(university.countryToApply, university.intake, university.courseType);
+  const entry = props.universityEntry[index];
+  // Reset dependent fields
+  entry.university_id = null;
+  entry.course_id = null;
+
+  // Fetch universities
+  entry.universities = await commonFunctionStore.getUniversitiesByCountryIntakeCourseType(
+    entry.country_id,
+    entry.intake_id,
+    entry.course_type
+  );
+  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const onUniversityChange = async (index) => {
-  console.log(index + " university changed");
-  const university = interestedUniversity.value[index];
-  university.course = null;
-  university.courses = await commonFunctionStore.getCourseDetails(university.intake, university.university, university.courseType);
+  const entry = props.universityEntry[index];
+  entry.course_id = null;
+
+  // Fetch courses
+  entry.courses = await commonFunctionStore.getCourseDetails(
+    entry.intake_id,
+    entry.university_id,
+    entry.course_type
+  );
+  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const addInterestedUniversity = () => {
-  const lastEntry = interestedUniversity.value[interestedUniversity.value.length - 1];
+  const lastEntry = props.universityEntry[props.universityEntry.length - 1];
 
-  if (!lastEntry.countryToApply ||
-    !lastEntry.intake ||
-    !lastEntry.courseType ||
-    !lastEntry.university ||
-    !lastEntry.course) {
-
+  if (!lastEntry.country_id ||
+    !lastEntry.intake_id ||
+    !lastEntry.course_type ||
+    !lastEntry.university_id ||
+    !lastEntry.course_id) {
     toast("Please fill all fields before adding a new entry", {
       type: "error",
       position: "top-right",
       theme: "colored",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
     });
     return;
   }
 
-  interestedUniversity.value.push({
-    countryToApply: '',
-    intake: null,
-    courseType: null,
-    university: null,
-    course: null,
+  props.universityEntry.push({
+    country_id: '',
+    intake_id: null,
+    course_type: null,
+    university_id: null,
+    course_id: null,
     intakes: [],
     courseTypes: [],
     universities: [],
     courses: []
   });
+  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const removeInterestedUniversity = (index) => {
   if (index !== 0) {
-    interestedUniversity.value.splice(index, 1);
+    props.universityEntry.splice(index, 1);
+    emit('updateUniversityEntry', props.universityEntry);
   }
 };
 </script>

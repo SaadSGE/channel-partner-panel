@@ -10,6 +10,7 @@ use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\AIController;
 use Spatie\PdfToImage\Pdf;
+use GuzzleHttp\Client;
 
 class StudentFileController extends Controller
 {
@@ -22,9 +23,9 @@ class StudentFileController extends Controller
             $originalFileName = $file->getClientOriginalName();
 
             // Check if the file is a PDF and convert to image if necessary
-            if ($file->getClientOriginalExtension() === 'pdf') {
-                $file = $this->convertPdfToImage($file);
-            }
+            // if ($file->getClientOriginalExtension() === 'pdf') {
+            //     $file = $this->convertPdfToImage($file);
+            // }
 
             // Upload file (either the converted image or original file)
             $fileUploadService = new FileUploadService();
@@ -32,12 +33,19 @@ class StudentFileController extends Controller
 
             // Construct the public URL
             $publicUrl = env('DO_URL') . $path;
+            \Log::info('Public URL: ' . $publicUrl);
 
-
-            $response = Http::post('http://134.122.104.232:82/api/shortener-url', [
-                'original_url' => $publicUrl,
+            $client = new Client();
+            $response = $client->post('http://134.122.104.232:82/api/shortener-url', [
+                'form_params' => [
+                    'original_url' => $publicUrl
+                ]
             ]);
-            $temporaryShrinkUrl = $response->successful() ? json_decode($response->body())->data->short_url : $publicUrl;
+
+            $responseBody = $response->getBody();
+
+            $temporaryShrinkUrl = json_decode($responseBody)->data->short_url;
+
 
             // $extractedData = null;
 

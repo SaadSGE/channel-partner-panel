@@ -1,3 +1,5 @@
+import { $api } from '@/utils/api';
+import axios from 'axios';
 import { defineStore } from 'pinia';
 
 const generateUniqueId = () => {
@@ -10,12 +12,35 @@ export const useFileStore = defineStore('fileStore', {
     filePaths: [],
     errors: [],
     documents: [],
+    studentInfo: {
+      generalInfo: {
+        address: null,
+        city: null,
+        country: null,
+        date_of_birth: null,
+        first_name: null,
+        gender: null,
+        last_name: null,
+        mobile: null,
+        passport_number: null,
+        visa_refusal: null
+      },
+      educationalHistory: [],
+      employmentHistory: [],
+      englishProficiency: {
+        listening: null,
+        overall_score: null,
+        reading: null,
+        speaking: null,
+        title: null,
+        writing: null
+      }
+    }
   }),
   actions: {
     async downloadAllFiles(documents = null) {
-      console.log(documents)
+      console.log(documents);
       try {
-        // If no documents are passed, use the store's files
         const filesToDownload = documents.map(file => ({
           path: file.path,
           file_name: file.filename,
@@ -27,11 +52,10 @@ export const useFileStore = defineStore('fileStore', {
         const response = await $api('/download-all', {
           method: 'POST',
           body: formData,
-          // You can add a progress handler if needed
           onUploadProgress: (event) => {
             if (event.lengthComputable) {
               const progressValue = Math.round((event.loaded / event.total) * 100);
-              console.log(`Progress: ${progressValue}%`);  // Optional: Handle progress UI updates
+              console.log(`Progress: ${progressValue}%`);
             }
           }
         });
@@ -92,9 +116,11 @@ export const useFileStore = defineStore('fileStore', {
       formData.append('filename', file.name || `${fieldName}_document`);
 
       try {
-        const response = await $api('/student-document-upload', {
-          method: 'POST',
-          body: formData,
+        const response = await axios.post('https://service.shabujglobal.org/process-document', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          withCredentials: false,
           onUploadProgress: (event) => {
             if (event.lengthComputable) {
               const progressValue = Math.round((event.loaded / event.total) * 100);
@@ -103,8 +129,30 @@ export const useFileStore = defineStore('fileStore', {
           }
         });
 
-        this.updateFilePath(fileId, response.data);
-        this.addDocument(fieldName, response.data);
+        this.updateFilePath(fileId, response.data.data.path);
+        this.addDocument(fieldName, response.data.data.path);
+
+        if (fieldName === 'passport' && response.data.data.general_info) {
+          this.studentInfo.generalInfo = response.data.data.general_info;
+        }
+
+        if (fieldName === 'cv-resume') {
+          const { data } = response.data;
+          if(data.general_info) {
+            this.studentInfo.generalInfo.email = data.general_info.email;
+          }
+          if (data.educational_history) {
+            this.studentInfo.educationalHistory = data.educational_history;
+          }
+
+          if (data.employment_history) {
+            this.studentInfo.employmentHistory = data.employment_history;
+          }
+
+          if (data.english_proficiency && data.english_proficiency.length > 0) {
+            this.studentInfo.englishProficiency = data.english_proficiency[0];
+          }
+        }
 
         return fileId;
       } catch (error) {
@@ -114,7 +162,6 @@ export const useFileStore = defineStore('fileStore', {
       }
     },
     addDocument(name, path) {
-      // Convert field name to display name
       const displayName = name
         .split('_')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -136,5 +183,22 @@ export const useFileStore = defineStore('fileStore', {
     clearDocuments() {
       this.documents = [];
     },
+    getFilePath(fileId) {
+      const file = this.files.find(f => f.id === fileId);
+      return file ? file.path : null;
+    },
+    resetToInitialState() {
+      this.documents = [/* ... initial documents array ... */];
+      this.studentInfo = {/* ... initial studentInfo object ... */};
+    },
+    continueWithoutDocuments() {
+      this.documents = [];
+      this.studentInfo = {/* ... initial studentInfo object ... */};
+      this.files = [];
+      this.filePaths = [];
+      this.errors = [];
+
+      console.log('Continuing without documents, keeping test data');
+    }
   }
 });

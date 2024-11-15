@@ -14,7 +14,7 @@ class StudentInterestedUniversityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'interested_university' => 'required|array',
+            'interested_university' => 'nullable|array',
             'interested_university.*.country_id' => 'nullable|exists:application_countries,id',
             'interested_university.*.intake_id' => 'nullable|exists:intakes,id',
             'interested_university.*.university_id' => 'nullable|exists:universities,id',

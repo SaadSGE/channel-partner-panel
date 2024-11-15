@@ -14,7 +14,7 @@ class StudentEducationalHistoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'educational_history' => 'required|array',
+            'educational_history' => 'nullable|array',
             'educational_history.*.degree_name' => 'nullable|string|max:255',
             'educational_history.*.institution_name' => 'nullable|string|max:255',
             'educational_history.*.passing_year' => 'nullable|date_format:Y',

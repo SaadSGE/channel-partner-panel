@@ -14,7 +14,7 @@ class StudentEmploymentHistoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employment_history' => 'required|array',
+            'employment_history' => 'nullable|array',
             'employment_history.*.company_name' => 'nullable|string|max:255',
             'employment_history.*.designation' => 'nullable|string|max:255',
         ];

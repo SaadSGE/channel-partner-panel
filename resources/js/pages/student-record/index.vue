@@ -54,13 +54,18 @@ const server = {
     fileStore
       .uploadFile(fieldName, file)
       .then((fileId) => {
+        file.fieldName = fieldName;
+        file.fileId = fileId;
         load(fileId);
       })
       .catch((err) => error(err));
   },
   revert: (uniqueFileId, load, error) => {
-    tempFileCount.value -= 1;
-    fileStore.removeFile(uniqueFileId);
+    const pondFile = files.value.find(file => file.fileId === uniqueFileId);
+    if (pondFile) {
+      fileStore.removeFile(uniqueFileId);
+      fileStore.removeDocument(pondFile.fieldName, fileStore.getFilePath(uniqueFileId));
+    }
     load();
   },
 };
@@ -74,6 +79,14 @@ const showDocumentUpload = ref(true)
 function goToNextPage() {
   showDocumentUpload.value = false
   console.log('Final Documents:', fileStore.documents)
+  console.log('Student Info:', fileStore.studentInfo)
+}
+
+function continueWithoutDocument() {
+  fileStore.continueWithoutDocuments();
+  showDocumentUpload.value = false;
+  console.log('Final Documents:', fileStore.documents);
+  console.log('Student Info:', fileStore.studentInfo);
 }
 </script>
 <template>
@@ -136,8 +149,12 @@ function goToNextPage() {
             <VBtn color="secondary">Cancel</VBtn>
           </div>
           <div>
-            <VBtn color="primary" @click="goToNextPage">Continue Without Document</VBtn>
-            <VBtn color="primary" class="btn-margin" @click="goToNextPage">Continue</VBtn>
+            <VBtn color="primary" @click="continueWithoutDocument">
+              Continue Without Document
+            </VBtn>
+            <VBtn color="primary" class="btn-margin" @click="goToNextPage">
+              Continue
+            </VBtn>
           </div>
         </div>
       </VCardText>

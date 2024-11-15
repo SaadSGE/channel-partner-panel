@@ -1,33 +1,63 @@
 <script setup>
-import { ref } from 'vue';
+import { useFileStore } from "@/@core/stores/fileStore";
+import { onMounted, watch } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
-const employmentHistory = ref([{ companyName: '', designation: '' }]);
+const fileStore = useFileStore();
+const props = defineProps({
+  employmentHistory: {
+    type: Array,
+    required: true,
+    default: () => [{
+      company_name: '',
+      designation: '',
+      year: ''
+    }]
+  }
+});
+
+const emit = defineEmits(['updateEmploymentHistory']);
+
+onMounted(() => {
+  if (fileStore.studentInfo.employmentHistory?.length) {
+    props.employmentHistory.splice(0, props.employmentHistory.length, ...fileStore.studentInfo.employmentHistory);
+  }
+  if (props.employmentHistory.length === 0) {
+    props.employmentHistory.push({ company_name: '', designation: '', year: '' });
+  }
+});
+
+watch(() => props.employmentHistory.length, (newLength) => {
+  if (newLength === 0) {
+    props.employmentHistory.push({ company_name: '', designation: '', year: '' });
+  }
+});
 
 const addEmploymentHistory = () => {
-  const lastEntry = employmentHistory.value[employmentHistory.value.length - 1];
+  const lastEntry = props.employmentHistory[props.employmentHistory.length - 1];
 
-  if (!lastEntry.companyName || !lastEntry.designation) {
-    toast("Please fill all fields before adding a new entry", {
+  if (!lastEntry.company_name || !lastEntry.designation) {
+    toast("Please fill all required fields before adding a new entry", {
       type: "error",
       position: "top-right",
       theme: "colored",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
     });
     return;
   }
 
-  employmentHistory.value.push({ companyName: '', designation: '' });
+  props.employmentHistory.push({
+    company_name: '',
+    designation: '',
+    year: ''
+  });
+  emit('updateEmploymentHistory', props.employmentHistory);
 }
 
 const removeEmploymentHistory = (index) => {
   if (index !== 0) {
-    employmentHistory.value.splice(index, 1);
+    props.employmentHistory.splice(index, 1);
+    emit('updateEmploymentHistory', props.employmentHistory);
   }
 }
 </script>
@@ -35,18 +65,21 @@ const removeEmploymentHistory = (index) => {
 <template>
   <VCard>
     <VCardText>
-      <VCardTitle class="text-left padding-bottom">Employment History</VCardTitle>
-      <p class="text-center padding-bottom">Add Employment History</p>
+      <VCardTitle>Employment History</VCardTitle>
+      <p class="text-center">Add Employment History</p>
       <VRow v-for="(employment, index) in employmentHistory" :key="index">
-        <VCol cols="12" md="5">
-          <AppTextField v-model="employment.companyName" label="Company Name" placeholder="Company Name"
+        <VCol cols="12" md="3">
+          <AppTextField v-model="employment.company_name" label="Company Name" placeholder="Company Name"
             density="compact" />
         </VCol>
-        <VCol cols="12" md="5">
+        <VCol cols="12" md="3">
           <AppTextField v-model="employment.designation" label="Designation" placeholder="Designation"
             density="compact" />
         </VCol>
-        <VCol cols="12" md="2" class="d-flex align-center">
+        <VCol cols="12" md="4">
+          <AppTextField v-model="employment.year" label="Year" placeholder="Year" density="compact" />
+        </VCol>
+        <VCol cols="12" md="2" class="d-flex align-center mt-5">
           <VBtn v-if="index !== 0" icon="tabler-x" color="error" @click="removeEmploymentHistory(index)" class="me-2"
             size="small" />
           <VBtn icon="tabler-plus" color="primary" @click="addEmploymentHistory" size="small" />

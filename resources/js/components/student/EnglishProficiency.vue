@@ -1,87 +1,66 @@
 <script setup>
-import { ref } from 'vue';
-import { toast } from 'vue3-toastify';
+import { useFileStore } from "@/@core/stores/fileStore";
+import { onMounted, watch } from 'vue';
 import 'vue3-toastify/dist/index.css';
 
-const englishProficiency = ref([{
-  proficiencyTitle: '',
-  overallScore: '',
-  reading: '',
-  writing: '',
-  speaking: '',
-  listening: ''
-}]);
-
-const addEnglishProficiency = () => {
-  const lastEntry = englishProficiency.value[englishProficiency.value.length - 1];
-
-  if (!lastEntry.proficiencyTitle ||
-    !lastEntry.overallScore ||
-    !lastEntry.reading ||
-    !lastEntry.writing ||
-    !lastEntry.speaking ||
-    !lastEntry.listening) {
-
-    toast("Please fill all fields before adding a new entry", {
-      type: "error",
-      position: "top-right",
-      theme: "colored",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-    return;
+const props = defineProps({
+  englishProficiency: {
+    type: Object,
+    required: true,
+    default: () => ({
+      title: '',
+      overall_score: '',
+      reading: '',
+      writing: '',
+      speaking: '',
+      listening: ''
+    })
   }
+});
 
-  englishProficiency.value.push({
-    proficiencyTitle: '',
-    overallScore: '',
-    reading: '',
-    writing: '',
-    speaking: '',
-    listening: ''
-  });
-}
+const emit = defineEmits(['updateEnglishProficiency']);
+const fileStore = useFileStore();
 
-const removeEnglishProficiency = (index) => {
-  if (index !== 0) {
-    englishProficiency.value.splice(index, 1);
+onMounted(() => {
+  if (fileStore.studentInfo.englishProficiency) {
+    props.englishProficiency = fileStore.studentInfo.englishProficiency;
   }
-}
+});
+
+// Watch for changes and emit updates
+watch(() => props.englishProficiency, (newValue) => {
+  emit('updateEnglishProficiency', newValue);
+}, { deep: true });
 </script>
 
 <template>
   <VCard>
     <VCardText>
       <VCardTitle class="text-left padding-bottom">English Proficiency</VCardTitle>
-      <p class="text-center padding-bottom">Add English Proficiency</p>
-      <VRow v-for="(proficiency, index) in englishProficiency" :key="index">
+      <VRow>
         <VCol cols="12" md="3">
-          <AppTextField v-model="proficiency.proficiencyTitle" label="Proficiency Title" placeholder="Proficiency Title"
+          <AppTextField v-model="props.englishProficiency.title" label="Proficiency Title"
+            placeholder="Proficiency Title" density="compact" />
+        </VCol>
+        <VCol cols="12" md="3">
+          <AppTextField v-model="props.englishProficiency.overall_score" label="Overall Score"
+            placeholder="Overall Score" density="compact" />
+        </VCol>
+        <VCol cols="12" md="1">
+          <AppTextField v-model="props.englishProficiency.listening" label="Listening" placeholder="Listening"
             density="compact" />
         </VCol>
-        <VCol cols="12" md="3">
-          <AppTextField v-model="proficiency.overallScore" label="Overall Score" placeholder="Overall Score"
+        <VCol cols="12" md="1">
+          <AppTextField v-model="props.englishProficiency.speaking" label="Speaking" placeholder="Speaking"
             density="compact" />
         </VCol>
         <VCol cols="12" md="1">
-          <AppTextField v-model="proficiency.listening" label="Listening" placeholder="Listening" density="compact" />
+          <AppTextField v-model="props.englishProficiency.writing" label="Writing" placeholder="Writing"
+            density="compact" />
         </VCol>
         <VCol cols="12" md="1">
-          <AppTextField v-model="proficiency.speaking" label="Speaking" placeholder="Speaking" density="compact" />
-        </VCol>
-        <VCol cols="12" md="1">
-          <AppTextField v-model="proficiency.writing" label="Writing" placeholder="Writing" density="compact" />
-        </VCol>
-        <VCol cols="12" md="1">
-          <AppTextField v-model="proficiency.reading" label="Reading" placeholder="Reading" density="compact" />
-        </VCol>
-        <VCol cols="12" md="2" class="d-flex align-center">
-          <VBtn v-if="index !== 0" icon="tabler-x" color="error" @click="removeEnglishProficiency(index)" class="me-2"
-            size="small" />
-          <VBtn icon="tabler-plus" color="primary" @click="addEnglishProficiency" size="small" />
+          <AppTextField v-model="props.englishProficiency.reading" label="Reading" placeholder="Reading"
+            density="compact" />
         </VCol>
       </VRow>
     </VCardText>

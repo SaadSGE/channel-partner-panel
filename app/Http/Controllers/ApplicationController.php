@@ -709,10 +709,15 @@ class ApplicationController extends Controller
     private function handleDocumentUploads(array $data, Student $student, ApplicationList $application)
     {
         if (!empty($data['document_paths'])) {
-            foreach ($data['document_paths'] as $path) {
-                $filename = basename($path['path']);
+            foreach ($data['document_paths'] as $pathData) {
+                // Extract the path from the array item
+                $path = is_array($pathData) ? $pathData['path'] : $pathData;
+
+                $filename = basename($path);
                 $newPath = "channelPartnerPanel/studentDocument/{$student->email}/{$student->email}_{$filename}";
-                Storage::disk('do_spaces')->move($path['path'], $newPath);
+
+                Storage::disk('do_spaces')->move($path, $newPath);
+
                 StudentDocument::create([
                     'student_id' => $student->id,
                     'application_id' => $application->id,

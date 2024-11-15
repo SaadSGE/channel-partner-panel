@@ -42,6 +42,9 @@ class StudentService
 
     public function storeInterestedUniversities(Student $student, array $universitiesData): void
     {
+        if (empty($universitiesData)) {
+            return;
+        }
         foreach ($universitiesData as &$data) {
             $data['student_id'] = $student->id;
         }

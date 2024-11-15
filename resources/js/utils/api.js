@@ -30,3 +30,23 @@ export const $api = ofetch.create({
     }
   },
 })
+export const $customApi = ofetch.create({
+  baseURL: import.meta.env.VITE_PYTHON_API_BASE_URL,
+  mode: 'cors', // Explicitly enable CORS
+  async onRequest({ options }) {
+
+    options.headers = {
+      ...options.headers,
+      Accept: 'application/json',
+    }
+
+  },
+  async onResponseError({ response }) {
+    if (response.status === 401) {
+      useCookie('accessToken').value = null
+      useCookie('userData').value = null
+      window.location.href = '/login'
+    }
+  },
+})
+
