@@ -192,11 +192,7 @@ export const useFileStore = defineStore('fileStore', {
       this.studentInfo = {/* ... initial studentInfo object ... */};
     },
     continueWithoutDocuments() {
-      this.documents = [];
-      this.studentInfo = {/* ... initial studentInfo object ... */};
-      this.files = [];
-      this.filePaths = [];
-      this.errors = [];
+
 
       console.log('Continuing without documents, keeping test data');
     }

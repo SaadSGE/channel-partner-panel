@@ -8,7 +8,8 @@ import EnglishProficiency from '@/components/student/EnglishProficiency.vue';
 import GeneralInformation from '@/components/student/GeneralInformation.vue';
 import UniversityEntry from '@/components/student/UniversityEntry.vue';
 import { onMounted, ref } from 'vue';
-
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 definePage({
   meta: {
     public: true
@@ -98,6 +99,18 @@ const handleEmploymentHistoryUpdate = (data) => {
 
 // Method to handle form submission
 const handleSubmit = async () => {
+  const isValid = await refForm.value?.validate()
+
+  if (!isValid.valid) {
+    toast("Please fill all necessary fields before submitting", {
+      type: "error",
+      position: "top-right",
+      theme: "colored",
+    });
+    return
+  }
+
+
   try {
     const response = await studentStore.storeStudent({
       generalInfo: formData.value.generalInfo,
@@ -105,16 +118,66 @@ const handleSubmit = async () => {
       educationalHistory: formData.value.educationalHistory,
       englishProficiency: formData.value.englishProficiency,
       employmentHistory: formData.value.employmentHistory,
-      documentPaths: fileStore.filePaths // Get document paths from fileStore
+      documentPaths: fileStore.filePaths
     });
 
-    // Handle success (e.g., show notification, redirect)
-    console.log('Student created successfully:', response);
+    // Show success notification
+    toast("Student information saved successfully", {
+      type: "success",
+      position: "top-right",
+      theme: "colored",
+    });
+
+    emit('back')
   } catch (error) {
-    // Handle error (e.g., show error message)
+    toast("Failed to save student information", {
+      type: "error",
+      position: "top-right",
+      theme: "colored",
+    });
     console.error('Failed to create student:', error);
   }
 };
+
+// Add this validation function
+const validateFormData = () => {
+  // Validate General Info
+  const gi = formData.value.generalInfo
+  if (!gi.first_name || !gi.last_name || !gi.email || !gi.mobile) {
+    commonFunctionStore.showErrorNotification('Please fill all required fields in General Information')
+    return false
+  }
+
+  // Validate email format
+  if (!validationRules.email(gi.email)) {
+    commonFunctionStore.showErrorNotification('Please enter a valid email address')
+    return false
+  }
+
+  // Validate phone format
+  if (!validationRules.phone(gi.mobile)) {
+    commonFunctionStore.showErrorNotification('Please enter a valid phone number')
+    return false
+  }
+
+  // Validate University Entry
+  if (formData.value.universityEntry.length === 0 ||
+    !formData.value.universityEntry[0].country_id ||
+    !formData.value.universityEntry[0].university_id) {
+    commonFunctionStore.showErrorNotification('Please fill required university entry information')
+    return false
+  }
+
+  // Validate Educational History
+  if (formData.value.educationalHistory.length === 0 ||
+    !formData.value.educationalHistory[0].degree ||
+    !formData.value.educationalHistory[0].institution) {
+    commonFunctionStore.showErrorNotification('Please fill required educational history information')
+    return false
+  }
+
+  return true
+}
 </script>
 
 <template>

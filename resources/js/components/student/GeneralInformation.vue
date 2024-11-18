@@ -47,12 +47,7 @@ const emit = defineEmits(['updateGeneralInfo']);
 // Watch for changes in any field and emit updates
 
 
-const requiredValidator = (value) => {
-  if (!value || !value.length) {
-    return 'This field is required';
-  }
-  return true;
-};
+
 
 const genderOptions = ['Male', 'Female', 'Other'];
 
@@ -74,6 +69,15 @@ const formattedDateOfBirth = computed({
     props.generalInfo.date_of_birth = value;
   }
 });
+const countries = ref([
+  "Bangladesh",
+  "Nigeria",
+  "Sri Lanka",
+  "India",
+  "Bhutan",
+  "Ghana",
+  "Pakistan",
+])
 
 // Remove the watch as we're now using a computed with getter/setter
 </script>
@@ -97,7 +101,7 @@ const formattedDateOfBirth = computed({
           <VRow>
             <VCol cols="12" md="6">
               <AppTextField v-model="props.generalInfo.email" label="Email(*)" placeholder="Email"
-                :rules="[requiredValidator]" density="compact" />
+                :rules="[requiredValidator, emailValidator]" density="compact" />
             </VCol>
             <VCol cols="12" md="6">
               <AppTextField v-model="props.generalInfo.mobile" label="Mobile No(*)" placeholder="Mobile No"
@@ -106,8 +110,7 @@ const formattedDateOfBirth = computed({
           </VRow>
           <VRow>
             <VCol cols="12" md="6">
-              <AppDateTimePicker v-model="formattedDateOfBirth" label="Date of birth" placeholder="Select date"
-                :rules="[requiredValidator]" />
+              <AppDateTimePicker v-model="formattedDateOfBirth" label="Date of birth" placeholder="Select date" />
             </VCol>
             <VCol cols="12" md="6">
               <AppSelect v-model="props.generalInfo.gender" :items="genderOptions" label="Gender"
@@ -138,8 +141,8 @@ const formattedDateOfBirth = computed({
               <AppTextField v-model="props.generalInfo.city" label="City" placeholder="City" density="compact" />
             </VCol>
             <VCol cols="12" md="6">
-              <AppAutocomplete v-model="props.generalInfo.country" :items="commonFunctionStore.countries"
-                label="Country" placeholder="Select Country" density="compact" class="small-dropdown" />
+              <AppAutocomplete v-model="props.generalInfo.country" :items="countries" label="Country"
+                placeholder="Select Country" density="compact" class="small-dropdown" />
             </VCol>
           </VRow>
         </VCol>

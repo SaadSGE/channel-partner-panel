@@ -149,9 +149,9 @@ function continueWithoutDocument() {
             <VBtn color="secondary">Cancel</VBtn>
           </div>
           <div>
-            <VBtn color="primary" @click="continueWithoutDocument">
+            <!-- <VBtn color="primary" @click="continueWithoutDocument">
               Continue Without Document
-            </VBtn>
+            </VBtn> -->
             <VBtn color="primary" class="btn-margin" @click="goToNextPage">
               Continue
             </VBtn>
