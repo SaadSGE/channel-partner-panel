@@ -9,6 +9,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
+        return response()->json(['message' => 'NotificationController@index']);
         \Log::info('NotificationController@index');
         $user = auth('api')->user();
 
