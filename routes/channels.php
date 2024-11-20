@@ -5,7 +5,7 @@ use App\Models\User;
 
 // Authentication for private user channels
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    \Log::info('Authenticating user for channel', ['user' => $user, 'id' => $id]);
+    return true;
     // Allow users to listen to their own channel
     if ((int) $user->id === (int) $id) {
         return true;

@@ -4,6 +4,7 @@ import Pusher from 'pusher-js'
 window.Pusher = Pusher
 
 const accessToken = useCookie('accessToken')
+console.log(accessToken.value)
 const userData = useCookie('userData')
 console.log('Initializing Echo...')
 window.Echo = new Echo({
@@ -14,13 +15,13 @@ window.Echo = new Echo({
     wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
-    authEndpoint: '/broadcasting/auth',
     auth: {
         headers: {
             Accept: 'application/json',
             Authorization: 'Bearer ' + accessToken.value
         }
-    }
+    },
+    authEndpoint: '/api/broadcasting/auth',
 })
 
 
