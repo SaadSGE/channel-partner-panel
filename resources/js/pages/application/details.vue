@@ -15,7 +15,7 @@ import ComplianceOfficerAssignments from '@/components/ComplianceOfficerAssignme
 import StudentInfoEditDialog from "@/components/dialogs/StudentInfoEditDialog.vue";
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Document from "./details-document.vue";
 
@@ -103,9 +103,22 @@ const goBack = () => {
   router.back();
 };
 
-onMounted(async () => {
-  await refreshData()
-})
+// Function to update the current tab based on the hash
+const updateTabFromHash = () => {
+  const hash = route.hash.replace('#', '');
+  if (hash) {
+    currentTab.value = hash;
+  }
+};
+
+// Watch for changes in the route's hash
+watch(() => route.hash, updateTabFromHash);
+
+// Set the initial tab based on the hash when the component is mounted
+onMounted(() => {
+  updateTabFromHash();
+  refreshData();
+});
 
 const refreshData = async () => {
   await store.getApplicationDetails(applicationId)
