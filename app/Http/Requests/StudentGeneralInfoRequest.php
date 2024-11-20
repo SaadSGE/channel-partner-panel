@@ -39,7 +39,7 @@ class StudentGeneralInfoRequest extends FormRequest
             'general_info.student_country' => 'nullable|string',
             'general_info.student_region_state' => 'nullable|string',
             'general_info.date_of_birth' => 'nullable|date',
-            'general_info.gender' => 'nullable|in:male,female',
+            'general_info.gender' => 'nullable',
             'general_info.visa_refusal' => 'nullable|in:yes,no',
         ];
     }
