@@ -9,6 +9,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
+        \Log::info('NotificationController@index');
         $user = auth('api')->user();
 
         $notifications = $user->notifications()
