@@ -16,10 +16,20 @@ class NotificationController extends Controller
             ->limit(10)
             ->get()
             ->map(function ($notification) {
+                $message = $notification->data['notification_text'] ?? '';
+                $applicationId = $notification->data['application_id'] ?? null;
+
+                // If application_id is null, try to extract it from the message
+                if (is_null($applicationId)) {
+                    if (preg_match('/application (\d+)/', $message, $matches)) {
+                        $applicationId = $matches[1];
+                    }
+                }
+
                 return [
                     'id' => $notification->id,
                     'title' => $notification->data['subject'] ?? '',
-                    'message' => $notification->data['notification_text'] ?? '',
+                    'message' => $message,
                     'time' => $notification->created_at->diffForHumans(),
                     'read' => !is_null($notification->read_at),
                     'color' => 'primary', // You may want to add this to your notification data if needed
@@ -28,7 +38,7 @@ class NotificationController extends Controller
                     'sender_name' => $notification->data['sender_name'] ?? '',
                     'sender_email' => $notification->data['sender_email'] ?? '',
                     'notification_route' => $notification->data['notification_route'] ?? '',
-                    'application_id' => $notification->data['application_id'] ?? '',
+                    'application_id' => $applicationId,
                     'notification_hash' => $notification->data['notification_hash'] ?? '',
                 ];
             });
