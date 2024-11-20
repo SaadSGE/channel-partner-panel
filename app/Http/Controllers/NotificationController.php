@@ -19,10 +19,19 @@ class NotificationController extends Controller
                 $message = $notification->data['notification_text'] ?? '';
                 $applicationId = $notification->data['application_id'] ?? null;
 
-                // If application_id is null, try to extract it from the message
+                // Log the message for debugging
+                \Log::info('Notification message:', ['message' => $message]);
+
+                // If application_id is null, check if the last part of the message is a number
                 if (is_null($applicationId)) {
-                    if (preg_match('/application (\d+)/', $message, $matches)) {
-                        $applicationId = $matches[1];
+                    $parts = explode(' ', $message);
+                    $lastPart = end($parts);
+
+                    if (is_numeric($lastPart)) {
+                        $applicationId = $lastPart;
+                        \Log::info('Extracted application ID from message:', ['application_id' => $applicationId]);
+                    } else {
+                        \Log::warning('No valid application ID found in message:', ['message' => $message]);
                     }
                 }
 
