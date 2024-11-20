@@ -25,7 +25,7 @@ window.Echo = new Echo({
 })
 
 
-
+if(userData.value){
 // Listen on private channel
 window.Echo.private(`App.Models.User.${userData.value.id}`)
     .listen('.new.application.event', (e) => {
@@ -79,6 +79,7 @@ window.Echo.private(`App.Models.User.${userData.value.id}`)
 
 const showNotification = (details) => {
     console.log('Showing notification:', details)
+}
 }
 
 
