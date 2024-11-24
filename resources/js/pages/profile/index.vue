@@ -6,8 +6,9 @@ definePage({
 })
 
 import { useUserStore } from '@/@core/stores/user';
-import { ref, onMounted } from 'vue';
+import { containsString } from '@/@core/utils/helpers.js';
 import Swal from 'sweetalert2';
+import { onMounted, ref } from 'vue';
 
 // Store and State
 const authStore = useUserStore();
@@ -37,6 +38,27 @@ const passwordForm = ref({
 
 const userRole = ref(''); // To store the user's role
 
+// Add these new refs
+const currentDocuments = ref([]);
+
+// Add this helper function
+const formatKey = (key) => {
+  return key
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+// Add this download function
+const downloadFile = (fileUrl) => {
+  const link = document.createElement('a');
+  link.href = fileUrl;
+  link.target = '_blank';
+  link.download = 'test';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 // Fetch user profile data on mount
 onMounted(async () => {
   const profile = await authStore.getUserProfile(); // Fetch user profile from API
@@ -57,6 +79,7 @@ onMounted(async () => {
       role: profile.role,
     };
     userRole.value = profile.role; // Store the user's role
+    currentDocuments.value = profile.documents || []; // Add this line
   }
 });
 
@@ -134,93 +157,53 @@ const onChangePassword = async () => {
         <VRow>
           <!-- First Name -->
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="form.firstName"
-              :rules="[requiredValidator]"
-              label="First Name"
-              placeholder="John"
-            />
+            <AppTextField v-model="form.firstName" :rules="[requiredValidator]" label="First Name" placeholder="John" />
           </VCol>
 
           <!-- Last Name -->
           <VCol cols="12" md="6">
-            <AppTextField
-              v-model="form.lastName"
-              :rules="[requiredValidator]"
-              label="Last Name"
-              placeholder="Doe"
-            />
+            <AppTextField v-model="form.lastName" :rules="[requiredValidator]" label="Last Name" placeholder="Doe" />
           </VCol>
 
           <!-- Mobile Number -->
           <VCol cols="12" md="4">
-            <AppTextField
-              v-model="form.mobileNumber"
-              label="Mobile Number"
-              type="tel"
-              placeholder="+1-541-754-3010"
-            />
+            <AppTextField v-model="form.mobileNumber" label="Mobile Number" type="tel" placeholder="+1-541-754-3010" />
           </VCol>
 
           <!-- WhatsApp Number -->
           <VCol cols="12" md="4">
-            <AppTextField
-              v-model="form.whatsappNumber"
-              label="WhatsApp Number"
-              type="tel"
-              placeholder="+1-541-754-3010"
-            />
+            <AppTextField v-model="form.whatsappNumber" label="WhatsApp Number" type="tel"
+              placeholder="+1-541-754-3010" />
           </VCol>
 
           <!-- Conditional Fields for Channel Partner Role -->
           <template v-if="form.role === 'channel partner'">
             <!-- Company Name -->
             <VCol cols="12" md="4">
-              <AppTextField
-                v-model="form.companyName"
-                :rules="[requiredValidator]"
-                label="Company Name"
-                placeholder="Enter company name"
-              />
+              <AppTextField v-model="form.companyName" :rules="[requiredValidator]" label="Company Name"
+                placeholder="Enter company name" />
             </VCol>
 
             <!-- Website -->
             <VCol cols="12" md="4">
-              <AppTextField
-                v-model="form.website"
-                label="Website"
-                placeholder="Enter website URL"
-              />
+              <AppTextField v-model="form.website" label="Website" placeholder="Enter website URL" />
             </VCol>
 
             <!-- Address -->
             <VCol cols="12" md="4">
-              <AppTextField
-                v-model="form.address"
-                :rules="[requiredValidator]"
-                label="Address"
-                placeholder="Enter address"
-              />
+              <AppTextField v-model="form.address" :rules="[requiredValidator]" label="Address"
+                placeholder="Enter address" />
             </VCol>
 
             <!-- City -->
             <VCol cols="12" md="4">
-              <AppTextField
-                v-model="form.city"
-                :rules="[requiredValidator]"
-                label="City"
-                placeholder="Enter city"
-              />
+              <AppTextField v-model="form.city" :rules="[requiredValidator]" label="City" placeholder="Enter city" />
             </VCol>
 
             <!-- Post Code -->
             <VCol cols="12" md="4">
-              <AppTextField
-                v-model="form.postCode"
-                :rules="[requiredValidator]"
-                label="Post Code"
-                placeholder="Enter post code"
-              />
+              <AppTextField v-model="form.postCode" :rules="[requiredValidator]" label="Post Code"
+                placeholder="Enter post code" />
             </VCol>
           </template>
 
@@ -244,35 +227,20 @@ const onChangePassword = async () => {
         <VRow>
           <!-- Current Password -->
           <VCol cols="12">
-            <AppTextField
-              v-model="passwordForm.currentPassword"
-              label="Current Password"
-              type="password"
-              :rules="[requiredValidator]"
-              placeholder="Enter current password"
-            />
+            <AppTextField v-model="passwordForm.currentPassword" label="Current Password" type="password"
+              :rules="[requiredValidator]" placeholder="Enter current password" />
           </VCol>
 
           <!-- New Password -->
           <VCol cols="12">
-            <AppTextField
-              v-model="passwordForm.newPassword"
-              label="New Password"
-              type="password"
-              :rules="[requiredValidator]"
-              placeholder="Enter new password"
-            />
+            <AppTextField v-model="passwordForm.newPassword" label="New Password" type="password"
+              :rules="[requiredValidator]" placeholder="Enter new password" />
           </VCol>
 
           <!-- Confirm New Password -->
           <VCol cols="12">
-            <AppTextField
-              v-model="passwordForm.confirmPassword"
-              label="Confirm New Password"
-              type="password"
-              :rules="[requiredValidator]"
-              placeholder="Confirm new password"
-            />
+            <AppTextField v-model="passwordForm.confirmPassword" label="Confirm New Password" type="password"
+              :rules="[requiredValidator]" placeholder="Confirm new password" />
           </VCol>
 
           <!-- Submit -->
@@ -283,6 +251,23 @@ const onChangePassword = async () => {
           </VCol>
         </VRow>
       </VForm>
+    </VCardText>
+  </VCard>
+
+  <VCard class="mt-5" v-if="containsString(form.role, 'channel partner')">
+    <VCardTitle>Documents</VCardTitle>
+    <VCardText>
+      <VCard v-for="(document, index) in currentDocuments" :key="index" class="mb-2">
+        <VCardText class="d-flex justify-space-between align-center">
+          <div>
+            <VIcon size="26" color="red" icon="tabler-file-type-doc" />
+            <a :href="document.document_path" target="_blank">{{ formatKey(document.document_type) }}</a>
+          </div>
+          <VBtn icon @click="downloadFile(document.document_path)">
+            <VIcon size="24" icon="tabler-eye" />
+          </VBtn>
+        </VCardText>
+      </VCard>
     </VCardText>
   </VCard>
 </template>

@@ -1,28 +1,41 @@
+import { $api } from '@/utils/api'
 import { defineStore } from 'pinia'
+
+
 
 export const useNotificationStore = defineStore({
   id: 'notification',
   state: () => ({
     notifications: [],
     errors: [],
+    initialized: false,
   }),
   actions: {
     async fetchNotifications() {
-      try {
-        const response = await $api('/notifications', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+        console.log('Fetching notifications, current initialized:', this.initialized)
+      if (this.initialized) return
 
-        this.notifications = response.data // Update this line
+      try {
+        const response = await $api('/notifications')
+        this.notifications = response.data
+        this.initialized = true
       } catch (error) {
         console.error('Error fetching notifications:', error)
-        this.errors = error.response ? error.response.data.data : ['An unexpected error occurred'] // Update this line
+        this.errors = error.response ? error.response.data.data : ['An unexpected error occurred']
         throw error
       }
     },
+
+    //fetch notification count by application_id from notifications state
+    async fetchNotificationCountByApplicationId(applicationId) {
+      //also check if notification is read
+      return this.notifications.filter(n => n.application_id === applicationId && !n.read).length
+    },
+    //fetch notification count by application_id from notifications state and notiication_hash
+    async fetchNotificationCountByApplicationIdAndNotificationHash(applicationId, notificationHash) {
+      return this.notifications.filter(n => n.application_id === applicationId && n.notification_hash === notificationHash && !n.read).length
+    },
+
 
     async markAsRead(notificationId) {
       try {
@@ -60,5 +73,24 @@ export const useNotificationStore = defineStore({
         throw error
       }
     },
+
+    async markNotificationsAsReadByApplicationIdAndHash(applicationId, notificationHash) {
+      try {
+        // Mark only notifications matching the application ID and hash as read
+        const notificationsToMark = this.notifications.filter(
+          n => n.application_id === applicationId &&
+               n.notification_hash === notificationHash &&
+               !n.read
+        );
+
+        // Mark each notification as read
+        for (const notification of notificationsToMark) {
+          await this.markAsRead(notification.id);
+        }
+      } catch (error) {
+        console.error('Error marking notifications as read:', error);
+        throw error;
+      }
+    }
   },
 })

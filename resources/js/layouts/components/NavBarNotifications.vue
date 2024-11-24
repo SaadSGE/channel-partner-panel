@@ -7,7 +7,7 @@ const notificationStore = useNotificationStore()
 const router = useRouter()
 
 onMounted(() => {
-  notificationStore.fetchNotifications()
+  //notificationStore.fetchNotifications()
 })
 
 const removeNotification = notificationId => {
@@ -24,21 +24,42 @@ const markUnRead = notificationId => {
 }
 
 const handleNotificationClick = notification => {
-
   if (!notification.read) {
     markRead(notification.id)
   }
   if (notification.notification_route) {
     const currentRouteName = router.currentRoute.value.name
-    if (currentRouteName === notification.notification_route) {
-      // If on the same route, just reload the page
-      router.go(0)
-    } else {
-      // If routes are different, navigate without forcing a reload
+    const currentId = router.currentRoute.value.params.id
+
+    if (currentRouteName === notification.notification_route &&
+      currentId == notification.application_id) {
+
+
+      // If on the same route and same ID, just update hash and reload
+      window.location.hash = '#' + (notification.notification_hash)
+      window.location.reload()
+    }
+    else if (currentRouteName == notification.notification_route) {
+      // Navigate to the new route and then force reload
+      router.push({
+        name: notification.notification_route,
+        params: { id: notification.application_id },
+        hash: '#' + (notification.notification_hash)
+      }).then(() => window.location.reload())
+    }
+    else {
+      // If routes or IDs are different, navigate with router.push
       if (notification.application_id) {
-        router.push({ name: notification.notification_route, params: { id: notification.application_id } })
+        router.push({
+          name: notification.notification_route,
+          params: { id: notification.application_id },
+          hash: '#' + (notification.notification_hash)
+        })
       } else {
-        router.push(notification.notification_route)
+        router.push({
+          name: notification.notification_route,
+          hash: '#' + (notification.notification_hash)
+        })
       }
     }
   }

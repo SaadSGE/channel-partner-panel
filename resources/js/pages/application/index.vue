@@ -14,9 +14,10 @@ definePage({
 })
 
 import { useApplicationListStore } from '@/@core/stores/applicationList';
+import { useNotificationStore } from '@/@core/stores/notification';
 import { getUserRole, resolveStatusColor, resolveStatusName } from '@/@core/utils/helpers';
 import Swal from 'sweetalert2';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 const { can } = useAbility();
 // Store and Router
@@ -43,7 +44,8 @@ const selectedDateTo = ref(null)
 const isLoading = ref(false)
 
 const applicationStore = useApplicationListStore()
-
+const notificationStore = useNotificationStore()
+const notificationCounts = ref({})
 
 
 // Methods
@@ -68,6 +70,14 @@ const fetchApplications = async () => {
 
     applicationLists.value = response.data
     totalApplications.value = response.total
+
+    // Fetch notification counts for each application
+    await Promise.all(
+      applicationLists.value.map(async (application) => {
+        const count = await notificationStore.fetchNotificationCountByApplicationId(application.application_id)
+        notificationCounts.value[application.application_id] = count
+      })
+    )
   } catch (error) {
     console.error('Error fetching applications:', error)
   } finally {
@@ -125,14 +135,12 @@ watch([
   fetchApplications()
 })
 
-// Mounted Hook
-onMounted(() => {
 
-  fetchApplications()
-})
+
 
 // Header Definitions
 const headers = ref([
+  { title: 'Action', key: 'action', sortable: false },
   { title: 'APPLICATION ID', key: 'application_id' },
   { title: 'Student Name', key: 'student.name' },
   { title: 'Student Email', key: 'student.email' },
@@ -143,7 +151,7 @@ const headers = ref([
   { title: 'University/Course Details', key: 'university.name' },
   { title: 'Status', key: 'status' },
   { title: 'Date Added', key: 'created_at' },
-  { title: 'Action', key: 'action', sortable: false },
+
 ])
 
 // Add this computed property
@@ -222,13 +230,22 @@ const tableHeight = computed(() => {
             {{ resolveStatusName(item.status) }}
           </VChip>
         </template>
+        <template #item.application_id="{ item }">
+          <div class="d-flex align-center">
+            {{ item.application_id }}
+            <VBadge v-if="notificationCounts[item.application_id]" :content="notificationCounts[item.application_id]"
+              color="error" :model-value="notificationCounts[item.application_id] > 0" class="ms-2">
+              <VIcon size="small" icon="tabler-bell" color="error" />
+            </VBadge>
+          </div>
+        </template>
         <template #item.action="{ item }">
           <div class="d-flex flex-column ms-3">
             <IconBtn @click="viewApplicationDetail(item.application_id)">
-              <VIcon icon="tabler-eye" />
+              <VIcon color="primary" icon="tabler-eye" />
             </IconBtn>
             <IconBtn v-if="$can('delete', 'application')" @click="deleteItem(item.id)">
-              <VIcon icon="tabler-trash" />
+              <VIcon color="error" icon="tabler-trash" />
             </IconBtn>
           </div>
         </template>

@@ -1,22 +1,20 @@
 import { ofetch } from 'ofetch';
 
+
+
 export const $api = ofetch.create({
-
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  async onRequest({ options }) {
+  async onRequest({ options, request }) {
+    // Skip notification init for notification-related endpoints
 
-    const accessToken = useCookie('accessToken').value || import.meta.env.VITE_TOKEN;
-
+    const accessToken = useCookie('accessToken').value
     options.headers = {
       ...options.headers,
-      Accept: 'application/json',  // Ensure the Accept header is always set
+      Accept: 'application/json',
     }
 
     if (accessToken) {
-      options.headers = {
-        ...options.headers,
-        Authorization: `Bearer ${accessToken}`,
-      }
+      options.headers.Authorization = `Bearer ${accessToken}`
     }
   },
   async onResponseError({ response }) {

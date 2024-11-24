@@ -8,6 +8,7 @@ definePage({
 import { useApplicationListStore } from "@/@core/stores/applicationList";
 import ActivityLog from "@/components/ActivityLog/ApplicationActivityLog.vue";
 
+import { useNotificationStore } from '@/@core/stores/notification';
 import AcoAoCommunication from '@/components/AcoAoCommunication.vue';
 import AcoCoCommunication from '@/components/AcoCoCommunication.vue';
 import ApplicationOfficerAssignments from '@/components/ApplicationOfficerAssignments.vue';
@@ -15,7 +16,7 @@ import ComplianceOfficerAssignments from '@/components/ComplianceOfficerAssignme
 import StudentInfoEditDialog from "@/components/dialogs/StudentInfoEditDialog.vue";
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Document from "./details-document.vue";
 
@@ -24,6 +25,7 @@ const route = useRoute()
 const applicationId = route.params.id
 console.log(applicationId)
 const store = useApplicationListStore()
+const notificationStore = useNotificationStore()
 
 const currentTab = ref("student-course-details")
 const showModal = ref(false) // Modal visibility state
@@ -103,9 +105,42 @@ const goBack = () => {
   router.back();
 };
 
+// Function to update the current tab based on the hash
+const updateTabFromHash = () => {
+  const hash = route.hash.replace('#', '');
+  if (hash) {
+    currentTab.value = hash;
+  }
+};
+
+// Watch for changes in the route's hash
+watch(() => route.hash, updateTabFromHash);
+
+// Set the initial tab based on the hash when the component is mounted
 onMounted(async () => {
-  await refreshData()
-})
+  updateTabFromHash();
+  await refreshData();
+  await updateNotificationCounts();
+
+  // Mark notifications as read for the initial tab
+  const notificationHash = {
+    'status': 'status',
+    'comments': 'comments',
+    'university-communication': 'university-communication',
+    'aco-ao-communication': 'aco-ao-communication',
+    'assign-officer': 'assign-officer',
+    'assign-compliance-officer': 'assign-compliance-officer',
+    'aco-co-communication': 'aco-co-communication'
+  }[currentTab.value];
+
+  if (notificationHash) {
+    await notificationStore.markNotificationsAsReadByApplicationIdAndHash(
+      applicationId,
+      notificationHash
+    );
+    await updateNotificationCounts();
+  }
+});
 
 const refreshData = async () => {
   await store.getApplicationDetails(applicationId)
@@ -184,6 +219,76 @@ const handleAddUniversityComm = async () => {
     isUniversityCommLoading.value = false
   }
 }
+
+const statusNotificationCount = ref(0)
+const commentsNotificationCount = ref(0)
+const universityCommNotificationCount = ref(0)
+const acoAoCommNotificationCount = ref(0)
+const assignOfficerNotificationCount = ref(0)
+const assignComplianceOfficerNotificationCount = ref(0)
+const acoCoCommNotificationCount = ref(0)
+
+const updateNotificationCounts = async () => {
+  statusNotificationCount.value = await notificationStore.fetchNotificationCountByApplicationIdAndNotificationHash(
+    applicationId,
+    'status'
+  )
+  commentsNotificationCount.value = await notificationStore.fetchNotificationCountByApplicationIdAndNotificationHash(
+    applicationId,
+    'comments'
+  )
+  universityCommNotificationCount.value = await notificationStore.fetchNotificationCountByApplicationIdAndNotificationHash(
+    applicationId,
+    'university-communication'
+  )
+  acoAoCommNotificationCount.value = await notificationStore.fetchNotificationCountByApplicationIdAndNotificationHash(
+    applicationId,
+    'aco-ao-communication'
+  )
+  assignOfficerNotificationCount.value = await notificationStore.fetchNotificationCountByApplicationIdAndNotificationHash(
+    applicationId,
+    'assign-officer'
+  )
+  assignComplianceOfficerNotificationCount.value = await notificationStore.fetchNotificationCountByApplicationIdAndNotificationHash(
+    applicationId,
+    'assign-compliance-officer'
+  )
+  acoCoCommNotificationCount.value = await notificationStore.fetchNotificationCountByApplicationIdAndNotificationHash(
+    applicationId,
+    'aco-co-communication'
+  )
+}
+
+// Add this watch for currentTab
+watch(currentTab, async (newTab) => {
+  try {
+    // Map tabs to their notification hashes
+    const tabHashMap = {
+      'status': 'status',
+      'comments': 'comments',
+      'university-communication': 'university-communication',
+      'aco-ao-communication': 'aco-ao-communication',
+      'assign-officer': 'assign-officer',
+      'assign-compliance-officer': 'assign-compliance-officer',
+      'aco-co-communication': 'aco-co-communication'
+    };
+
+    const notificationHash = tabHashMap[newTab];
+
+    if (notificationHash) {
+      // Mark notifications as read for this tab
+      await notificationStore.markNotificationsAsReadByApplicationIdAndHash(
+        applicationId,
+        notificationHash
+      );
+
+      // Update notification counts after marking as read
+      await updateNotificationCounts();
+    }
+  } catch (error) {
+    console.error('Error marking notifications as read:', error);
+  }
+});
 </script>
 
 <template>
@@ -290,23 +395,38 @@ const handleAddUniversityComm = async () => {
         </VTab>
         <VTab value="status">
           Status
+          <VBadge v-if="statusNotificationCount > 0" :content="statusNotificationCount" color="error" location="top end"
+            offset-x="-15" offset-y="3" />
         </VTab>
         <VTab value="comments">
           Comments
+          <VBadge v-if="commentsNotificationCount > 0" :content="commentsNotificationCount" color="error"
+            location="top end" offset-x="-15" offset-y="3" />
         </VTab>
         <VTab value="university-communication">
           University Communication
+          <VBadge v-if="universityCommNotificationCount > 0" :content="universityCommNotificationCount" color="error"
+            location="top end" offset-x="-15" offset-y="3" />
         </VTab>
         <VTab value="aco-ao-communication" v-if="$can('enable', 'aco-ao-communication')">
           ACO & AO Communication
+          <VBadge v-if="acoAoCommNotificationCount > 0" :content="acoAoCommNotificationCount" color="error"
+            location="top end" offset-x="-15" offset-y="3" />
         </VTab>
         <VTab value="assign-officer" v-if="$can('assign', 'application-officer')">
           Assign Application Officer
+          <VBadge v-if="assignOfficerNotificationCount > 0" :content="assignOfficerNotificationCount" color="error"
+            location="top end" offset-x="-15" offset-y="3" />
         </VTab>
         <VTab value="assign-compliance-officer" v-if="$can('assign', 'compliance-officer')">Assign Compliance Officer
+          <VBadge v-if="assignComplianceOfficerNotificationCount > 0"
+            :content="assignComplianceOfficerNotificationCount" color="error" location="top end" offset-x="-15"
+            offset-y="3" />
         </VTab>
-        <VTab value="aco-co-communication" v-if="$can('enable', 'aco-co-communication')">ACO & CO Communication</VTab>
-
+        <VTab value="aco-co-communication" v-if="$can('enable', 'aco-co-communication')">ACO & CO Communication
+          <VBadge v-if="acoCoCommNotificationCount > 0" :content="acoCoCommNotificationCount" color="error"
+            location="top end" offset-x="-15" offset-y="3" />
+        </VTab>
         <VTab v-if="isAdmin" value="activity-logs">
           Activity Logs
         </VTab>
@@ -558,5 +678,21 @@ const handleAddUniversityComm = async () => {
   justify-content: flex-end;
   inset-block-start: 10px;
   inset-inline-end: 10px;
+}
+
+.custom-badge {
+  margin-block-start: -0.25rem;
+  padding-block: 0.25rem;
+  padding-inline: 0.5rem;
+}
+
+:deep(.v-badge__badge) {
+  border-radius: 10px;
+  block-size: 20px;
+  font-size: 12px;
+  inset-block-end: calc(100% - 2px) !important;
+  min-inline-size: 20px;
+  padding-block: 0;
+  padding-inline: 6px;
 }
 </style>

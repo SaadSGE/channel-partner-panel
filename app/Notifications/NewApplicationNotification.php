@@ -3,19 +3,19 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
 class NewApplicationNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public $application;
+    private $details;
 
-    public function __construct($application)
+    public function __construct(array $details)
     {
-        $this->application = $application;
+        $this->details = $details;
     }
 
     public function via($notifiable)
@@ -26,21 +26,12 @@ class NewApplicationNotification extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         return (new MailMessage())
-                    ->subject('New Application Created')
-                    ->view('emails.new_application', ['application' => $this->application]);
+            ->subject($this->details['subject'])
+            ->view('emails.general', ['body' => $this->details['body']]);
     }
 
     public function toArray($notifiable)
     {
-        return [
-            'application_id' => $this->application->application_id,
-            'student_name' => $this->application->student->first_name . ' ' . $this->application->student->last_name,
-            'student_email' => $this->application->student->email,
-            'counsellor_name' => $this->application->user->name,
-            'counsellor_email' => $this->application->user->email,
-            'university_name' => $this->application->university->name,
-            'intake_name' => $this->application->intake->name,
-            'course_name' => $this->application->courseDetails->course->name,
-        ];
+        return $this->details;
     }
 }

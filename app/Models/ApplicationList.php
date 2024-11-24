@@ -197,4 +197,34 @@ class ApplicationList extends Model
                     ->withPivot('status')
                     ->withTimestamps();
     }
+
+    public function scopeOrderByUnreadNotifications($query)
+    {
+        $user = auth('api')->user();
+
+        // Create a subquery to count unread notifications for each application
+        $subQuery = \DB::table('notifications')
+            ->select(
+                \DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.application_id")) as application_id'),
+                \DB::raw('COUNT(*) as unread_count'),
+                \DB::raw('CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END as has_unread'),
+                \DB::raw('MAX(created_at) as latest_notification')
+            )
+            ->where('notifiable_id', $user->id)
+            ->whereNull('read_at')
+            ->whereRaw('JSON_EXTRACT(data, "$.application_id") IS NOT NULL')
+            ->groupBy(\DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.application_id"))'));
+
+        // Join with our main query and order by unread count
+        return $query
+            ->leftJoinSub($subQuery, 'notification_counts', function ($join) {
+                $join->on('application_lists.application_id', '=', \DB::raw('CAST(notification_counts.application_id AS CHAR)'));
+            })
+            ->orderByRaw('COALESCE(has_unread, 0) DESC')
+            ->orderByRaw('CASE WHEN latest_notification IS NULL THEN 1 ELSE 0 END') // Handle nulls last
+            ->orderByRaw('latest_notification DESC')
+            ->orderByRaw('COALESCE(unread_count, 0) DESC')
+            ->addSelect('application_lists.*')
+            ->addSelect(\DB::raw('COALESCE(unread_count, 0) as unread_notifications_count'));
+    }
 }
