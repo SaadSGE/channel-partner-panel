@@ -124,11 +124,22 @@ class ApplicationController extends Controller
             return $q->whereDate('created_at', '<=', $request->query('dateTo'));
         });
 
-        // Sorting
-        $query->orderBy($sortBy, $orderBy);
+        // First order by unread notifications, then by user-specified sort
+        $query->orderByUnreadNotifications();
+
+        // Only apply additional sorting if it's not already sorted by notifications
+        if ($sortBy !== 'unread_notifications_count') {
+            $query->orderBy($sortBy, $orderBy);
+        }
 
         // Pagination
         $applications = $query->paginate($perPage);
+
+        // Transform the response to include unread notification count
+        $applications->through(function ($application) {
+            $application->unread_notifications_count = $application->unread_notifications_count ?? 0;
+            return $application;
+        });
 
         // Log the activity
         $this->logIndexActivity($request, $applications->total());
