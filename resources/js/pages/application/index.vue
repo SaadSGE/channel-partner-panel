@@ -14,9 +14,10 @@ definePage({
 })
 
 import { useApplicationListStore } from '@/@core/stores/applicationList';
+import { useNotificationStore } from '@/@core/stores/notification';
 import { getUserRole, resolveStatusColor, resolveStatusName } from '@/@core/utils/helpers';
 import Swal from 'sweetalert2';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 const { can } = useAbility();
 // Store and Router
@@ -43,7 +44,8 @@ const selectedDateTo = ref(null)
 const isLoading = ref(false)
 
 const applicationStore = useApplicationListStore()
-
+const notificationStore = useNotificationStore()
+const notificationCounts = ref({})
 
 
 // Methods
@@ -68,6 +70,14 @@ const fetchApplications = async () => {
 
     applicationLists.value = response.data
     totalApplications.value = response.total
+
+    // Fetch notification counts for each application
+    await Promise.all(
+      applicationLists.value.map(async (application) => {
+        const count = await notificationStore.fetchNotificationCountByApplicationId(application.application_id)
+        notificationCounts.value[application.application_id] = count
+      })
+    )
   } catch (error) {
     console.error('Error fetching applications:', error)
   } finally {
@@ -125,11 +135,8 @@ watch([
   fetchApplications()
 })
 
-// Mounted Hook
-onMounted(() => {
 
-  fetchApplications()
-})
+
 
 // Header Definitions
 const headers = ref([
@@ -221,6 +228,15 @@ const tableHeight = computed(() => {
             size="small" class="font-weight-medium">
             {{ resolveStatusName(item.status) }}
           </VChip>
+        </template>
+        <template #item.application_id="{ item }">
+          <div class="d-flex align-center">
+            {{ item.application_id }}
+            <VBadge v-if="notificationCounts[item.application_id]" :content="notificationCounts[item.application_id]"
+              color="error" :model-value="notificationCounts[item.application_id] > 0" class="ms-2">
+              <VIcon size="small" icon="tabler-bell" color="error" />
+            </VBadge>
+          </div>
         </template>
         <template #item.action="{ item }">
           <div class="d-flex flex-column ms-3">

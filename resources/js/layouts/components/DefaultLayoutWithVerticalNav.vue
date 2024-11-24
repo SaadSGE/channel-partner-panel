@@ -30,7 +30,7 @@ watch([
 const notificationStore = useNotificationStore()
 
 onMounted(() => {
-  notificationStore.fetchNotifications()
+  //notificationStore.fetchNotifications()
 })
 
 // !SECTION

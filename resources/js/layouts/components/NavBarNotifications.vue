@@ -7,7 +7,7 @@ const notificationStore = useNotificationStore()
 const router = useRouter()
 
 onMounted(() => {
-  notificationStore.fetchNotifications()
+  //notificationStore.fetchNotifications()
 })
 
 const removeNotification = notificationId => {

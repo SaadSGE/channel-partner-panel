@@ -1,12 +1,11 @@
 import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
-
 window.Pusher = Pusher
 
 const accessToken = useCookie('accessToken')
-console.log(accessToken.value)
+
 const userData = useCookie('userData')
-console.log('Initializing Echo...')
+
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
@@ -78,8 +77,10 @@ window.Echo.private(`App.Models.User.${userData.value.id}`)
     })
 
 const showNotification = (details) => {
-    console.log('Showing notification:', details)
-}
+        console.log('Showing notification:', details)
+    }
+
+
 }
 
 
