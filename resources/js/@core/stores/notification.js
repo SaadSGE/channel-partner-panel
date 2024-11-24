@@ -31,6 +31,11 @@ export const useNotificationStore = defineStore({
       //also check if notification is read
       return this.notifications.filter(n => n.application_id === applicationId && !n.read).length
     },
+    //fetch notification count by application_id from notifications state and notiication_hash
+    async fetchNotificationCountByApplicationIdAndNotificationHash(applicationId, notificationHash) {
+      return this.notifications.filter(n => n.application_id === applicationId && n.notification_hash === notificationHash && !n.read).length
+    },
+
 
     async markAsRead(notificationId) {
       try {
@@ -68,5 +73,24 @@ export const useNotificationStore = defineStore({
         throw error
       }
     },
+
+    async markNotificationsAsReadByApplicationIdAndHash(applicationId, notificationHash) {
+      try {
+        // Mark only notifications matching the application ID and hash as read
+        const notificationsToMark = this.notifications.filter(
+          n => n.application_id === applicationId &&
+               n.notification_hash === notificationHash &&
+               !n.read
+        );
+
+        // Mark each notification as read
+        for (const notification of notificationsToMark) {
+          await this.markAsRead(notification.id);
+        }
+      } catch (error) {
+        console.error('Error marking notifications as read:', error);
+        throw error;
+      }
+    }
   },
 })
