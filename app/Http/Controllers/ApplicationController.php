@@ -89,7 +89,7 @@ class ApplicationController extends Controller
 
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
-                $q->where('application_id', 'LIKE', "%$searchQuery%")
+                $q->where('application_lists.application_id', 'LIKE', "%$searchQuery%")
                     ->orWhereHas('student', function ($q) use ($searchQuery) {
                         $q->where('first_name', 'LIKE', "%$searchQuery%")
                             ->orWhere('last_name', 'LIKE', "%$searchQuery%")
@@ -887,7 +887,7 @@ class ApplicationController extends Controller
 
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
-                $q->where('application_id', 'LIKE', "%$searchQuery%")
+                $q->where('application_lists.application_id', 'LIKE', "%$searchQuery%")
                     ->orWhereHas('student', function ($q) use ($searchQuery) {
                         $q->where('first_name', 'LIKE', "%$searchQuery%")
                             ->orWhere('last_name', 'LIKE', "%$searchQuery%")
@@ -1403,7 +1403,7 @@ class ApplicationController extends Controller
 
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
-                $q->where('application_id', 'LIKE', "%$searchQuery%")
+                $q->where('application_lists.application_id', 'LIKE', "%$searchQuery%")
                     ->orWhereHas('student', function ($q) use ($searchQuery) {
                         $q->where('first_name', 'LIKE', "%$searchQuery%")
                             ->orWhere('last_name', 'LIKE', "%$searchQuery%")
