@@ -1,1 +1,0 @@
-import{a9 as u,bm as o,a6 as m}from"./main-CVWDuzes.js";const c=(t,r,n,i,e=!1)=>{const s=u(),{global:a}=o();return m(()=>{if(a.name.value==="light")return s.skin==="bordered"&&e?n:t;if(a.name.value==="dark")return s.skin==="bordered"&&e?i:r})},g="/build/assets/misc-mask-dark-D4eSvDKH.png",k="/build/assets/misc-mask-light-7GUBPWb3.png";export{g as a,k as b,c as u};
