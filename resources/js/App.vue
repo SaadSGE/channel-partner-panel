@@ -8,10 +8,12 @@ import {
 } from '@core/stores/config'
 import { hexToRgb } from '@layouts/utils'
 import { useTheme } from 'vuetify'
-
+const userData = useCookie('userData')
 const { global } = useTheme()
-const notificationStore = useNotificationStore()
-notificationStore.fetchNotifications()
+if (userData.value) {
+  const notificationStore = useNotificationStore()
+  notificationStore.fetchNotifications()
+}
 
 // ℹ️ Sync current theme with initial loader theme
 initCore()
