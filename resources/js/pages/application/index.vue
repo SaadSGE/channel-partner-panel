@@ -140,6 +140,7 @@ watch([
 
 // Header Definitions
 const headers = ref([
+  { title: 'Action', key: 'action', sortable: false },
   { title: 'APPLICATION ID', key: 'application_id' },
   { title: 'Student Name', key: 'student.name' },
   { title: 'Student Email', key: 'student.email' },
@@ -150,7 +151,7 @@ const headers = ref([
   { title: 'University/Course Details', key: 'university.name' },
   { title: 'Status', key: 'status' },
   { title: 'Date Added', key: 'created_at' },
-  { title: 'Action', key: 'action', sortable: false },
+
 ])
 
 // Add this computed property
@@ -241,10 +242,10 @@ const tableHeight = computed(() => {
         <template #item.action="{ item }">
           <div class="d-flex flex-column ms-3">
             <IconBtn @click="viewApplicationDetail(item.application_id)">
-              <VIcon icon="tabler-eye" />
+              <VIcon color="primary" icon="tabler-eye" />
             </IconBtn>
             <IconBtn v-if="$can('delete', 'application')" @click="deleteItem(item.id)">
-              <VIcon icon="tabler-trash" />
+              <VIcon color="error" icon="tabler-trash" />
             </IconBtn>
           </div>
         </template>
