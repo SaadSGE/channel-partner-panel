@@ -1,5 +1,10 @@
 <template>
+  <VAlert type="info" border="start" v-if="currentNotice">
+    {{ currentNotice }}
+  </VAlert>
   <VRow>
+
+
     <!-- Conditional rendering based on user role -->
     <VCol cols="12" md="4" sm="6" lg="3" v-if="isAdmin">
       <VCard>
@@ -96,4 +101,53 @@ const isChannelPartner = computed(() => containsString(userRole.value, 'channel 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString();
 };
+
+
+import { onUnmounted } from 'vue';
+
+// Notices Array (Placeholder - replace with API data)
+const notices = ref([
+  "Welcome to the Dashboard!",
+  "System maintenance is scheduled for Friday.",
+  "New updates are available in your profile section.",
+]);
+
+// Current notice index
+const currentNoticeIndex = ref(0);
+
+// Computed property to get the current notice
+const currentNotice = computed(() => notices.value[currentNoticeIndex.value]);
+
+// Function to cycle through notices
+const cycleNotices = () => {
+  currentNoticeIndex.value = (currentNoticeIndex.value + 1) % notices.value.length;
+};
+
+// Timer for rotating notices
+let noticeTimer;
+
+onMounted(() => {
+  // Start cycling notices every 5 seconds
+  noticeTimer = setInterval(cycleNotices, 5000);
+
+  // Fetch notices from API (placeholder function)
+  // fetchNoticesFromAPI();
+});
+
+onUnmounted(() => {
+  // Clear the timer on component unmount
+  clearInterval(noticeTimer);
+});
+
+// Placeholder function for fetching notices from an API
+// const fetchNoticesFromAPI = async () => {
+//   // Simulate API call
+//   const apiNotices = await new Promise((resolve) =>
+//     setTimeout(() => resolve(["New Notice 1", "New Notice 2"]), 2000)
+//   );
+
+//   notices.value = apiNotices;
+// };
+
+
 </script>
