@@ -366,6 +366,7 @@
     "LeadStatuses": true,
     "resolveLeadStatusColor": true,
     "resolveLeadStatusName": true,
-    "leadStatuses": true
+    "leadStatuses": true,
+    "$customApi": true
   }
 }
