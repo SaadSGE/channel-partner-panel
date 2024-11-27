@@ -20,7 +20,10 @@ const statuses = ref([
   { id: 11, name: 'Doc Received' },
   { id: 12, name: 'Partial Payment' },
 ]);
-
+const courseType = ref([
+  { id: 0, name: 'Graduate' },
+  { id: 1, name: 'Post graduate' }
+])
 
 const countries = ref([]);
 const intakes = ref([]);
@@ -104,6 +107,10 @@ const props = defineProps({
     type: Number,
     Required: false,
   },
+  selectedCourseType: {
+    type: Number,
+    Required: false,
+  },
   selectedUserStatus: {
     type: Object,
     Required: false,
@@ -113,7 +120,7 @@ const props = defineProps({
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedChannelPartner = ref(props.selectedChannelPartner);
@@ -130,6 +137,7 @@ const localSelectedRole = ref(props.selectedRole);
 const localSelectedParent = ref(props.selectedParent);
 const localSelectedEditor = ref(props.selectedEditor);
 const localSelectedUserStatus = ref(props.selectedUserStatus);
+const localSelectedCourseType = ref(props.selectedCourseType);
 
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
@@ -174,7 +182,9 @@ watch(localSelectedEditor, (newValue) => {
 watch(localSelectedUserStatus, (newValue) => {
   emit('update-userStatus', newValue);
 });
-
+watch(localSelectedCourseType, (newValue) => {
+  emit('update-courseType', newValue);
+});
 
 
 const fetchFilterOptions = async () => {
@@ -353,7 +363,10 @@ const loadEditors = async () => {
     <AppTextField v-model="localSelectedCourseName" label="Filter by Course Name" placeholder="Enter Course Name"
       clearable />
   </VCol>
-
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedCourseType !== undefined">
+    <AppAutocomplete v-model="localSelectedCourseType" :items="courseType" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Filter by coursetype" placeholder="Select Coursetype" clearable />
+  </VCol>
   <!-- user -->
 
   <VCol cols="12" sm="4" v-if="props.selectedRole !== undefined">
