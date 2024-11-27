@@ -37,6 +37,8 @@ class StudentController extends Controller
             'interestedUniversities.course',
             'interestedUniversities.country',
             'interestedUniversities.intake',
+            'counsellor:id,first_name,last_name,branch_id',
+            'counsellor.branch'
 
         ]);
 

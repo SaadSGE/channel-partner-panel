@@ -10,6 +10,8 @@ use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
+use function Symfony\Component\String\b;
+
 class User extends Authenticatable
 {
     use HasFactory;
@@ -143,7 +145,10 @@ class User extends Authenticatable
 
         return $dashboardWithTotalFirst;
     }
-
+    public function getBranchNameAttribute(): string
+    {
+        return $this->branch->name ?? 'No Branch';
+    }
 
     protected function getEditorDashboard(): array
     {
@@ -156,7 +161,10 @@ class User extends Authenticatable
         ];
     }
 
-
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class)->withDefault('No Branch');
+    }
 
     public function parent()
     {

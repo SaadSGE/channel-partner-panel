@@ -93,7 +93,7 @@ function continueWithoutDocument() {
   <div v-if="showDocumentUpload">
     <VCard>
       <VCardTitle class="text-center">Upload Necessary Document</VCardTitle>
-      <VCardTitle>Passport(*)</VCardTitle>
+      <VCardTitle>Passport</VCardTitle>
       <VCardText>
         <file-pond ref="pond" name="passport" :allow-multiple="false" allowRemove="true"
           label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"
@@ -102,7 +102,7 @@ function continueWithoutDocument() {
       </VCardText>
     </VCard>
     <VCard>
-      <VCardTitle>Academic Reference Letter(*)</VCardTitle>
+      <VCardTitle>Academic Reference Letter</VCardTitle>
       <VCardText>
         <file-pond ref="pond" name="academic_letter" :allow-multiple="false" allowRemove="true"
           label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" :server="server"

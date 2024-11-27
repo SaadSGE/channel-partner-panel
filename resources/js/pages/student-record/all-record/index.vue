@@ -107,13 +107,12 @@ watch([search, selectedStatus, selectedDateFrom, selectedDateTo], () => {
 // Table headers
 const headers = ref([
   { title: 'Student ID', key: 'student_id' },
-  { title: 'Counsellor', key: 'student_id' },
-  { title: 'Branch', key: 'student_id' },
-  { title: 'First Name', key: 'first_name' },
-  { title: 'Last Name', key: 'last_name' },
+  { title: 'Name', key: 'full_name' },
   { title: 'Email', key: 'email' },
   { title: 'Phone', key: 'whatsapp_number' },
-  { title: 'University', key: 'interested_universities[0]?.university.name' },
+  { title: 'University', key: 'university_intake_course_country' },
+  { title: 'Counsellor', key: 'counsellor.full_name' },
+  { title: 'Branch', key: 'counsellor.branch.branch_name_with_country' },
   { title: 'Status', key: 'status' },
   { title: 'Action', key: 'action', sortable: false },
 ]);
@@ -153,11 +152,8 @@ const headers = ref([
       <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="studentLists"
         :items-length="totalStudents" :headers="headers" class="text-no-wrap color-black student-table"
         :height="tableHeight" @update:options="updateOptions">
-        <template #item.first_name="{ item }">
-          <p>{{ item.first_name }}</p>
-        </template>
-        <template #item.last_name="{ item }">
-          <p>{{ item.last_name }}</p>
+        <template #item.full_name="{ item }">
+          <p>{{ item.full_name }}</p>
         </template>
         <template #item.email="{ item }">
           <p>{{ item.email }}</p>
@@ -165,12 +161,15 @@ const headers = ref([
         <template #item.passport_no="{ item }">
           <p>{{ item.passport_no }}</p>
         </template>
-        <template #item.interested_universities[0]?.university.name="{ item }">
-          <div class="d-flex flex-column ms-3">
-            <span class="d-block font-weight-medium text-truncate text-high-emphasis">
-              {{ item.interested_universities[0]?.university.name }}
-            </span>
-          </div>
+        <template #item.university_intake_course_country="{ item }">
+          <ul class="university-list ms-3">
+            <template v-for="(choice, index) in item.university_intake_course_country" :key="index">
+              <li class="text-truncate text-high-emphasis">
+                {{ choice }}
+              </li>
+              <VDivider v-if="index < item.university_intake_course_country.length - 1" class="my-1" />
+            </template>
+          </ul>
         </template>
         <template #item.status="{ item }">
           <VChip :color="resolveStatusColor(item.status)" :class="`text-${resolveStatusColor(item.status)}`"
@@ -228,5 +227,16 @@ td {
 .student-table {
   overflow: auto;
   flex: 1;
+}
+
+.university-list {
+  margin: 0;
+  list-style-type: disc;
+  padding-inline-start: 1rem;
+}
+
+.university-list li {
+  color: black;
+  font-size: 0.85rem;
 }
 </style>
