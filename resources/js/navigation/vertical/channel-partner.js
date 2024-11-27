@@ -143,6 +143,51 @@ export default [
 
     ],
   },
+    {
+    title: 'Leads',
+    icon: { icon: 'tabler-files' },
+    action: 'read',
+    subject: 'dashboard',
+    children: [
+      {
+        title: 'All Leads',
+        to: 'lead',
+        action: 'read',
+        subject: 'dashboard',
+      },
+
+      // {
+      //   title: ' Assigned Lead',
+      //   to: 'record-university',
+      //   action: 'read',
+      //   subject: 'record',
+
+      // },
+
+      // {
+      //   title: 'Unassigned Lead',
+      //   to: 'record-intake',
+      //   action: 'read',
+      //   subject: 'record',
+
+      // },
+      // {
+      //   title: 'Future Intake',
+      //   to: 'record-intake',
+      //   action: 'read',
+      //   subject: 'record',
+
+      // },
+      // {
+      //   title: 'Dead Lead',
+      //   to: 'record-intake',
+      //   action: 'read',
+      //   subject: 'record',
+
+      // },
+
+    ],
+  },
 
   {
     title: 'Roles & Permission',
