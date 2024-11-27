@@ -84,6 +84,7 @@ export const useApplicationListStore = defineStore({
         this.documents = response.data.student.document.map(doc => doc.path)
         this.students = response.data.student
         this.comments = response.data.comments
+        this.universities = response.data.universities
         this.universityCommunications = response.data.university_communications
 
         return response.data

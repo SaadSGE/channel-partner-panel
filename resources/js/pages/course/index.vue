@@ -38,7 +38,7 @@ const selectedCountry = ref(null);
 const selectedIntake = ref(null);
 const selectedUniversity = ref(null);
 const selectedCourseName = ref("");
-
+const selectedCourseType = ref(null);
 
 const countries = ref([]);
 const intakes = ref([]);
@@ -72,14 +72,15 @@ const getRecord = async (page = 1) => {
     selectedCountry.value,
     selectedIntake.value,
     selectedUniversity.value,
-    selectedCourseName.value
+    selectedCourseName.value,
+    selectedCourseType.value
   );
   records.value = fetchRecord.data;
   total.value = fetchRecord.total;
   isLoading.value = false;
 };
 
-watch([searchQuery, selectedCountry, selectedIntake, selectedUniversity, selectedCourseName], () => {
+watch([searchQuery, selectedCountry, selectedIntake, selectedUniversity, selectedCourseName, selectedCourseType], () => {
   getRecord();
 });
 
@@ -134,7 +135,8 @@ const headersRecord = [
         <Filters :selected-country="selectedCountry" @update-country="selectedCountry = $event"
           :selected-intake="selectedIntake" @update-intake="selectedIntake = $event"
           :selected-university2="selectedUniversity" @update-university2="selectedUniversity = $event"
-          :selected-courseName="selectedCourseName" @update-courseName="selectedCourseName = $event"></Filters>
+          :selected-courseName="selectedCourseName" @update-courseName="selectedCourseName = $event"
+          :selected-courseType="selectedCourseType" @update-courseType="selectedCourseType = $event"></Filters>
 
 
 

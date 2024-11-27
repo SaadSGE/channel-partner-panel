@@ -67,6 +67,7 @@ const applicationData = ref({
 const statusFile = ref()
 const statusLoading = ref(true)
 
+
 const studentData = ref({
   id: null,
   student_id: null,
@@ -95,7 +96,7 @@ const studentData = ref({
     },
   ],
 })
-
+console.log(studentData)
 const documents = ref([])
 const allStatuses = ref([])
 
@@ -158,6 +159,8 @@ const refreshData = async () => {
   )
 
   console.log(studentData);
+
+
 }
 
 const isStatusLoading = ref(false)
@@ -480,6 +483,16 @@ watch(currentTab, async (newTab) => {
                       <td>{{ applicationData.counsellor_email }}</td>
                       <td><strong>Communication Phone No.</strong></td>
                       <td>{{ applicationData.counsellor_number }}</td>
+                    </tr>
+                    <tr>
+                      <td><strong>University Name</strong></td>
+                      <td>{{ applicationData?.university?.name }}</td>
+                      <td><strong>Intake Name</strong></td>
+                      <td>{{ applicationData?.intake?.name }}</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Course Name</strong></td>
+                      <td>{{ applicationData?.course?.name }}</td>
                     </tr>
                   </tbody>
                 </VTable>
