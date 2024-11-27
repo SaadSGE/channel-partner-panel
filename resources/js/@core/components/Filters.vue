@@ -126,12 +126,8 @@ const props = defineProps({
 });
 
 
-const emit = defineEmits([
-  'update-status', 'update-lead-status', 'update-channel-partner', 'update-university',
-  'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country',
-  'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent',
-  'update-editor', 'update-userStatus'
-]);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType']);
+
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedLeadStatus = ref(props.selectedLeadStatus);
 const localSelectedChannelPartner = ref(props.selectedChannelPartner);
