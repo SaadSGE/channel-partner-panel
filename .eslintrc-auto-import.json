@@ -1,6 +1,7 @@
 {
   "globals": {
     "$api": true,
+    "$customApi": true,
     "COOKIE_MAX_AGE_1_YEAR": true,
     "Component": true,
     "ComponentPublicInstance": true,
@@ -81,6 +82,7 @@
     "isRef": true,
     "isToday": true,
     "kFormatter": true,
+    "leadStatuses": true,
     "lengthValidator": true,
     "logicAnd": true,
     "logicNot": true,
@@ -135,6 +137,8 @@
     "registerPlugins": true,
     "requiredValidator": true,
     "resolveComponent": true,
+    "resolveLeadStatusColor": true,
+    "resolveLeadStatusName": true,
     "resolveRef": true,
     "resolveStatusColor": true,
     "resolveStatusName": true,
@@ -360,13 +364,6 @@
     "watchThrottled": true,
     "watchTriggerable": true,
     "watchWithFilter": true,
-    "whenever": true,
-    "getLeadStatusColor": true,
-    "getLeadStatus": true,
-    "LeadStatuses": true,
-    "resolveLeadStatusColor": true,
-    "resolveLeadStatusName": true,
-    "leadStatuses": true,
-    "$customApi": true
+    "whenever": true
   }
 }
