@@ -5,6 +5,10 @@ import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
 const props = defineProps({
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
   educationalHistory: {
     type: Array,
     required: true,
@@ -68,23 +72,25 @@ const removeEducationalHistory = (index) => {
   <VCard>
     <VCardText>
       <VCardTitle>Educational History</VCardTitle>
-      <p class="text-center">Add Educational History</p>
+      <p class="text-center" v-if="!readonly">Add Educational History</p>
       <VRow v-for="(education, index) in educationalHistory" :key="index">
         <VCol cols="12" md="3">
-          <AppTextField v-model="education.degree" label="Degree" placeholder="Degree" density="compact" />
+          <AppTextField v-model="education.degree" label="Degree" placeholder="Degree" density="compact"
+            :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="3">
-          <AppTextField v-model="education.institution" label="Institution" placeholder="Institution"
-            density="compact" />
+          <AppTextField v-model="education.institution" label="Institution" placeholder="Institution" density="compact"
+            :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="2">
           <AppTextField v-model="education.passing_year" label="Passing Year" placeholder="Passing Year"
-            density="compact" />
+            density="compact" :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="2">
-          <AppTextField v-model="education.result" label="Result" placeholder="Result" density="compact" />
+          <AppTextField v-model="education.result" label="Result" placeholder="Result" density="compact"
+            :readonly="readonly" />
         </VCol>
-        <VCol cols="12" md="2" class="d-flex align-center mt-5">
+        <VCol cols="12" md="2" class="d-flex align-center mt-5" v-if="!readonly">
           <VBtn v-if="index !== 0" icon="tabler-x" color="error" @click="removeEducationalHistory(index)" class="me-2"
             size="small" />
           <VBtn icon="tabler-plus" color="primary" @click="addEducationalHistory" size="small" />

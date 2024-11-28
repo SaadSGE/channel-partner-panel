@@ -4,6 +4,10 @@ import { onMounted, watch } from 'vue';
 import 'vue3-toastify/dist/index.css';
 
 const props = defineProps({
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
   englishProficiency: {
     type: Object,
     required: true,
@@ -40,27 +44,27 @@ watch(() => props.englishProficiency, (newValue) => {
       <VRow>
         <VCol cols="12" md="3">
           <AppTextField v-model="props.englishProficiency.title" label="Proficiency Title"
-            placeholder="Proficiency Title" density="compact" />
+            placeholder="Proficiency Title" density="compact" :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="3">
           <AppTextField v-model="props.englishProficiency.overall_score" label="Overall Score"
-            placeholder="Overall Score" density="compact" />
+            placeholder="Overall Score" density="compact" :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="1">
           <AppTextField v-model="props.englishProficiency.listening" label="Listening" placeholder="Listening"
-            density="compact" />
+            density="compact" :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="1">
           <AppTextField v-model="props.englishProficiency.speaking" label="Speaking" placeholder="Speaking"
-            density="compact" />
+            density="compact" :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="1">
           <AppTextField v-model="props.englishProficiency.writing" label="Writing" placeholder="Writing"
-            density="compact" />
+            density="compact" :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="1">
           <AppTextField v-model="props.englishProficiency.reading" label="Reading" placeholder="Reading"
-            density="compact" />
+            density="compact" :readonly="readonly" />
         </VCol>
       </VRow>
     </VCardText>

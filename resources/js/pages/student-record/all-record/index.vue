@@ -1,7 +1,8 @@
 <script setup>
 import { useApplicationListStore } from '@/@core/stores/applicationList';
 import { commonFunction } from '@/@core/stores/commonFunction';
-
+import { useStudentStore } from '@/@core/stores/studentStore';
+import { useRouter } from 'vue-router';
 // Page definition
 definePage({
   meta: {
@@ -35,7 +36,9 @@ const selectedStatus = ref(null);
 // Stores
 const commonFunctionStore = commonFunction();
 const store = useApplicationListStore();
+const studentStore = useStudentStore();
 
+const router = useRouter();
 // Methods
 const viewStudentDetail = studentId => {
   router.push({ name: 'student-record-details-id', params: { id: studentId } });
@@ -76,8 +79,7 @@ const updateOptions = options => {
 const fetchStudents = async () => {
   isLoading.value = true;
   try {
-    const response = await store.getStudentList(
-      props.userId,
+    const response = await studentStore.getStudentList(
       page.value,
       itemsPerPage.value,
       search.value,
@@ -106,15 +108,16 @@ watch([search, selectedStatus, selectedDateFrom, selectedDateTo], () => {
 
 // Table headers
 const headers = ref([
+  { title: 'Action', key: 'action', sortable: false },
   { title: 'Student ID', key: 'student_id' },
   { title: 'Name', key: 'full_name' },
   { title: 'Email', key: 'email' },
   { title: 'Phone', key: 'whatsapp_number' },
-  { title: 'University', key: 'university_intake_course_country' },
   { title: 'Counsellor', key: 'counsellor.full_name' },
+  { title: 'University', key: 'university_intake_course_country' },
   { title: 'Branch', key: 'counsellor.branch.branch_name_with_country' },
   { title: 'Status', key: 'status' },
-  { title: 'Action', key: 'action', sortable: false },
+
 ]);
 </script>
 <template>
@@ -180,10 +183,10 @@ const headers = ref([
         <template #item.action="{ item }">
           <div class="d-flex flex-column ms-3">
             <IconBtn @click="viewStudentDetail(item.id)">
-              <VIcon icon="tabler-eye" />
+              <VIcon color="primary" icon="tabler-eye" />
             </IconBtn>
             <IconBtn @click="deleteItem(item.id)">
-              <VIcon icon="tabler-trash" />
+              <VIcon color="error" icon="tabler-trash" />
             </IconBtn>
           </div>
         </template>

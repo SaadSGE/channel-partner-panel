@@ -6,6 +6,10 @@ import 'vue3-toastify/dist/index.css';
 
 const fileStore = useFileStore();
 const props = defineProps({
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
   employmentHistory: {
     type: Array,
     required: true,
@@ -70,14 +74,15 @@ const removeEmploymentHistory = (index) => {
       <VRow v-for="(employment, index) in employmentHistory" :key="index">
         <VCol cols="12" md="3">
           <AppTextField v-model="employment.company_name" label="Company Name" placeholder="Company Name"
-            density="compact" />
+            density="compact" :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="3">
-          <AppTextField v-model="employment.designation" label="Designation" placeholder="Designation"
-            density="compact" />
+          <AppTextField v-model="employment.designation" label="Designation" placeholder="Designation" density="compact"
+            :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="4">
-          <AppTextField v-model="employment.year" label="Year" placeholder="Year" density="compact" />
+          <AppTextField v-model="employment.year" label="Year" placeholder="Year" density="compact"
+            :readonly="readonly" />
         </VCol>
         <VCol cols="12" md="2" class="d-flex align-center mt-5">
           <VBtn v-if="index !== 0" icon="tabler-x" color="error" @click="removeEmploymentHistory(index)" class="me-2"

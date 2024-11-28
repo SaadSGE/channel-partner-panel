@@ -1,3 +1,125 @@
+<script setup>
+import { commonFunction } from "@/@core/stores/commonFunction";
+import { watch } from 'vue';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+
+const commonFunctionStore = commonFunction();
+
+const props = defineProps({
+  universityEntry: {
+    type: Array,
+    required: true,
+    default: () => [{
+      id: null,
+      country_id: '',
+      intake_id: '',
+      course_type: '',
+      university_id: '',
+      course_id: '',
+      // Additional properties for UI state
+      intakes: [],
+      courseTypes: [],
+      universities: [],
+      courses: []
+    }]
+  },
+  isEdit: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const emit = defineEmits(['updateUniversityEntry']);
+
+// Watch for changes and emit updates
+watch(() => props.universityEntry, (newValue) => {
+  emit('updateUniversityEntry', newValue);
+}, { deep: true });
+
+const onCountryChange = async (index) => {
+  const entry = props.universityEntry[index];
+  // Reset dependent fields
+  entry.intake_id = null;
+  entry.course_type = null;
+  entry.university_id = null;
+  entry.course_id = null;
+
+  // Use data from props instead of fetching
+  entry.intakes = entry.country.intakes || [];
+  emit('updateUniversityEntry', props.universityEntry);
+};
+
+const onIntakeChange = async (index) => {
+  const entry = props.universityEntry[index];
+  // Reset dependent fields
+  entry.course_type = null;
+  entry.university_id = null;
+  entry.course_id = null;
+
+  // Use data from props instead of fetching
+  entry.courseTypes = entry.intake.courseTypes || [];
+  emit('updateUniversityEntry', props.universityEntry);
+};
+
+const onCourseTypeChange = async (index) => {
+  const entry = props.universityEntry[index];
+  // Reset dependent fields
+  entry.university_id = null;
+  entry.course_id = null;
+
+  // Use data from props instead of fetching
+  entry.universities = entry.courseType.universities || [];
+  emit('updateUniversityEntry', props.universityEntry);
+};
+
+const onUniversityChange = async (index) => {
+  const entry = props.universityEntry[index];
+  entry.course_id = null;
+
+  // Use data from props instead of fetching
+  entry.courses = entry.university.courses || [];
+  emit('updateUniversityEntry', props.universityEntry);
+};
+
+const addInterestedUniversity = () => {
+  const lastEntry = props.universityEntry[props.universityEntry.length - 1];
+
+  if (!lastEntry.country_id ||
+    !lastEntry.intake_id ||
+    !lastEntry.course_type ||
+    !lastEntry.university_id ||
+    !lastEntry.course_id) {
+    toast("Please fill all fields before adding a new entry", {
+      type: "error",
+      position: "top-right",
+      theme: "colored",
+    });
+    return;
+  }
+
+  props.universityEntry.push({
+    id: null,
+    country_id: '',
+    intake_id: null,
+    course_type: null,
+    university_id: null,
+    course_id: null,
+    intakes: [],
+    courseTypes: [],
+    universities: [],
+    courses: []
+  });
+  emit('updateUniversityEntry', props.universityEntry);
+};
+
+const removeInterestedUniversity = (index) => {
+  if (index !== 0) {
+    props.universityEntry.splice(index, 1);
+    emit('updateUniversityEntry', props.universityEntry);
+  }
+};
+</script>
 <template>
   <VCard>
     <VCardText>
@@ -45,133 +167,7 @@
   </VCard>
 </template>
 
-<script setup>
-import { commonFunction } from "@/@core/stores/commonFunction";
-import { watch } from 'vue';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
 
-const commonFunctionStore = commonFunction();
-
-const props = defineProps({
-  universityEntry: {
-    type: Array,
-    required: true,
-    default: () => [{
-      country_id: '',
-      intake_id: '',
-      course_type: '',
-      university_id: '',
-      course_id: '',
-      // Additional properties for UI state
-      intakes: [],
-      courseTypes: [],
-      universities: [],
-      courses: []
-    }]
-  }
-});
-
-const emit = defineEmits(['updateUniversityEntry']);
-
-// Watch for changes and emit updates
-watch(() => props.universityEntry, (newValue) => {
-  emit('updateUniversityEntry', newValue);
-}, { deep: true });
-
-const onCountryChange = async (index) => {
-  const entry = props.universityEntry[index];
-  // Reset dependent fields
-  entry.intake_id = null;
-  entry.course_type = null;
-  entry.university_id = null;
-  entry.course_id = null;
-
-  // Fetch new intakes
-  entry.intakes = await commonFunctionStore.getIntakesByCountry(entry.country_id);
-  emit('updateUniversityEntry', props.universityEntry);
-};
-
-const onIntakeChange = async (index) => {
-  const entry = props.universityEntry[index];
-  // Reset dependent fields
-  entry.course_type = null;
-  entry.university_id = null;
-  entry.course_id = null;
-
-  // Fetch course types
-  entry.courseTypes = await commonFunctionStore.getCourseTypesByCountryIntake(
-    entry.country_id,
-    entry.intake_id
-  );
-  emit('updateUniversityEntry', props.universityEntry);
-};
-
-const onCourseTypeChange = async (index) => {
-  const entry = props.universityEntry[index];
-  // Reset dependent fields
-  entry.university_id = null;
-  entry.course_id = null;
-
-  // Fetch universities
-  entry.universities = await commonFunctionStore.getUniversitiesByCountryIntakeCourseType(
-    entry.country_id,
-    entry.intake_id,
-    entry.course_type
-  );
-  emit('updateUniversityEntry', props.universityEntry);
-};
-
-const onUniversityChange = async (index) => {
-  const entry = props.universityEntry[index];
-  entry.course_id = null;
-
-  // Fetch courses
-  entry.courses = await commonFunctionStore.getCourseDetails(
-    entry.intake_id,
-    entry.university_id,
-    entry.course_type
-  );
-  emit('updateUniversityEntry', props.universityEntry);
-};
-
-const addInterestedUniversity = () => {
-  const lastEntry = props.universityEntry[props.universityEntry.length - 1];
-
-  if (!lastEntry.country_id ||
-    !lastEntry.intake_id ||
-    !lastEntry.course_type ||
-    !lastEntry.university_id ||
-    !lastEntry.course_id) {
-    toast("Please fill all fields before adding a new entry", {
-      type: "error",
-      position: "top-right",
-      theme: "colored",
-    });
-    return;
-  }
-
-  props.universityEntry.push({
-    country_id: '',
-    intake_id: null,
-    course_type: null,
-    university_id: null,
-    course_id: null,
-    intakes: [],
-    courseTypes: [],
-    universities: [],
-    courses: []
-  });
-  emit('updateUniversityEntry', props.universityEntry);
-};
-
-const removeInterestedUniversity = (index) => {
-  if (index !== 0) {
-    props.universityEntry.splice(index, 1);
-    emit('updateUniversityEntry', props.universityEntry);
-  }
-};
-</script>
 
 <style scoped>
 .small-dropdown :deep(.v-field__input),

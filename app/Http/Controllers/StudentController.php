@@ -191,11 +191,12 @@ class StudentController extends Controller
     public function show($id)
     {
         try {
-            //check if student exists or not
+            // Check if student exists
             $studentExists = Student::where('id', $id)->exists();
             if (!$studentExists) {
                 return $this->errorJsonResponse('Student not found', [], 404);
             }
+
             $student = Student::with([
                 'educationalHistories',
                 'employmentHistories',
@@ -205,8 +206,74 @@ class StudentController extends Controller
                 'interestedUniversities.course',
                 'interestedUniversities.country',
                 'interestedUniversities.intake',
+
                 'creator'
             ])->find($id);
+
+            // Map the interested universities with their dependent data
+            $interestedUniversities = $student->interestedUniversities->map(function ($uni) {
+                return [
+                    'id' => $uni->id,
+                    'country_id' => $uni->country_id,
+                    'intake_id' => $uni->intake_id,
+                    'course_type' => $uni->course_type,
+                    'university_id' => $uni->university_id,
+                    'course_id' => $uni->course_id,
+                    // Include relationships
+                    'university' => $uni->university,
+                    'course' => $uni->course,
+                    'country' => $uni->country,
+                    'intake' => $uni->intake,
+                    'courseType' => $uni->courseType,
+                ];
+            });
+
+            // Transform the data to match frontend structure
+            $transformedData = [
+                'generalInfo' => [
+                    'student_first_name' => $student->first_name,
+                    'student_last_name' => $student->last_name,
+                    'student_email' => $student->email,
+                    'student_whatsapp_number' => $student->whatsapp_number,
+                    'date_of_birth' => $student->date_of_birth,
+                    'gender' => $student->gender,
+                    'student_passport_no' => $student->passport_no,
+                    'student_address' => $student->address,
+                    'student_city' => $student->city,
+                    'student_country' => $student->country,
+                    'visa_refusal' => $student->visa_refusal,
+                    'student_id' => $student->student_id,
+                ],
+                'educationalHistory' => $student->educationalHistories->map(function ($edu) {
+                    return [
+                        'degree' => $edu->degree_name,
+                        'institution' => $edu->institution_name,
+                        'passing_year' => $edu->passing_year,
+                        'result' => $edu->result,
+                    ];
+                }),
+                'employmentHistory' => $student->employmentHistories->map(function ($emp) {
+                    return [
+                        'company_name' => $emp->company_name,
+                        'designation' => $emp->designation,
+                        'year' => $emp->year,
+                    ];
+                }),
+                'englishProficiency' => $student->englishProficiency ? [
+                    [
+                        'proficiencyTitle' => $student->englishProficiency->proficiency_title,
+                        'overallScore' => $student->englishProficiency->overall_score,
+                        'reading' => $student->englishProficiency->reading,
+                        'writing' => $student->englishProficiency->writing,
+                        'speaking' => $student->englishProficiency->speaking,
+                        'listening' => $student->englishProficiency->listening,
+                    ]
+                ] : [],
+                'interestedUniversity' => $interestedUniversities,
+                'documentPaths' => $student->document->map(function ($doc) {
+                    return $doc->path['path'] ?? null;
+                })->filter(),
+            ];
 
             // Log the activity
             activity()
@@ -220,7 +287,7 @@ class StudentController extends Controller
                 ])
                 ->log('student_view');
 
-            return $this->successJsonResponse('Student details retrieved successfully', $student);
+            return $this->successJsonResponse('Student details retrieved successfully', $transformedData);
         } catch (\Exception $e) {
             Log::error('Failed to retrieve student details', [
                 'error' => $e->getMessage(),

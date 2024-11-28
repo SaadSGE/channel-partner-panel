@@ -1,178 +1,197 @@
 <script setup>
-import { commonFunction } from '@/@core/stores/commonFunction';
-import { useRoute, useRouter } from 'vue-router';
-import { VCardText } from 'vuetify/lib/components/index.mjs';
 
+import { useStudentStore } from '@/@core/stores/studentStore';
+import EducationHistory from '@/components/student/EducationHistory.vue';
+import EmploymentHistory from '@/components/student/EmploymentHistory.vue';
+import EnglishProficiency from '@/components/student/EnglishProficiency.vue';
+import GeneralInformation from '@/components/student/GeneralInformation.vue';
+import UniversityEntry from '@/components/student/UniversityEntry.vue';
 definePage({
-    meta: {
-        public: true
-    }
-})
-const student = ref([]);
+  meta: {
+    action: 'read',
+    subject: 'dashboard',
+  },
+});
+const studentStore = useStudentStore();
 const currentTab = ref("general-info");
-const commonFunctionStore = commonFunction();
 const isLoading = ref(false);
 const route = useRoute();
 const id = route.params.id;
 
+// Form data structure matching the one in info.vue
+const formData = ref({
+  generalInfo: {
+    first_name: '',
+    last_name: '',
+    email: '',
+    mobile: '',
+    date_of_birth: '',
+    gender: '',
+    passport_number: '',
+    address: '',
+    city: '',
+    country: '',
+    visa_refusal: 'no'
+  },
+  universityEntry: [{
+    country_id: '',
+    intake_id: '',
+    course_type: '',
+    university_id: '',
+    course_id: ''
+  }],
+  educationalHistory: [{
+    degree: '',
+    institution: '',
+    passingYear: '',
+    result: ''
+  }],
+  englishProficiency: [{
+    proficiencyTitle: '',
+    overallScore: '',
+    reading: '',
+    writing: '',
+    speaking: '',
+    listening: ''
+  }],
+  employmentHistory: [{
+    company_name: '',
+    designation: '',
+    year: ''
+  }]
+});
+
 const router = useRouter();
 
 const goBack = () => {
-    router.back();
+  router.back();
 };
 
-onMounted(() => {
-    getStudentById(id);
+onMounted(async () => {
+  await getStudentDetails(id);
 });
 
-const getStudentById = async (id) => {
-    isLoading.value = true;
-    const data = await commonFunctionStore.getStudentById(id);
+const getStudentDetails = async (id) => {
+  isLoading.value = true;
+  try {
+    await studentStore.getStudentDetails(id);
 
-    student.value = data;
+
+    // Map store data to formData structure
+    formData.value = {
+      generalInfo: {
+        first_name: studentStore.studentInfo.generalInfo.student_first_name,
+        last_name: studentStore.studentInfo.generalInfo.student_last_name,
+        email: studentStore.studentInfo.generalInfo.student_email,
+        mobile: studentStore.studentInfo.generalInfo.student_whatsapp_number,
+        date_of_birth: studentStore.studentInfo.generalInfo.date_of_birth,
+        gender: studentStore.studentInfo.generalInfo.gender,
+        passport_number: studentStore.studentInfo.generalInfo.student_passport_no,
+        address: studentStore.studentInfo.generalInfo.student_address,
+        city: studentStore.studentInfo.generalInfo.student_city,
+        country: studentStore.studentInfo.generalInfo.student_country,
+        visa_refusal: studentStore.studentInfo.generalInfo.visa_refusal
+      },
+      universityEntry: studentStore.studentInfo.interestedUniversity,
+      educationalHistory: studentStore.studentInfo.educationalHistory,
+      englishProficiency: studentStore.studentInfo.englishProficiency,
+      employmentHistory: studentStore.studentInfo.employmentHistory
+    };
+  } catch (error) {
+    console.error('Error fetching student details:', error);
+  } finally {
     isLoading.value = false;
-}
+  }
+};
 
+// Handler functions (read-only versions)
+const handleGeneralInfoUpdate = (data) => {
+  // Read-only implementation
+  console.log('General info update attempted:', data);
+};
+
+const handleUniversityEntryUpdate = (data) => {
+  // Read-only implementation
+  console.log('University entry update attempted:', data);
+};
+
+const handleEducationalHistoryUpdate = (data) => {
+  // Read-only implementation
+  console.log('Educational history update attempted:', data);
+};
+
+const handleEnglishProficiencyUpdate = (data) => {
+  // Read-only implementation
+  console.log('English proficiency update attempted:', data);
+};
+
+const handleEmploymentHistoryUpdate = (data) => {
+  // Read-only implementation
+  console.log('Employment history update attempted:', data);
+};
 </script>
 
 <template>
-    <VCard>
-        <VCardTitle class="d-flex justify-space-between align-center">
-            <div>Student Details</div>
-            <VBtn color="primary" @click="goBack">
-                <VIcon icon="tabler-arrow-left" class="mr-2" />
-                Back
-            </VBtn>
-        </VCardTitle>
+  <VCard>
+    <VCardTitle class="d-flex justify-space-between align-center">
+      <div>Student Details</div>
+      <VBtn color="primary" @click="goBack">
+        <VIcon icon="tabler-arrow-left" class="mr-2" />
+        Back
+      </VBtn>
+    </VCardTitle>
 
-        <VTabs v-model="currentTab">
-            <VTab value="general-info">
-                General Info
-            </VTab>
-            <VTab value="interested-university">
-                Interested University
-            </VTab>
-            <VTab value="educational-history">
-                Educational History
-            </VTab>
-            <VTab value="english-proficiency">
-                English Proficiency
-            </VTab>
-            <VTab value="employment-history">
-                Employment History
-            </VTab>
-        </VTabs>
+    <VTabs v-model="currentTab">
+      <VTab value="general-info">
+        General Info
+      </VTab>
+      <VTab value="interested-university">
+        Interested University
+      </VTab>
+      <VTab value="educational-history">
+        Educational History
+      </VTab>
+      <VTab value="english-proficiency">
+        English Proficiency
+      </VTab>
+      <VTab value="employment-history">
+        Employment History
+      </VTab>
+    </VTabs>
 
-        <VCardText>
-            <VWindow v-model="currentTab">
-                <VWindowItem value="general-info">
+    <VCardText>
+      <VWindow v-model="currentTab">
+        <VWindowItem value="general-info">
+          <GeneralInformation :general-info="formData.generalInfo" @updateGeneralInfo="handleGeneralInfoUpdate"
+            :is-edit="true" :readonly="true" />
+        </VWindowItem>
 
-                    <VRow>
-                        <VCol cols="12">
-                            <VTable>
-                                <tbody>
+        <VWindowItem value="interested-university">
+          <UniversityEntry :university-entry="formData.universityEntry"
+            @updateUniversityEntry="handleUniversityEntryUpdate" :readonly="true" :is-edit="true" />
+        </VWindowItem>
 
-                                    <tr>
-                                        <td><strong>Student ID</strong></td>
-                                        <td>{{ student.student_id ?? "" }}</td>
-                                        <td><strong>Student Passport No.</strong></td>
-                                        <td>{{ student.passport_no }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Student Name</strong></td>
-                                        <td>
-                                            {{ student.first_name }} {{ student.last_name }}
-                                        </td>
-                                        <td><strong>Student Date of Birth</strong></td>
-                                        <td>{{ student.date_of_birth }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Student E-Mail</strong></td>
-                                        <td>{{ student.email }}</td>
-                                        <td><strong>Student Mobile No.</strong></td>
-                                        <td>{{ student.whatsapp_number }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Student gender</strong></td>
-                                        <td>{{ student.gender }}</td>
-                                        <td><strong>Previous visa refusal</strong></td>
-                                        <td>{{ student.visa_refusal }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>City</strong></td>
-                                        <td>{{ student.city }}</td>
-                                        <td><strong>Country</strong></td>
-                                        <td>{{ student.country }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Address</strong></td>
-                                        <td>{{ student.address }}</td>
-                                    </tr>
-                                </tbody>
-                            </VTable>
-                        </VCol>
-                    </VRow>
-                </VWindowItem>
+        <VWindowItem value="educational-history">
+          <EducationHistory :educational-history="formData.educationalHistory"
+            @updateEducationalHistory="handleEducationalHistoryUpdate" :readonly="true" :is-edit="true" />
+        </VWindowItem>
 
-                <VWindowItem value="interested-university">
+        <VWindowItem value="english-proficiency">
+          <EnglishProficiency :english-proficiency="formData.englishProficiency"
+            @updateEnglishProficiency="handleEnglishProficiencyUpdate" :readonly="true" :is-edit="true" />
+        </VWindowItem>
 
-                    <VRow>
-                        <VCol cols="12">
-                            <VTable v-for="(university, index) in student.interested_universities" :key="index"
-                                :value="index" class="t-padding">
-                                <tbody>
-                                    <tr>
-                                        <td><strong>University Id</strong></td>
-                                        <td>{{ university.university.id }}</td>
-                                        <td><strong>University Name</strong></td>
-                                        <td>{{ university.university.name }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>University Address</strong></td>
-                                        <td>{{ university.university.address }}</td>
-
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Country Id</strong></td>
-                                        <td>{{ university.country.id }}</td>
-                                        <td><strong>Country Name</strong></td>
-                                        <td>{{ university.country.name }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Timezone</strong></td>
-                                        <td>{{ university.country.timezone }}</td>
-                                        <td><strong>Country Created At</strong></td>
-                                        <td>{{ university.country.created_at }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Course Id</strong></td>
-                                        <td>{{ university.course.id }}</td>
-                                        <td><strong>Course type</strong></td>
-                                        <td>{{ university.course.type }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Course name</strong></td>
-                                        <td>{{ university.course.name }}</td>
-                                        <td><strong>Course Created At</strong></td>
-                                        <td>{{ university.course.created_at }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Intake Id</strong></td>
-                                        <td>{{ university.intake.id }}</td>
-                                        <td><strong>Intake Name</strong></td>
-                                        <td>{{ university.intake.name }}</td>
-                                    </tr>
-                                </tbody>
-                            </VTable>
-                        </VCol>
-                    </VRow>
-                </VWindowItem>
-            </VWindow>
-        </VCardText>
-    </VCard>
+        <VWindowItem value="employment-history">
+          <EmploymentHistory :employment-history="formData.employmentHistory"
+            @updateEmploymentHistory="handleEmploymentHistoryUpdate" :readonly="true" :is-edit="true" />
+        </VWindowItem>
+      </VWindow>
+    </VCardText>
+  </VCard>
 </template>
+
 <style>
 .t-padding {
-    padding-bottom: 180px;
+  padding-block-end: 180px;
 }
 </style>

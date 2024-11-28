@@ -5,6 +5,10 @@ import { computed, ref } from 'vue';
 const commonFunctionStore = commonFunction();
 const fileStore = useFileStore();
 const props = defineProps({
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
   generalInfo: {
     type: Object,
     required: true,
@@ -91,36 +95,37 @@ const countries = ref([
           <VRow>
             <VCol cols="12" md="6">
               <AppTextField v-model="props.generalInfo.first_name" label="First Name(*)" placeholder="First Name"
-                :rules="[requiredValidator]" density="compact" />
+                :rules="[requiredValidator]" density="compact" :readonly="readonly" />
             </VCol>
             <VCol cols="12" md="6">
               <AppTextField v-model="props.generalInfo.last_name" label="Last Name(*)" placeholder="Last Name"
-                :rules="[requiredValidator]" density="compact" />
+                :rules="[requiredValidator]" density="compact" :readonly="readonly" />
             </VCol>
           </VRow>
           <VRow>
             <VCol cols="12" md="6">
               <AppTextField v-model="props.generalInfo.email" label="Email(*)" placeholder="Email"
-                :rules="[requiredValidator, emailValidator]" density="compact" />
+                :rules="[requiredValidator, emailValidator]" density="compact" :readonly="readonly" />
             </VCol>
             <VCol cols="12" md="6">
               <AppTextField v-model="props.generalInfo.mobile" label="Mobile No(*)" placeholder="Mobile No"
-                :rules="[requiredValidator]" density="compact" />
+                :rules="[requiredValidator]" density="compact" :readonly="readonly" />
             </VCol>
           </VRow>
           <VRow>
             <VCol cols="12" md="6">
-              <AppDateTimePicker v-model="formattedDateOfBirth" label="Date of birth" placeholder="Select date" />
+              <AppDateTimePicker v-model="formattedDateOfBirth" label="Date of birth" placeholder="Select date"
+                :readonly="readonly" />
             </VCol>
             <VCol cols="12" md="6">
               <AppSelect v-model="props.generalInfo.gender" :items="genderOptions" label="Gender"
-                placeholder="Select Gender" density="compact" />
+                placeholder="Select Gender" density="compact" :readonly="readonly" />
             </VCol>
           </VRow>
           <VRow>
             <VCol cols="12" md="6">
               <AppTextField v-model="props.generalInfo.passport_number" label="Passport No" placeholder="Passport No"
-                density="compact" />
+                density="compact" :readonly="readonly" />
             </VCol>
             <VCol cols="12" md="6">
               <label>Any Previous Visa Refusal</label>
@@ -132,17 +137,18 @@ const countries = ref([
           </VRow>
           <VRow>
             <VCol cols="12" md="12">
-              <AppTextField v-model="props.generalInfo.address" label="Address" placeholder="Address"
-                density="compact" />
+              <AppTextField v-model="props.generalInfo.address" label="Address" placeholder="Address" density="compact"
+                :readonly="readonly" />
             </VCol>
           </VRow>
           <VRow>
             <VCol cols="12" md="6">
-              <AppTextField v-model="props.generalInfo.city" label="City" placeholder="City" density="compact" />
+              <AppTextField v-model="props.generalInfo.city" label="City" placeholder="City" density="compact"
+                :readonly="readonly" />
             </VCol>
             <VCol cols="12" md="6">
               <AppAutocomplete v-model="props.generalInfo.country" :items="countries" label="Country"
-                placeholder="Select Country" density="compact" class="small-dropdown" />
+                placeholder="Select Country" density="compact" class="small-dropdown" :readonly="readonly" />
             </VCol>
           </VRow>
         </VCol>
