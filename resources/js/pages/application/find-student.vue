@@ -39,6 +39,11 @@ const searchStudents = async (query) => {
   students.value = await studentStore.search(query);
 };
 
+const back = () => {
+  router.push("/application/new")
+};
+
+
 const submitApplication = async () => {
   try {
     if (!selectedStudent.value) {
@@ -126,7 +131,8 @@ const removeFile = (fileId) => {
         label="Search Existing Student" placeholder="Start typing to search...">
       </AppAutocomplete>
       <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-      <div class="d-flex justify-end mt-4">
+      <div class="d-flex justify-space-between mt-4">
+        <VBtn color="secondary" @click="back()">Back</VBtn>
         <VBtn color="primary" @click="submitApplication">Next</VBtn>
       </div>
     </VCardText>

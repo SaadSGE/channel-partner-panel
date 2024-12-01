@@ -5,7 +5,8 @@
       <file-pond ref="pond" name="student_document" :allow-multiple="true" allowRemove="true" :files="files"
         :server="server" label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" />
       <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-      <div class="d-flex justify-end mt-4">
+      <div class="d-flex justify-space-between mt-4">
+        <VBtn color="secondary" @click="back()">Back</VBtn>
         <VBtn color="primary" @click="next()">Next</VBtn>
       </div>
     </VCardText>
@@ -32,7 +33,7 @@ const FilePond = vueFilePond(
   FilePondPluginPdfPreview
 );
 
-const emit = defineEmits(['update:uploadDocumentShow', 'update:studentFormShow']);
+const emit = defineEmits(['update:uploadDocumentShow', 'update:studentFormShow', 'update:courseDetailsShow']);
 const errorMessage = ref(null);
 const files = ref([]);
 
@@ -44,7 +45,11 @@ files.value = fileStore.files;
 
 
 const tempFileCount = ref(0);
-
+const back = () => {
+  emit('update:uploadDocumentShow', false);
+  emit('update:studentFormShow', false);
+  emit('update:courseDetailsShow', true);
+};
 
 
 const nextStudent = () => {

@@ -9,7 +9,7 @@ import { useFileStore } from "@/@core/stores/fileStore";
 import { ref } from "vue";
 import { useRouter } from 'vue-router';
 import StudentInformation from "./student-information.vue";
-import UploadDocuemnt from "./upload-document.vue";
+import UploadDocument from "./upload-document.vue";
 const currentTab = ref("item-1");
 
 
@@ -106,8 +106,8 @@ const nextPage = () => {
         </VCardText>
       </div>
       <div v-if="uploadDocumentShow">
-        <UploadDocuemnt @update:uploadDocumentShow="uploadDocumentShow = $event"
-          @update:studentFormShow="studentFormShow = $event" />
+        <UploadDocument @update:uploadDocumentShow="uploadDocumentShow = $event"
+          @update:studentFormShow="studentFormShow = $event" @update:courseDetailsShow="courseDetailsShow = $event" />
       </div>
 
       <div v-if="studentFormShow">
