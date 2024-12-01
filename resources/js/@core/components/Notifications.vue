@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 
@@ -56,9 +57,65 @@ const router = useRouter()
 const viewAllNotifications = () => {
   router.push({ name: 'notifications' })
 }
+
+// Notices Array (Placeholder - replace with API data)
+const notices = ref([
+  "Welcome to the Dashboard!",
+  "System maintenance is scheduled for Friday.",
+  "New updates are available in your profile section.",
+]);
+
+// Current notice index
+const currentNoticeIndex = ref(0);
+
+// Computed property to get the current notice
+const currentNotice = computed(() => notices.value[currentNoticeIndex.value]);
+
+// Function to cycle through notices
+const cycleNotices = () => {
+  currentNoticeIndex.value = (currentNoticeIndex.value + 1) % notices.value.length;
+};
+
+// Timer for rotating notices
+let noticeTimer;
+
+onMounted(() => {
+  // Start cycling notices every 5 seconds
+  noticeTimer = setInterval(cycleNotices, 5000);
+
+  // Fetch notices from API (placeholder function)
+  // fetchNoticesFromAPI();
+});
+
+onUnmounted(() => {
+  // Clear the timer on component unmount
+  clearInterval(noticeTimer);
+});
+
+// Placeholder function for fetching notices from an API
+// const fetchNoticesFromAPI = async () => {
+//   // Simulate API call
+//   const apiNotices = await new Promise((resolve) =>
+//     setTimeout(() => resolve(["New Notice 1", "New Notice 2"]), 2000)
+//   );
+
+//   notices.value = apiNotices;
+// };
+
+
 </script>
 
 <template>
+  <div class="notice-container">
+    <div class="notice-ticker">
+      <span class="notice-text">
+        <span v-for="(notice, index) in notices" :key="index" class="notice-item">
+          {{ notice }}
+        </span>
+      </span>
+    </div>
+  </div>
+
   <IconBtn id="notification-btn">
     <VBadge :content="totalUnseenNotifications" color="error" offset-x="2" offset-y="3">
       <VIcon size="28" icon="tabler-bell" />
@@ -148,6 +205,56 @@ const viewAllNotifications = () => {
 </template>
 
 <style lang="scss">
+.notice-container {
+  position: absolute;
+  z-index: 1000;
+  left: 10px;
+  overflow: hidden;
+  width: 90%;
+
+  // padding: 0.5rem 1rem;
+
+  // background-color: #f4f4f4;
+
+  // box-shadow: 0 2px 4px rgba(0, 0, 0, 10%);
+  white-space: nowrap;
+}
+
+.notice-ticker {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.notice-text {
+  display: inline-block;
+  animation: scroll-left 15s linear infinite;
+
+  /* Controls the scrolling speed */
+  white-space: nowrap;
+}
+
+.notice-item {
+  display: inline-block;
+  padding: 0 1rem;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+#notification-btn {
+  margin-right: 10px;
+}
+
 .notification-section {
   padding-block: 0.75rem;
   padding-inline: 1rem;
