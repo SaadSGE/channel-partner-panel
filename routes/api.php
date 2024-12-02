@@ -24,6 +24,7 @@ use App\Http\Controllers\NigeriaStudentController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\NoticeController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -97,6 +98,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/fetch-compliance-officers', [UserController::class, 'fetchComplianceOfficers']);
     Route::get('/course-requests', [CourseRequestController::class, 'index']);
     Route::post('/course-requests/{id}/complete', [CourseRequestController::class, 'complete']);
+
+    Route::apiResource('notices', NoticeController::class);
 });
 Route::apiResource('students', StudentController::class);
 Route::post('university-logo-upload', [UniversityController::class, 'logoUpload']);
