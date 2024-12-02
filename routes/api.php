@@ -101,6 +101,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::apiResource('notices', NoticeController::class);
 });
+Route::apiResource('notices', NoticeController::class);
 Route::apiResource('students', StudentController::class);
 Route::post('university-logo-upload', [UniversityController::class, 'logoUpload']);
 Route::post('/download-all', [FileController::class, 'downloadAll'])->name('file.downloadAll');
