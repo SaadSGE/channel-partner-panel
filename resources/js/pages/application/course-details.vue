@@ -7,7 +7,6 @@ definePage({
 })
 import { useFileStore } from "@/@core/stores/fileStore";
 import { ref } from "vue";
-import { useRouter } from 'vue-router';
 import StudentInformation from "./student-information.vue";
 import UploadDocument from "./upload-document.vue";
 const currentTab = ref("item-1");
@@ -36,10 +35,7 @@ const uploadDocument = () => {
   uploadDocumentShow.value = true;
   courseDetailsShow.value = false
 }
-const router = useRouter();
-const nextPage = () => {
-  router.push("/application/find-student")
-}
+
 </script>
 <template>
   <VRow>
@@ -101,8 +97,8 @@ const nextPage = () => {
         </VCard>
         <VCardText class="d-flex justify-space-between flex-wrap gap-4">
           <VBtn color="secondary" @click="back()">Back</VBtn>
-          <VBtn color="primary" @click="uploadDocument">New student</VBtn>
-          <VBtn color="primary" @click="nextPage">Existing student</VBtn>
+          <VBtn color="primary" @click="uploadDocument">Next</VBtn>
+
         </VCardText>
       </div>
       <div v-if="uploadDocumentShow">
