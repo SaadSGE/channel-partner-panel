@@ -1,16 +1,23 @@
 <template>
-  <div class="flex-button">
-    <div>
-      <VBtn color="primary" :class="{ active: selectedView === 'newStudent' }" @click="setView('newStudent')">
-        New Student
+  <div class="button-container">
+    <div class="flex-button" :class="{ 'single-button': selectedView }">
+      <VBtn v-if="!selectedView || selectedView === 'existingStudent'" color="primary" :class="{
+        'active': selectedView === 'newStudent',
+        'slide-in': selectedView === null,
+        'slide-out': selectedView === 'existingStudent'
+      }" @click="setView('newStudent')">
+        Is this New Student?
       </VBtn>
-    </div>
-    <div>
-      <VBtn color="primary" :class="{ active: selectedView === 'existingStudent' }" @click="setView('existingStudent')">
-        Existing Student
+      <VBtn v-if="!selectedView || selectedView === 'newStudent'" color="secondary" :class="{
+        'active': selectedView === 'existingStudent',
+        'slide-in': selectedView === null,
+        'slide-out': selectedView === 'newStudent'
+      }" @click="setView('existingStudent')">
+        Is this Existing Student?
       </VBtn>
     </div>
   </div>
+
   <VCard class="mb-6" v-if="selectedView === 'existingStudent'">
     <VCardTitle>Select Existing Student</VCardTitle>
     <VCardText>
@@ -18,17 +25,14 @@
         label="Search Existing Student" placeholder="Start typing to search...">
       </AppAutocomplete>
       <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-      <div class="d-flex justify-end mt-4">
+      <div class="d-flex justify-space-between mt-4">
+        <div class="flex-grow-1 text-center">
+          <VBtn color="secondary" @click="setView('newStudent')">Move to New Student</VBtn>
+        </div>
         <VBtn color="primary" @click="submitApplication">Next</VBtn>
       </div>
     </VCardText>
   </VCard>
-
-  <!-- <div class="d-flex align-center my-6">
-    <VDivider></VDivider>
-    <span class="mx-4">OR</span>
-    <VDivider></VDivider>
-  </div> -->
 
   <VCard v-if="selectedView === 'newStudent'">
     <VCardTitle>Please upload only color scan copy files for new student</VCardTitle>
@@ -36,7 +40,11 @@
       <file-pond ref="pond" name="student_document" :allow-multiple="true" allowRemove="true" :files="files"
         :server="server" label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" />
       <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-      <div class="d-flex justify-end mt-4">
+      <div class="d-flex justify-space-between mt-4">
+        <VBtn color="secondary" @click="showCourseDetails">Back</VBtn>
+        <div class="flex-grow-1 text-center">
+          <VBtn color="secondary" @click="setView('existingStudent')">Move to Existing Student</VBtn>
+        </div>
         <VBtn color="primary" @click="next()">Next</VBtn>
       </div>
     </VCardText>
@@ -65,7 +73,7 @@ const FilePond = vueFilePond(
   FilePondPluginPdfPreview
 );
 const commonFunctionStore = commonFunction();
-const emit = defineEmits(['update:uploadDocumentShow', 'update:studentFormShow']);
+const emit = defineEmits(['update:uploadDocumentShow', 'update:studentFormShow', 'update:courseDetailsShow']);
 const errorMessage = ref(null);
 const files = ref([]);
 const selectedView = ref(null);
@@ -207,6 +215,11 @@ const submitApplication = async () => {
     });
   }
 }
+
+const showCourseDetails = () => {
+  emit('update:uploadDocumentShow', false);
+  emit('update:courseDetailsShow', true);
+};
 </script>
 
 <style scoped>
@@ -248,167 +261,91 @@ const submitApplication = async () => {
 .d-flex.align-center span {
   color: rgba(0, 0, 0, 60%);
   font-weight: bold;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  margin-block-end: 2rem;
 }
 
 .flex-button {
   display: flex;
-  gap: 20px;
-}
-</style>
-
-
-
-
-
-
-
-
-<!-- <template>
-  <VCard>
-    <VCardTitle>Please upload only color scan copy files for new student</VCardTitle>
-    <VCardText>
-      <file-pond ref="pond" name="student_document" :allow-multiple="true" allowRemove="true" :files="files"
-        :server="server" label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" />
-      <p v-if="errorMessage" class="text-error">{{ errorMessage }}</p>
-      <div class="d-flex justify-space-between mt-4">
-        <VBtn color="secondary" @click="back()">Back</VBtn>
-        <VBtn color="primary" @click="next()">Next</VBtn>
-      </div>
-    </VCardText>
-  </VCard>
-</template>
-
-<script setup>
-import { useFileStore } from "@/@core/stores/fileStore";
-import { useApplicationStore } from "@/@core/stores/submitApplication";
-import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
-import FilePondPluginImagePreview from "filepond-plugin-image-preview";
-import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css";
-import FilePondPluginPdfPreview from "filepond-plugin-pdf-preview";
-import "filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.min.css";
-import "filepond/dist/filepond.min.css";
-import { ref } from 'vue';
-import vueFilePond from "vue-filepond";
-import { useRouter } from 'vue-router';
-
-
-const FilePond = vueFilePond(
-  FilePondPluginFileValidateType,
-  FilePondPluginImagePreview,
-  FilePondPluginPdfPreview
-);
-
-const emit = defineEmits(['update:uploadDocumentShow', 'update:studentFormShow', 'update:courseDetailsShow']);
-const errorMessage = ref(null);
-const files = ref([]);
-
-const fileStore = useFileStore();
-const applicationStore = useApplicationStore();
-
-const router = useRouter();
-files.value = fileStore.files;
-
-
-const tempFileCount = ref(0);
-const back = () => {
-  emit('update:uploadDocumentShow', false);
-  emit('update:studentFormShow', false);
-  emit('update:courseDetailsShow', true);
-};
-
-
-const nextStudent = () => {
-  if (!selectedStudent.value) {
-    errorMessage.value = "Please select a student before proceeding.";
-  } else {
-    errorMessage.value = null;
-    // Proceed to the next step or perform any other action
-    console.log('Selected student:', selectedStudent.value);
-    // You may want to emit an event or update a store here
-  }
-};
-
-const next = () => {
-  if (files.value.length === 0) {
-    errorMessage.value = "Please upload at least one file.";
-  } else {
-    errorMessage.value = null;
-    emit('update:uploadDocumentShow', false);
-    emit('update:studentFormShow', true);
-  }
-};
-
-const server = {
-  process: (fieldName, file, metadata, load, error, progress, abort) => {
-    tempFileCount.value += 1;
-    fileStore
-      .uploadFile(fieldName, file)
-      .then((response) => load(response))
-      .catch((err) => error(err));
-  },
-  revert: (uniqueFileId, load, error) => {
-    tempFileCount.value -= 1;
-    fileStore.removeFile(uniqueFileId);
-    load();
-  },
-};
-
-
-const removeFile = (fileId) => {
-  fileStore.removeFile(fileId);
-};
-
-// Assuming you have a list with items
-const listItems = document.querySelectorAll('.student-list-item');
-
-listItems.forEach(item => {
-  item.addEventListener('click', function () {
-    // Handle item selection
-    console.log('Item selected:', this.textContent);
-    // Add your selection logic here
-  });
-});
-
-</script>
-
-<style scoped>
-.file-item {
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  border-block-end: 1px solid #ccc;
-  padding-block: 0.5rem;
-  padding-inline: 0;
+  gap: 20px;
+  transition: all 0.3s ease;
 }
 
-.file-item i {
-  margin-inline-end: 0.5rem;
-}
-
-.delete-btn {
-  margin-inline-start: 1rem;
-}
-
-.progress {
+.single-button {
+  display: flex;
+  justify-content: center;
   inline-size: 100%;
 }
 
-.v-btn--icon {
-  padding: 0;
-  min-inline-size: unset;
+.v-btn {
+  font-size: 24px;
+  min-block-size: 80px;
+  min-inline-size: 300px;
+  transition: all 0.3s ease;
 }
 
-.error-message {
-  color: red;
-  margin-block-start: 1rem;
+.v-btn.active {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 20%);
+  transform: scale(1.05);
 }
 
-.d-flex.align-center {
-  text-align: center;
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.d-flex.align-center span {
-  color: rgba(0, 0, 0, 60%);
-  font-weight: bold;
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 }
-</style> -->
+
+.slide-in {
+  animation: slideIn 0.3s ease forwards;
+}
+
+.slide-out {
+  animation: slideOut 0.3s ease forwards;
+}
+
+/* Specific styles for the main navigation buttons */
+.button-container .v-btn {
+  font-size: 24px;
+  min-block-size: 80px;
+  min-inline-size: 300px;
+  transition: all 0.3s ease;
+}
+
+/* Reset styles for buttons inside VCard */
+.v-card .v-btn {
+  font-size: initial;
+  min-block-size: initial;
+  min-inline-size: initial;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+</style>
