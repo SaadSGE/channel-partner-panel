@@ -12,7 +12,7 @@ class NoticeController extends Controller
      */
     public function index()
     {
-        $notices = Notice::where('status', true)->get();
+        $notices = Notice::get();
         return $this->successJsonResponse('Notices retrieved successfully', $notices);
     }
 
@@ -60,5 +60,11 @@ class NoticeController extends Controller
         $notice->delete();
 
         return $this->successJsonResponse('Notice deleted successfully');
+    }
+
+    public function getActiveNotices()
+    {
+        $notices = Notice::where('status', true)->get();
+        return $this->successJsonResponse('Active notices retrieved successfully', $notices);
     }
 }

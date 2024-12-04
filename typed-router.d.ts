@@ -74,6 +74,8 @@ declare module 'vue-router/auto/routes' {
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'nigeria': RouteRecordInfo<'nigeria', '/nigeria', Record<never, never>, Record<never, never>>,
     'not-authorized': RouteRecordInfo<'not-authorized', '/not-authorized', Record<never, never>, Record<never, never>>,
+    'notices': RouteRecordInfo<'notices', '/notices', Record<never, never>, Record<never, never>>,
+    'notices-add': RouteRecordInfo<'notices-add', '/notices/add', Record<never, never>, Record<never, never>>,
     'notifications': RouteRecordInfo<'notifications', '/notifications', Record<never, never>, Record<never, never>>,
     'permissions': RouteRecordInfo<'permissions', '/permissions', Record<never, never>, Record<never, never>>,
     'profile': RouteRecordInfo<'profile', '/profile', Record<never, never>, Record<never, never>>,
