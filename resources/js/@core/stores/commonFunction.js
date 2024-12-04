@@ -8,6 +8,8 @@ export const commonFunction = defineStore({
     branches: [],
     courses: [],
     intakes: [],
+    notices: [],
+    activeNotices: [],
     errors: [],
     universities: [],
     courseDetails: [],
@@ -507,6 +509,87 @@ export const commonFunction = defineStore({
         );
       } catch (error) {
         console.error("Error deleting country:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+
+    async getNotices() {
+      try {
+        const response = await $api("/notices", {
+          method: "GET",
+        });
+        this.notices = response.data;
+      } catch (error) {
+        console.error("Error fetching notices:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async getActiveNotices() {
+      try {
+        const response = await $api("/active-notices", {
+          method: "GET",
+        });
+        console.log(response.data);
+        this.activeNotices = response.data;
+      } catch (error) {
+        console.error("Error fetching active notices:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async addNotice(notice) {
+      try {
+        const response = await $api("/notices", {
+          method: "POST",
+          body: notice,
+        });
+
+        this.notices.push(response.data);
+      } catch (error) {
+        console.error("Error adding notice:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async updateNoticeStatus(noticeId, status) {
+      try {
+        const response = await $api(`/notices/${noticeId}`, {
+          method: "PUT",
+          body: { status },
+        });
+
+        // Update the local notices array
+        const index = this.notices.findIndex(
+          (notice) => notice.id === noticeId
+        );
+        if (index !== -1) {
+          this.notices[index].status = status;
+        }
+
+        return response;
+      } catch (error) {
+        console.error("Error updating notice status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+        throw error;
+      }
+    },
+    async deleteNotice(id) {
+      try {
+        await $api(`/notices/${id}`, {
+          method: "DELETE",
+        });
+
+        this.notices = this.notices.filter((notice) => notice.id !== id);
+      } catch (error) {
+        console.error("Error deleting notice:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];

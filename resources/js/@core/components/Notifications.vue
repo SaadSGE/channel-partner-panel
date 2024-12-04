@@ -1,8 +1,8 @@
 <script setup>
+import { commonFunction } from "@/@core/stores/commonFunction";
 import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
-
 const props = defineProps({
   notifications: {
     type: Array,
@@ -20,13 +20,16 @@ const props = defineProps({
   },
 })
 
+
+const commonFunctionStore = commonFunction();
+
 const emit = defineEmits([
   'read',
   'unread',
   'remove',
   'click:notification',
 ])
-
+const isLoading = ref(false)
 const isAllMarkRead = computed(() => props.notifications.some(item => item.isSeen === false))
 
 const markAllReadOrUnread = () => {
@@ -59,11 +62,7 @@ const viewAllNotifications = () => {
 }
 
 // Notices Array (Placeholder - replace with API data)
-const notices = ref([
-  "Welcome to the Dashboard!",
-  "System maintenance is scheduled for Friday.",
-  "New updates are available in your profile section.",
-]);
+const notices = ref([]);
 
 // Current notice index
 const currentNoticeIndex = ref(0);
@@ -79,12 +78,15 @@ const cycleNotices = () => {
 // Timer for rotating notices
 let noticeTimer;
 
-onMounted(() => {
+onMounted(async () => {
   // Start cycling notices every 5 seconds
-  noticeTimer = setInterval(cycleNotices, 5000);
+  noticeTimer = setInterval(cycleNotices, 2000);
+  if (commonFunctionStore.activeNotices.length === 0) {
+    await commonFunctionStore.getActiveNotices();
+  }
 
-  // Fetch notices from API (placeholder function)
-  // fetchNoticesFromAPI();
+  notices.value = commonFunctionStore.activeNotices;
+  isLoading.value = false
 });
 
 onUnmounted(() => {
@@ -92,15 +94,7 @@ onUnmounted(() => {
   clearInterval(noticeTimer);
 });
 
-// Placeholder function for fetching notices from an API
-// const fetchNoticesFromAPI = async () => {
-//   // Simulate API call
-//   const apiNotices = await new Promise((resolve) =>
-//     setTimeout(() => resolve(["New Notice 1", "New Notice 2"]), 2000)
-//   );
 
-//   notices.value = apiNotices;
-// };
 
 
 </script>
@@ -110,7 +104,7 @@ onUnmounted(() => {
     <div class="notice-ticker">
       <span class="notice-text">
         <span v-for="(notice, index) in notices" :key="index" class="notice-item">
-          {{ notice }}
+          {{ notice.content }}
         </span>
       </span>
     </div>
@@ -231,8 +225,7 @@ onUnmounted(() => {
 .notice-text {
   display: inline-block;
   animation: scroll-left 15s linear infinite;
-
-  /* Controls the scrolling speed */
+  color: #930404;
   white-space: nowrap;
 }
 
