@@ -32,7 +32,9 @@ const sortBy = ref();
 const orderBy = ref();
 const searchQuery = ref("");
 const selectedRole = ref(null);
-const selectedParent = ref(null); // State for the selected parent
+const selectedParent = ref(null);
+const selectedCountry = ref(null);
+const selectedMou = ref(null) // State for the selected parent
 const selectedPlan = ref();
 const selectedStatus = ref();
 const selectedUserStatus = ref(null);
@@ -97,7 +99,9 @@ const fetchUsers = async () => {
       searchQuery.value,
       selectedRole.value,
       selectedParent.value,
-      selectedUserStatus.value
+      selectedUserStatus.value,
+      selectedCountry.value,
+      selectedMou.value
     );
     users.value = response.data;
     totalUsers.value = response.total;
@@ -190,7 +194,7 @@ onMounted(async () => {
   getAllBranches();
 });
 
-watch([searchQuery, selectedRole, selectedParent, selectedUserStatus], () => {
+watch([searchQuery, selectedRole, selectedParent, selectedUserStatus, selectedCountry, selectedMou], () => {
   fetchUsers();
 });
 
@@ -241,7 +245,9 @@ const getAllBranches = async () => {
           <!-- 👉 Select Role -->
           <Filters :selected-role="selectedRole" @update-role="selectedRole = $event" :selected-parent="selectedParent"
             @update-parent="selectedParent = $event" :selected-userStatus="selectedUserStatus"
-            @update-userStatus="selectedUserStatus = $event"></Filters>
+            @update-userStatus="selectedUserStatus = $event" :selected-country="selectedCountry"
+            @update-country="selectedCountry = $event" :selected-mou="selectedMou" @update-mou="selectedMou = $event">
+          </Filters>
 
 
         </VRow>

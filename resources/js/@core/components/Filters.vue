@@ -120,13 +120,16 @@ const props = defineProps({
   selectedUserStatus: {
     type: Object,
     Required: false,
-  }
-
+  },
+  selectedMou: {
+    type: Object,
+    Required: false,
+  },
 
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedLeadStatus = ref(props.selectedLeadStatus);
@@ -145,6 +148,7 @@ const localSelectedParent = ref(props.selectedParent);
 const localSelectedEditor = ref(props.selectedEditor);
 const localSelectedUserStatus = ref(props.selectedUserStatus);
 const localSelectedCourseType = ref(props.selectedCourseType);
+const localSelectedMou = ref(props.selectedMou);
 
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
@@ -196,7 +200,9 @@ watch(localSelectedUserStatus, (newValue) => {
 watch(localSelectedCourseType, (newValue) => {
   emit('update-courseType', newValue);
 });
-
+watch(localSelectedMou, (newValue) => {
+  emit('update-mou', newValue);
+});
 
 const fetchFilterOptions = async () => {
   try {
@@ -280,12 +286,14 @@ const loadFilterOptions = async () => {
 
 
 const fetchUsers = async () => {
-  if (selectedRole.value || selectedParent.value) { // Ensure at least one prop is selected
+  if (selectedRole.value || selectedParent.value || selectedCountry.value || selectedMou.value) { // Ensure at least one prop is selected
     isLoading.value = true;
     try {
       const response = await userStore.fetchUsers(
         selectedRole.value,
-        selectedParent.value
+        selectedParent.value,
+        selectedCountry.value,
+        selectedMou.value
       );
       users.value = response.data;
       totalUsers.value = response.total;
@@ -383,20 +391,28 @@ const loadEditors = async () => {
   </VCol>
   <!-- user -->
 
-  <VCol cols="12" sm="4" v-if="props.selectedRole !== undefined">
-    <AppSelect v-model="localSelectedRole" placeholder="Select role" :items="roles" clearable clear-icon="tabler-x"
-      :item-title="(item) => item.role" :item-value="(item) => item.role" />
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedRole !== undefined">
+    <AppSelect v-model="localSelectedRole" label="Filter by Role" placeholder="Select role" :items="roles" clearable
+      clear-icon="tabler-x" :item-title="(item) => item.role" :item-value="(item) => item.role" />
   </VCol>
 
-  <VCol cols="12" sm="4" v-if="props.selectedParent !== undefined">
-    <AppAutocomplete v-model="localSelectedParent" placeholder="Select Parent" :items="userStore.parentUsers" clearable
-      clear-icon="tabler-x" :item-title="(item) => item.full_name" :item-value="(item) => item.id" />
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedParent !== undefined">
+    <AppAutocomplete v-model="localSelectedParent" label="Filter by Parent" placeholder="Select Parent"
+      :items="userStore.parentUsers" clearable clear-icon="tabler-x" :item-title="(item) => item.full_name"
+      :item-value="(item) => item.id" />
   </VCol>
-  <VCol cols="12" sm="4" v-if="props.selectedUserStatus !== undefined">
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedUserStatus !== undefined">
     <AppAutocomplete v-model="localSelectedUserStatus" :items="[
       { value: 1, title: 'Active' },
       { value: 0, title: 'Inactive' }
-    ]" placeholder="Select Status" @change="fetchUsers" clearable clear-icon="tabler-x" />
+    ]" placeholder="Select Status" label="Filter by User Status " @change="fetchUsers" clearable
+      clear-icon="tabler-x" />
+  </VCol>
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedMou !== undefined">
+    <AppAutocomplete v-model="localSelectedMou" :items="[
+      { value: 1, title: 'Complete' },
+      { value: 0, title: 'Incomplete' }
+    ]" placeholder="Select Mou" label="Filter by Mou" @change="fetchUsers" clearable clear-icon="tabler-x" />
   </VCol>
   <!--All record  -->
 
