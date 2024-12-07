@@ -70,6 +70,9 @@ const props = defineProps({
     }]
   }
 });
+onMounted(async () => {
+  commonFunctionStore.getUniqueCountries();
+});
 
 const emit = defineEmits(['updateUniversityEntry']);
 
@@ -86,11 +89,8 @@ const onCountryChange = async (index) => {
   entry.course_type = null;
   entry.university_id = null;
   entry.course_id = null;
-
   // Fetch new intakes
   entry.intakes = await commonFunctionStore.getIntakesByCountry(entry.country_id);
-  console.log(commonFunctionStore.getIntakesByCountry(entry.country_id));
-  console.log(entry.intakes);
   emit('updateUniversityEntry', props.universityEntry);
 };
 
@@ -106,6 +106,7 @@ const onIntakeChange = async (index) => {
     entry.country_id,
     entry.intake_id
   );
+  console.log(entry.courseTypes);
   emit('updateUniversityEntry', props.universityEntry);
 };
 

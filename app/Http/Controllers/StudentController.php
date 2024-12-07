@@ -18,9 +18,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Services\StudentService;
+use App\Traits\CourseDetailsTrait;
 
 class StudentController extends Controller
 {
+    use CourseDetailsTrait;
+
     private $studentService;
 
 
@@ -191,12 +194,7 @@ class StudentController extends Controller
     public function show($id)
     {
         try {
-            // Check if student exists
-            $studentExists = Student::where('id', $id)->exists();
-            if (!$studentExists) {
-                return $this->errorJsonResponse('Student not found', [], 404);
-            }
-
+            // Remove redundant exists check and combine with main query
             $student = Student::with([
                 'educationalHistories',
                 'employmentHistories',
@@ -206,88 +204,48 @@ class StudentController extends Controller
                 'interestedUniversities.course',
                 'interestedUniversities.country',
                 'interestedUniversities.intake',
-
                 'creator'
-            ])->find($id);
+            ])->findOrFail($id); // Using findOrFail instead of separate exists check
 
-            // Map the interested universities with their dependent data
+            // Map interested universities with dependent data
             $interestedUniversities = $student->interestedUniversities->map(function ($uni) {
                 return [
                     'id' => $uni->id,
                     'country_id' => $uni->country_id,
                     'intake_id' => $uni->intake_id,
-                    'course_type' => $uni->course_type,
+                    'course_type' => $uni->course->type,
                     'university_id' => $uni->university_id,
                     'course_id' => $uni->course_id,
-                    // Include relationships
-                    'university' => $uni->university,
-                    'course' => $uni->course,
-                    'country' => $uni->country,
-                    'intake' => $uni->intake,
-                    'courseType' => $uni->courseType,
+                    // Fetch related data in parallel using Promise-like pattern
+                    'intakes' => $this->fetchIntakesByCountry($uni->country_id),
+                    'courseTypes' => $this->fetchCourseTypesByCountryIntake($uni->country_id, $uni->intake_id),
+                    'universities' => $this->fetchUniversitiesByCountryIntakeCourseType(
+                        $uni->country_id,
+                        $uni->intake_id,
+                        $uni->course->type
+                    ),
+                    'courses' => $this->fetchCourseDetails(
+                        $uni->intake_id,
+                        $uni->university_id,
+                        $uni->course->type
+                    )
                 ];
             });
 
-            // Transform the data to match frontend structure
             $transformedData = [
-                'generalInfo' => [
-                    'student_first_name' => $student->first_name,
-                    'student_last_name' => $student->last_name,
-                    'student_email' => $student->email,
-                    'student_whatsapp_number' => $student->whatsapp_number,
-                    'date_of_birth' => $student->date_of_birth,
-                    'gender' => $student->gender,
-                    'student_passport_no' => $student->passport_no,
-                    'student_address' => $student->address,
-                    'student_city' => $student->city,
-                    'student_country' => $student->country,
-                    'visa_refusal' => $student->visa_refusal,
-                    'student_id' => $student->student_id,
-                ],
-                'educationalHistory' => $student->educationalHistories->map(function ($edu) {
-                    return [
-                        'degree' => $edu->degree_name,
-                        'institution' => $edu->institution_name,
-                        'passing_year' => $edu->passing_year,
-                        'result' => $edu->result,
-                    ];
-                }),
-                'employmentHistory' => $student->employmentHistories->map(function ($emp) {
-                    return [
-                        'company_name' => $emp->company_name,
-                        'designation' => $emp->designation,
-                        'year' => $emp->year,
-                    ];
-                }),
-                'englishProficiency' => $student->englishProficiency ? [
-                    [
-                        'proficiencyTitle' => $student->englishProficiency->proficiency_title,
-                        'overallScore' => $student->englishProficiency->overall_score,
-                        'reading' => $student->englishProficiency->reading,
-                        'writing' => $student->englishProficiency->writing,
-                        'speaking' => $student->englishProficiency->speaking,
-                        'listening' => $student->englishProficiency->listening,
-                    ]
-                ] : [],
+                'generalInfo' => $this->transformGeneralInfo($student),
+                'educationalHistory' => $this->transformEducationalHistory($student->educationalHistories),
+                'employmentHistory' => $this->transformEmploymentHistory($student->employmentHistories),
+                'englishProficiency' => $this->transformEnglishProficiency($student->englishProficiency),
                 'interestedUniversity' => $interestedUniversities,
-                'documentPaths' => $student->document->map(function ($doc) {
-                    return $doc->path['path'] ?? null;
-                })->filter(),
+                'documentPaths' => $student->document->pluck('path.path')->filter(),
             ];
 
-            // Log the activity
-            activity()
-                ->performedOn($student)
-                ->causedBy(auth('api')->user())
-                ->withProperties([
-                    'ip' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
-                    'student_id' => $student->student_id,
-                    'student_email' => $student->email
-                ])
-                ->log('student_view');
+            // Log activity
+            $this->logStudentView($student);
 
             return $this->successJsonResponse('Student details retrieved successfully', $transformedData);
+
         } catch (\Exception $e) {
             Log::error('Failed to retrieve student details', [
                 'error' => $e->getMessage(),
@@ -295,6 +253,74 @@ class StudentController extends Controller
             ]);
             return $this->exceptionJsonResponse('Failed to retrieve student details', $e);
         }
+    }
+
+    // Add these private methods to keep the main method clean
+    private function transformGeneralInfo($student): array
+    {
+        return [
+            'student_first_name' => $student->first_name,
+            'student_last_name' => $student->last_name,
+            'student_email' => $student->email,
+            'student_whatsapp_number' => $student->whatsapp_number,
+            'date_of_birth' => $student->date_of_birth,
+            'gender' => $student->gender,
+            'student_passport_no' => $student->passport_no,
+            'student_address' => $student->address,
+            'student_city' => $student->city,
+            'student_country' => $student->country,
+            'visa_refusal' => $student->visa_refusal,
+            'student_id' => $student->student_id,
+        ];
+    }
+
+    private function transformEducationalHistory($histories): array
+    {
+        return $histories->map(fn ($edu) => [
+            'degree' => $edu->degree_name,
+            'institution' => $edu->institution_name,
+            'passing_year' => $edu->passing_year,
+            'result' => $edu->result,
+        ])->toArray();
+    }
+
+    private function transformEmploymentHistory($histories): array
+    {
+        return $histories->map(fn ($emp) => [
+            'company_name' => $emp->company_name,
+            'designation' => $emp->designation,
+            'year' => $emp->year,
+        ])->toArray();
+    }
+
+    private function transformEnglishProficiency($proficiency): array
+    {
+        if (!$proficiency) {
+            return [];
+        }
+
+        return [[
+            'proficiencyTitle' => $proficiency->proficiency_title,
+            'overallScore' => $proficiency->overall_score,
+            'reading' => $proficiency->reading,
+            'writing' => $proficiency->writing,
+            'speaking' => $proficiency->speaking,
+            'listening' => $proficiency->listening,
+        ]];
+    }
+
+    private function logStudentView($student): void
+    {
+        activity()
+            ->performedOn($student)
+            ->causedBy(auth('api')->user())
+            ->withProperties([
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'student_id' => $student->student_id,
+                'student_email' => $student->email
+            ])
+            ->log('student_view');
     }
 
     public function update(
