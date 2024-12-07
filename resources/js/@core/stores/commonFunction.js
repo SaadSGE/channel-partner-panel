@@ -8,12 +8,11 @@ export const commonFunction = defineStore({
     branches: [],
     courses: [],
     intakes: [],
-    notices: [],
-    activeNotices: [],
     errors: [],
     universities: [],
     courseDetails: [],
     courseTypes: [],
+    students: [],
     countryIntakeUniversityCourse: [],
     selectedCountryId: null,
     selectedCourseId: null,
@@ -58,7 +57,7 @@ export const commonFunction = defineStore({
     },
 
     getFilteredCourseDetails:
-      (state) => (countryId, courseId, intakeId, universityId) => {
+      (state) => (countryId, courseId, intakeId, universityId, studentId) => {
         state.selectedCountryId = countryId;
         state.selectedCourseId = courseId;
         state.selectedIntakeId = intakeId;
@@ -120,6 +119,7 @@ export const commonFunction = defineStore({
           method: "GET",
         });
         this.intakes = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching intakes:", error);
         this.errors = error.response
@@ -133,6 +133,7 @@ export const commonFunction = defineStore({
           method: "GET",
         });
         this.courseTypes = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching course types:", error);
         this.errors = error.response
@@ -151,6 +152,7 @@ export const commonFunction = defineStore({
           { method: "GET" }
         );
         this.universities = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching universities:", error);
         this.errors = error.response
@@ -169,6 +171,7 @@ export const commonFunction = defineStore({
         this.courseDetails = response.data;
         this.selectedIntakeId = intakeId;
         this.selectedUniversityId = universityId;
+        return response.data;
       } catch (error) {
         console.error("Error fetching course details:", error);
         this.errors = error.response
@@ -201,6 +204,7 @@ export const commonFunction = defineStore({
 
         // Convert Map values to array
         this.countries = Array.from(countryMap.values());
+        return response.data;
       } catch (error) {
         console.error("Error fetching countries:", error);
         this.errors = error.response
@@ -213,6 +217,7 @@ export const commonFunction = defineStore({
         const response = await $api("/application-country", { method: "GET" });
 
         this.countries = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching countries:", error);
         this.errors = error.response
@@ -225,6 +230,7 @@ export const commonFunction = defineStore({
         const response = await $api("/course", { method: "GET" });
 
         this.courses = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching courses:", error);
         this.errors = error.response
@@ -237,6 +243,7 @@ export const commonFunction = defineStore({
         const response = await $api("/intake", { method: "GET" });
 
         this.intakes = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching intakes:", error);
         this.errors = error.response
@@ -515,81 +522,39 @@ export const commonFunction = defineStore({
       }
     },
 
-    async getNotices() {
+    async getAllStudents() {
       try {
-        const response = await $api("/notices", {
-          method: "GET",
-        });
-        this.notices = response.data;
+        const response = await $api("/students", { method: "GET" });
+        this.students = response.data;
       } catch (error) {
-        console.error("Error fetching notices:", error);
+        console.error("Error fetching students:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];
       }
     },
-    async getActiveNotices() {
-      try {
-        const response = await $api("/active-notices", {
-          method: "GET",
-        });
-        console.log(response.data);
-        this.activeNotices = response.data;
-      } catch (error) {
-        console.error("Error fetching active notices:", error);
-        this.errors = error.response
-          ? error.response.data.errors
-          : ["An unexpected error occurred"];
-      }
-    },
-    async addNotice(notice) {
-      try {
-        const response = await $api("/notices", {
-          method: "POST",
-          body: notice,
-        });
 
-        this.notices.push(response.data);
+    async getStudentById(id) {
+      try {
+        const response = await $api(`/students/${id}`, { method: "GET" });
+        this.students = response.data;
+        return response.data;
       } catch (error) {
-        console.error("Error adding notice:", error);
+        console.error("Error fetching student:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];
       }
     },
-    async updateNoticeStatus(noticeId, status) {
+    async deleteAllStudent(id) {
       try {
-        const response = await $api(`/notices/${noticeId}`, {
-          method: "PUT",
-          body: { status },
-        });
-
-        // Update the local notices array
-        const index = this.notices.findIndex(
-          (notice) => notice.id === noticeId
-        );
-        if (index !== -1) {
-          this.notices[index].status = status;
-        }
-
-        return response;
-      } catch (error) {
-        console.error("Error updating notice status:", error);
-        this.errors = error.response
-          ? error.response.data.errors
-          : ["An unexpected error occurred"];
-        throw error;
-      }
-    },
-    async deleteNotice(id) {
-      try {
-        await $api(`/notices/${id}`, {
+        await $api(`/students/${id}`, {
           method: "DELETE",
         });
 
-        this.notices = this.notices.filter((notice) => notice.id !== id);
+        this.students = this.students.filter((student) => student.id !== id);
       } catch (error) {
-        console.error("Error deleting notice:", error);
+        console.error("Error deleting student:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];
