@@ -158,11 +158,11 @@ const toggleEdit = () => {
 .custom-table {
   position: relative;
   z-index: 1;
-  background: transparent !important;
+  background: #f0f7ff !important;
   box-shadow: 0 2px 6px 0 rgba(var(--v-shadow-key-umbra-color), 0.14);
 
   :deep(th) {
-    background-color: rgba(var(--v-theme-surface), 0.04);
+    background-color: #e1f0ff !important;
     font-size: 0.8125rem;
     font-weight: 600;
     letter-spacing: 0.2px;
@@ -170,13 +170,20 @@ const toggleEdit = () => {
     padding-inline: 16px !important;
     text-transform: uppercase;
   }
+
+  :deep(td) {
+    background-color: #f0f7ff !important;
+    border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    padding-block: 12px !important;
+    padding-inline: 16px !important;
+  }
 }
 
 .info-table {
   overflow: hidden;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 6px;
-  background: transparent !important;
+  background: #f0f7ff !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
@@ -185,7 +192,7 @@ const toggleEdit = () => {
   }
 
   :deep(td) {
-    background-color: rgb(var(--v-theme-surface));
+    background-color: #f0f7ff !important;
     border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
     padding-block: 12px !important;
     padding-inline: 16px !important;

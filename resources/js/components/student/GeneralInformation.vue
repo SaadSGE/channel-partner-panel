@@ -1,9 +1,13 @@
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useFileStore } from "@/@core/stores/fileStore";
+import { useStudentStore } from "@/@core/stores/studentStore";
 import { computed, ref, watch } from 'vue';
+
 const commonFunctionStore = commonFunction();
 const fileStore = useFileStore();
+const studentStore = useStudentStore();
+
 const props = defineProps({
   isEdit: {
     type: Boolean,
@@ -43,9 +47,28 @@ const emit = defineEmits(['updateGeneralInfo', 'saveChanges']);
 
 const isEditing = ref(false);
 
-const toggleEdit = () => {
+const toggleEdit = async () => {
   if (isEditing.value) {
-    emit('saveChanges', formData.value);
+    try {
+      // Assuming you have access to the student ID through props or route
+      const studentId = props.studentId; // Add this prop to your props definition
+      // Prepare the form data in the expected format
+      const updateData = {
+        generalInfo: formData.value,
+        // Add empty arrays for other sections if they're required by the API
+        universityEntry: [],
+        educationalHistory: [],
+        englishProficiency: [],
+        employmentHistory: [],
+        documentPaths: [],
+      };
+
+      await studentStore.updateStudent(studentId, updateData);
+      emit('saveChanges', formData.value);
+    } catch (error) {
+      // Handle error (you might want to show an error message to the user)
+      console.error('Error updating student:', error);
+    }
   }
   isEditing.value = !isEditing.value;
 };
@@ -264,7 +287,7 @@ const emailValidator = (v) => {
   overflow: hidden;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 6px;
-  background: transparent !important;
+  background: #f0f7ff !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
@@ -273,14 +296,14 @@ const emailValidator = (v) => {
   }
 
   td {
-    background-color: rgb(var(--v-theme-surface));
+    background-color: #f0f7ff !important;
     border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
     padding-block: 12px !important;
     padding-inline: 16px !important;
   }
 
   td:first-child {
-    background-color: rgba(var(--v-theme-surface), 0.04);
+    background-color: #e1f0ff !important;
     font-weight: 600;
     inline-size: 140px;
   }

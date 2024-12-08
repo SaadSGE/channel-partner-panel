@@ -291,25 +291,50 @@ const getCourseName = (courseId, courses) => {
   overflow: hidden;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 6px;
-  background: transparent !important;
-  inline-size: 100%;
-  margin-block-end: 16px;
+  background: #f0f7ff !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 24px -4px rgba(var(--v-shadow-key-umbra-color), 0.2);
+    transform: translateY(-2px);
+  }
+
+  td {
+    background-color: #f0f7ff !important;
+    border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    padding-block: 12px !important;
+    padding-inline: 16px !important;
+  }
+
+  td:first-child {
+    background-color: #e1f0ff !important;
+    font-weight: 600;
+    inline-size: 140px;
+  }
+
+  tr:last-child td {
+    border-block-end: none;
+  }
 }
 
-.info-table td {
-  border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  padding-block: 12px !important;
-  padding-inline: 16px !important;
-  text-align: start;
-}
+.custom-table {
+  position: relative;
+  z-index: 1;
+  background: #f0f7ff !important;
+  box-shadow: 0 2px 6px 0 rgba(var(--v-shadow-key-umbra-color), 0.14);
 
-.info-table td:first-child {
-  background-color: rgba(var(--v-theme-surface), 0.04);
-  inline-size: 140px;
-}
+  :deep(td) {
+    background-color: #f0f7ff !important;
+    border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    padding-block: 12px !important;
+    padding-inline: 16px !important;
+  }
 
-.info-table tr:last-child td {
-  border-block-end: none;
+  :deep(td:first-child) {
+    background-color: #e1f0ff !important;
+    font-weight: 600;
+    inline-size: 140px;
+  }
 }
 
 /* Add spacing between multiple university entries */
@@ -337,30 +362,6 @@ const getCourseName = (courseId, courses) => {
   padding-block-end: 20px;
 }
 
-.custom-table {
-  position: relative;
-  z-index: 1;
-  background: transparent !important;
-  box-shadow: 0 2px 6px 0 rgba(var(--v-shadow-key-umbra-color), 0.14);
-
-  :deep(td) {
-    background-color: rgb(var(--v-theme-surface));
-    border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-    padding-block: 12px !important;
-    padding-inline: 16px !important;
-  }
-
-  :deep(tr:last-child td) {
-    border-block-end: none;
-  }
-
-  :deep(td:first-child) {
-    background-color: rgba(var(--v-theme-surface), 0.04);
-    font-weight: 600;
-    inline-size: 140px;
-  }
-}
-
 .v-card {
   position: relative;
   z-index: 0;
@@ -385,18 +386,6 @@ const getCourseName = (courseId, courses) => {
         rgba(var(--v-theme-surface), 0.02) 100%);
     content: "";
     inset: 0;
-  }
-}
-
-.info-table {
-  overflow: hidden;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 6px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    box-shadow: 0 4px 24px -4px rgba(var(--v-shadow-key-umbra-color), 0.2);
-    transform: translateY(-2px);
   }
 }
 

@@ -210,17 +210,17 @@ export const useStudentStore = defineStore({
       try {
         const generalInfoRequest = {
           general_info: {
-            first_name: formData.generalInfo.first_name,
-            last_name: formData.generalInfo.last_name,
-            email: formData.generalInfo.email,
-            mobile: formData.generalInfo.mobile,
+            student_first_name: formData.generalInfo.first_name,
+            student_last_name: formData.generalInfo.last_name,
+            student_email: formData.generalInfo.email,
+            student_whatsapp_number: formData.generalInfo.mobile,
             date_of_birth: formatDate(formData.generalInfo.date_of_birth),
             gender: formData.generalInfo.gender,
-            passport_no: formData.generalInfo.passport_number,
-            address: formData.generalInfo.address,
-            city: formData.generalInfo.city,
-            country: formData.generalInfo.country,
-            visa_refusal: formData.generalInfo.visaRefusal,
+            student_passport_no: formData.generalInfo.passport_number,
+            student_address: formData.generalInfo.address,
+            student_city: formData.generalInfo.city,
+            student_country: formData.generalInfo.country,
+            visa_refusal: formData.generalInfo.visa_refusal,
           },
         };
 
@@ -266,7 +266,7 @@ export const useStudentStore = defineStore({
           document_paths: formData.documentPaths || [],
         };
 
-        const response = await $api(`/student/${id}`, {
+        const response = await $api(`/students/${id}`, {
           method: "PUT",
           body: JSON.stringify({
             ...generalInfoRequest,
