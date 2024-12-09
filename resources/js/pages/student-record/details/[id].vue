@@ -5,6 +5,7 @@ import EducationHistory from '@/components/student/EducationHistory.vue';
 import EmploymentHistory from '@/components/student/EmploymentHistory.vue';
 import EnglishProficiency from '@/components/student/EnglishProficiency.vue';
 import GeneralInformation from '@/components/student/GeneralInformation.vue';
+import StudentDocuments from '@/components/student/StudentDocuments.vue';
 import UniversityEntry from '@/components/student/UniversityEntry.vue';
 definePage({
   meta: {
@@ -58,7 +59,8 @@ const formData = ref({
     company_name: '',
     designation: '',
     year: ''
-  }]
+  }],
+  documents: []
 });
 
 const router = useRouter();
@@ -95,7 +97,8 @@ const getStudentDetails = async (id) => {
       universityEntry: studentStore.studentInfo.interestedUniversity,
       educationalHistory: studentStore.studentInfo.educationalHistory,
       englishProficiency: studentStore.studentInfo.englishProficiency,
-      employmentHistory: studentStore.studentInfo.employmentHistory
+      employmentHistory: studentStore.studentInfo.employmentHistory,
+      documents: studentStore.studentInfo.documents
     };
   } catch (error) {
     console.error('Error fetching student details:', error);
@@ -157,6 +160,9 @@ const handleEmploymentHistoryUpdate = (data) => {
       <VTab value="employment-history">
         Employment History
       </VTab>
+      <VTab value="documents">
+        Documents
+      </VTab>
     </VTabs>
 
     <VCardText>
@@ -184,6 +190,10 @@ const handleEmploymentHistoryUpdate = (data) => {
         <VWindowItem value="employment-history">
           <EmploymentHistory :employment-history="formData.employmentHistory"
             @updateEmploymentHistory="handleEmploymentHistoryUpdate" :readonly="true" :is-edit="true" />
+        </VWindowItem>
+
+        <VWindowItem value="documents">
+          <StudentDocuments :documents="formData.documents" />
         </VWindowItem>
       </VWindow>
     </VCardText>

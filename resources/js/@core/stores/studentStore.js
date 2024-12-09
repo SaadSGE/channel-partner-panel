@@ -84,8 +84,8 @@ export const useStudentStore = defineStore({
           english_proficiency: formData.englishProficiency?.length
             ? formData.englishProficiency
                 .map((prof) => ({
-                  proficiency_title: prof.proficiencyTitle || null,
-                  overall_score: prof.overallScore || null,
+                  proficiency_title: prof.title || null,
+                  overall_score: prof.overall_score || null,
                   reading: prof.reading || null,
                   writing: prof.writing || null,
                   speaking: prof.speaking || null,

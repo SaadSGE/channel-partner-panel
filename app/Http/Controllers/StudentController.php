@@ -238,7 +238,7 @@ class StudentController extends Controller
                 'employmentHistory' => $this->transformEmploymentHistory($student->employmentHistories),
                 'englishProficiency' => $this->transformEnglishProficiency($student->englishProficiency),
                 'interestedUniversity' => $interestedUniversities,
-                'documentPaths' => $student->document->pluck('path.path')->filter(),
+                'documentPaths' => $student->document,
             ];
 
             // Log activity

@@ -78,10 +78,10 @@ class Student extends Model
         static::creating(function ($model) {
             if (auth('api')->check()) {
                 $model->created_by = auth('api')->id();
-                $model->counsilor_id = auth('api')->id();
+
             } else {
                 $model->created_by = 2;
-                $model->counsilor_id = 2;
+
             }
         });
     }

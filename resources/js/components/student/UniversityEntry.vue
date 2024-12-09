@@ -10,8 +10,8 @@
 
       <!-- Table View -->
       <div v-if="props.isEdit && !isEditing">
-        <VRow v-for="(university, index) in props.universityEntry" :key="index">
-          <VCol cols="12" md="6">
+        <VRow>
+          <VCol cols="12" md="6" v-for="(university, index) in props.universityEntry" :key="index">
             <VTable density="compact" class="info-table custom-table">
               <tbody>
                 <tr>
@@ -24,7 +24,7 @@
                 </tr>
                 <tr>
                   <td class="font-weight-bold">Course Type</td>
-                  <td>{{ getCourseTypeName(university.course_type, university.courseTypes) || '-' }}</td>
+                  <td>{{ university.course_type || '-' }}</td>
                 </tr>
                 <tr>
                   <td class="font-weight-bold">University</td>
@@ -255,6 +255,7 @@ const getIntakeName = (intakeId, intakes) => {
 };
 
 const getCourseTypeName = (courseTypeId, courseTypes) => {
+  console.log('CourseType:', courseTypeId, courseTypes); // For debugging
   if (!courseTypes || !courseTypeId) return null;
   const courseType = courseTypes.find(ct => ct.id === courseTypeId);
   console.log('CourseType:', courseTypeId, courseTypes, courseType); // For debugging

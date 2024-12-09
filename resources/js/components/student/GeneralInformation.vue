@@ -1,18 +1,10 @@
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useFileStore } from "@/@core/stores/fileStore";
-import { useStudentStore } from "@/@core/stores/studentStore";
 import { computed, ref, watch } from 'vue';
-
 const commonFunctionStore = commonFunction();
 const fileStore = useFileStore();
-const studentStore = useStudentStore();
-
 const props = defineProps({
-  isEdit: {
-    type: Boolean,
-    default: false,
-  },
   generalInfo: {
     type: Object,
     required: true,
@@ -32,54 +24,25 @@ const props = defineProps({
   }
 });
 
-const formData = ref({ ...props.generalInfo });
 
-// Add a watch to update formData when generalInfo changes
-watch(
-  () => props.generalInfo,
-  (newValue) => {
-    formData.value = { ...newValue };
-  },
-  { deep: true }
-);
+const formData = ref(props.generalInfo);
 
 const emit = defineEmits(['updateGeneralInfo', 'saveChanges']);
 
-const isEditing = ref(false);
+// Watch for changes in any field and emit updates
 
-const toggleEdit = async () => {
-  if (isEditing.value) {
-    try {
-      // Assuming you have access to the student ID through props or route
-      const studentId = props.studentId; // Add this prop to your props definition
-      // Prepare the form data in the expected format
-      const updateData = {
-        generalInfo: formData.value,
-        // Add empty arrays for other sections if they're required by the API
-        universityEntry: [],
-        educationalHistory: [],
-        englishProficiency: [],
-        employmentHistory: [],
-        documentPaths: [],
-      };
 
-      await studentStore.updateStudent(studentId, updateData);
-      emit('saveChanges', formData.value);
-    } catch (error) {
-      // Handle error (you might want to show an error message to the user)
-      console.error('Error updating student:', error);
-    }
-  }
-  isEditing.value = !isEditing.value;
-};
+
 
 const genderOptions = ['Male', 'Female', 'Other'];
 
+// Add this computed property
 const formattedDateOfBirth = computed({
   get: () => {
-    const dob = formData.value.date_of_birth;
+    const dob = props.generalInfo.date_of_birth;
     if (!dob) return '';
 
+    // Convert date string to YYYY-MM-DD format for input[type="date"]
     try {
       const date = new Date(dob);
       return date.toISOString().split('T')[0];
@@ -88,7 +51,7 @@ const formattedDateOfBirth = computed({
     }
   },
   set: (value) => {
-    formData.value.date_of_birth = value;
+    props.generalInfo.date_of_birth = value;
   }
 });
 const countries = ref([
@@ -101,25 +64,25 @@ const countries = ref([
   "Pakistan",
 ])
 
-const tableData = computed(() => [
-  { label: 'Name', value: `${formData.value.first_name} ${formData.value.last_name}` },
-  { label: 'Email', value: formData.value.email },
-  { label: 'Mobile', value: formData.value.mobile },
-  { label: 'Date of Birth', value: formattedDateOfBirth.value },
-  { label: 'Gender', value: formData.value.gender },
-  { label: 'Passport No', value: formData.value.passport_number },
-  { label: 'Visa Refusal', value: formData.value.visa_refusal },
-  { label: 'Address', value: formData.value.address },
-  { label: 'City', value: formData.value.city },
-  { label: 'Country', value: formData.value.country },
-]);
+// Remove the watch as we're now using a computed with getter/setter
 
-// Add missing validators (these seem to be used in the template but weren't defined)
-const requiredValidator = (v) => !!v || 'This field is required';
-const emailValidator = (v) => {
-  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return pattern.test(v) || 'Please enter a valid email';
+const isEditing = ref(false);
+
+const toggleEdit = () => {
+  if (isEditing.value) {
+    emit('saveChanges', props.generalInfo);
+  }
+  isEditing.value = !isEditing.value;
 };
+
+// Add a watch to emit updates when form data changes
+watch(
+  () => props.generalInfo,
+  (newValue) => {
+    emit('updateGeneralInfo', newValue);
+  },
+  { deep: true }
+);
 </script>
 
 <template>
@@ -127,28 +90,32 @@ const emailValidator = (v) => {
     <VCardText>
       <div class="d-flex justify-space-between align-center">
         <VCardTitle class="padding-bottom">General Info</VCardTitle>
-        <VBtn v-if="props.isEdit" :color="isEditing ? 'success' : 'primary'" @click="toggleEdit">
+        <VBtn :color="isEditing ? 'success' : 'primary'" @click="toggleEdit">
           {{ isEditing ? 'Save Changes' : 'Edit' }}
         </VBtn>
       </div>
 
       <!-- Table View -->
-      <div v-if="props.isEdit && !isEditing">
+      <div v-if="!isEditing">
         <VRow>
           <VCol cols="12" md="6">
-            <VTable density="compact" class="info-table">
+            <VTable density="compact" class="info-table custom-table">
               <tbody>
                 <tr>
-                  <td class="font-weight-bold">Name</td>
-                  <td>{{ formData.first_name }} {{ formData.last_name || '-' }}</td>
+                  <td class="font-weight-bold">First Name</td>
+                  <td>{{ props.generalInfo.first_name || '-' }}</td>
+                </tr>
+                <tr>
+                  <td class="font-weight-bold">Last Name</td>
+                  <td>{{ props.generalInfo.last_name || '-' }}</td>
                 </tr>
                 <tr>
                   <td class="font-weight-bold">Email</td>
-                  <td>{{ formData.email || '-' }}</td>
+                  <td>{{ props.generalInfo.email || '-' }}</td>
                 </tr>
                 <tr>
                   <td class="font-weight-bold">Mobile</td>
-                  <td>{{ formData.mobile || '-' }}</td>
+                  <td>{{ props.generalInfo.mobile || '-' }}</td>
                 </tr>
                 <tr>
                   <td class="font-weight-bold">Date of Birth</td>
@@ -156,34 +123,34 @@ const emailValidator = (v) => {
                 </tr>
                 <tr>
                   <td class="font-weight-bold">Gender</td>
-                  <td>{{ formData.gender || '-' }}</td>
+                  <td>{{ props.generalInfo.gender || '-' }}</td>
                 </tr>
               </tbody>
             </VTable>
           </VCol>
-
           <VCol cols="12" md="6">
-            <VTable density="compact" class="info-table">
+            <VTable density="compact" class="info-table custom-table">
               <tbody>
+
                 <tr>
-                  <td class="font-weight-bold">Passport No</td>
-                  <td>{{ formData.passport_number || '-' }}</td>
+                  <td class="font-weight-bold">Passport Number</td>
+                  <td>{{ props.generalInfo.passport_number || '-' }}</td>
                 </tr>
                 <tr>
                   <td class="font-weight-bold">Visa Refusal</td>
-                  <td>{{ formData.visa_refusal || '-' }}</td>
+                  <td>{{ props.generalInfo.visa_refusal || '-' }}</td>
                 </tr>
                 <tr>
                   <td class="font-weight-bold">Address</td>
-                  <td>{{ formData.address || '-' }}</td>
+                  <td>{{ props.generalInfo.address || '-' }}</td>
                 </tr>
                 <tr>
                   <td class="font-weight-bold">City</td>
-                  <td>{{ formData.city || '-' }}</td>
+                  <td>{{ props.generalInfo.city || '-' }}</td>
                 </tr>
                 <tr>
                   <td class="font-weight-bold">Country</td>
-                  <td>{{ formData.country || '-' }}</td>
+                  <td>{{ props.generalInfo.country || '-' }}</td>
                 </tr>
               </tbody>
             </VTable>
@@ -192,66 +159,64 @@ const emailValidator = (v) => {
       </div>
 
       <!-- Form View -->
-      <VRow v-else>
-        <VCol cols="12" md="12">
-          <VRow>
-            <VCol cols="12" md="6">
-              <AppTextField v-model="formData.first_name" label="First Name(*)" placeholder="First Name"
-                :rules="[requiredValidator]" density="compact" />
-            </VCol>
-            <VCol cols="12" md="6">
-              <AppTextField v-model="formData.last_name" label="Last Name(*)" placeholder="Last Name"
-                :rules="[requiredValidator]" density="compact" />
-            </VCol>
-          </VRow>
-          <VRow>
-            <VCol cols="12" md="6">
-              <AppTextField v-model="formData.email" label="Email(*)" placeholder="Email"
-                :rules="[requiredValidator, emailValidator]" density="compact" />
-            </VCol>
-            <VCol cols="12" md="6">
-              <AppTextField v-model="formData.mobile" label="Mobile No(*)" placeholder="Mobile No"
-                :rules="[requiredValidator]" density="compact" />
-            </VCol>
-          </VRow>
-          <VRow>
-            <VCol cols="12" md="6">
-              <AppDateTimePicker v-model="formattedDateOfBirth" label="Date of birth" placeholder="Select date" />
-            </VCol>
-            <VCol cols="12" md="6">
-              <AppSelect v-model="formData.gender" :items="genderOptions" label="Gender" placeholder="Select Gender"
-                density="compact" />
-            </VCol>
-          </VRow>
-          <VRow>
-            <VCol cols="12" md="6">
-              <AppTextField v-model="formData.passport_number" label="Passport No" placeholder="Passport No"
-                density="compact" />
-            </VCol>
-            <VCol cols="12" md="6">
-              <label>Any Previous Visa Refusal</label>
-              <VRadioGroup v-model="formData.visa_refusal" row>
-                <VRadio label="Yes" value="yes" />
-                <VRadio label="No" value="no" />
-              </VRadioGroup>
-            </VCol>
-          </VRow>
-          <VRow>
-            <VCol cols="12" md="12">
-              <AppTextField v-model="formData.address" label="Address" placeholder="Address" density="compact" />
-            </VCol>
-          </VRow>
-          <VRow>
-            <VCol cols="12" md="6">
-              <AppTextField v-model="formData.city" label="City" placeholder="City" density="compact" />
-            </VCol>
-            <VCol cols="12" md="6">
-              <AppAutocomplete v-model="formData.country" :items="countries" label="Country"
-                placeholder="Select Country" density="compact" class="small-dropdown" />
-            </VCol>
-          </VRow>
-        </VCol>
-      </VRow>
+      <div v-else>
+        <VRow>
+          <VCol cols="12" md="6">
+            <AppTextField v-model="props.generalInfo.first_name" label="First Name(*)" placeholder="First Name"
+              :rules="[requiredValidator]" density="compact" />
+          </VCol>
+          <VCol cols="12" md="6">
+            <AppTextField v-model="props.generalInfo.last_name" label="Last Name(*)" placeholder="Last Name"
+              :rules="[requiredValidator]" density="compact" />
+          </VCol>
+        </VRow>
+        <VRow>
+          <VCol cols="12" md="6">
+            <AppTextField v-model="props.generalInfo.email" label="Email(*)" placeholder="Email"
+              :rules="[requiredValidator, emailValidator]" density="compact" />
+          </VCol>
+          <VCol cols="12" md="6">
+            <AppTextField v-model="props.generalInfo.mobile" label="Mobile No(*)" placeholder="Mobile No"
+              :rules="[requiredValidator]" density="compact" />
+          </VCol>
+        </VRow>
+        <VRow>
+          <VCol cols="12" md="6">
+            <AppDateTimePicker v-model="formattedDateOfBirth" label="Date of birth" placeholder="Select date" />
+          </VCol>
+          <VCol cols="12" md="6">
+            <AppSelect v-model="props.generalInfo.gender" :items="genderOptions" label="Gender"
+              placeholder="Select Gender" density="compact" />
+          </VCol>
+        </VRow>
+        <VRow>
+          <VCol cols="12" md="6">
+            <AppTextField v-model="props.generalInfo.passport_number" label="Passport No" placeholder="Passport No"
+              density="compact" />
+          </VCol>
+          <VCol cols="12" md="6">
+            <label>Any Previous Visa Refusal</label>
+            <VRadioGroup v-model="props.generalInfo.visa_refusal" row>
+              <VRadio label="Yes" value="yes" />
+              <VRadio label="No" value="no" />
+            </VRadioGroup>
+          </VCol>
+        </VRow>
+        <VRow>
+          <VCol cols="12" md="12">
+            <AppTextField v-model="props.generalInfo.address" label="Address" placeholder="Address" density="compact" />
+          </VCol>
+        </VRow>
+        <VRow>
+          <VCol cols="12" md="6">
+            <AppTextField v-model="props.generalInfo.city" label="City" placeholder="City" density="compact" />
+          </VCol>
+          <VCol cols="12" md="6">
+            <AppAutocomplete v-model="props.generalInfo.country" :items="countries" label="Country"
+              placeholder="Select Country" density="compact" class="small-dropdown" />
+          </VCol>
+        </VRow>
+      </div>
     </VCardText>
   </VCard>
 </template>
@@ -273,14 +238,6 @@ const emailValidator = (v) => {
 
 .padding-bottom {
   padding-block-end: 30px;
-}
-
-// Enhanced table styles
-.custom-table {
-  position: relative;
-  z-index: 1;
-  background: transparent !important;
-  box-shadow: 0 2px 6px 0 rgba(var(--v-shadow-key-umbra-color), 0.14);
 }
 
 .info-table {
@@ -313,59 +270,10 @@ const emailValidator = (v) => {
   }
 }
 
-// Enhanced card styles
-.v-card {
+.custom-table {
   position: relative;
-  z-index: 0;
-  border-radius: 6px;
-  background: rgb(var(--v-theme-surface)) !important;
-  box-shadow: 0 4px 18px -4px rgba(var(--v-shadow-key-umbra-color), 0.1);
-
-  :deep(.v-card-text) {
-    position: relative;
-    z-index: 1;
-    padding-block: 16px;
-    padding-inline: 24px;
-  }
-
-  &::before {
-    position: absolute;
-    z-index: 0;
-    border-radius: inherit;
-    background:
-      linear-gradient(180deg,
-        rgba(var(--v-theme-surface), 0.05) 0%,
-        rgba(var(--v-theme-surface), 0.02) 100%);
-    content: "";
-    inset: 0;
-  }
-}
-
-/* Make tables full height */
-.v-table {
-  background: transparent !important;
-  block-size: 100%;
-
-  td {
-    padding-block: 8px !important;
-    padding-inline: 16px !important;
-  }
-}
-
-/* Add some spacing between tables on mobile */
-@media (max-width: 960px) {
-  .v-col-md-6:first-child {
-    margin-block-end: 1rem;
-  }
-
-  .custom-table :deep(td) {
-    font-size: 0.8rem;
-    padding-block: 8px !important;
-    padding-inline: 12px !important;
-  }
-
-  .v-card {
-    margin-inline: 8px;
-  }
+  z-index: 1;
+  background: #f0f7ff !important;
+  box-shadow: 0 2px 6px 0 rgba(var(--v-shadow-key-umbra-color), 0.14);
 }
 </style>
