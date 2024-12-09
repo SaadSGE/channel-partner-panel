@@ -100,6 +100,14 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/course-requests/{id}/complete', [CourseRequestController::class, 'complete']);
 
     Route::apiResource('notices', NoticeController::class);
+
+    // Student section-specific routes
+    Route::put('/students/{id}/general-info', [StudentController::class, 'updateGeneralInfo']);
+    Route::put('/students/{id}/interested-university', [StudentController::class, 'updateInterestedUniversity']);
+    Route::put('/students/{id}/educational-history', [StudentController::class, 'updateEducationalHistory']);
+    Route::put('/students/{id}/english-proficiency', [StudentController::class, 'updateEnglishProficiency']);
+    Route::put('/students/{id}/employment-history', [StudentController::class, 'updateEmploymentHistory']);
+    Route::put('/students/{id}/documents', [StudentController::class, 'updateDocuments']);
 });
 Route::get('/active-notices', [NoticeController::class, 'getActiveNotices']);
 Route::apiResource('notices', NoticeController::class);

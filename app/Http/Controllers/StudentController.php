@@ -278,6 +278,7 @@ class StudentController extends Controller
     private function transformEducationalHistory($histories): array
     {
         return $histories->map(fn ($edu) => [
+            'id' => $edu->id,
             'degree' => $edu->degree_name,
             'institution' => $edu->institution_name,
             'passing_year' => $edu->passing_year,
@@ -288,6 +289,7 @@ class StudentController extends Controller
     private function transformEmploymentHistory($histories): array
     {
         return $histories->map(fn ($emp) => [
+            'id' => $emp->id,
             'company_name' => $emp->company_name,
             'designation' => $emp->designation,
             'year' => $emp->year,
@@ -301,6 +303,7 @@ class StudentController extends Controller
         }
 
         return [[
+            'id' => $proficiency->id,
             'proficiencyTitle' => $proficiency->proficiency_title,
             'overallScore' => $proficiency->overall_score,
             'reading' => $proficiency->reading,
@@ -420,6 +423,115 @@ class StudentController extends Controller
             ->get(['id', 'first_name', 'last_name', 'email', 'passport_no', 'date_of_birth']);
 
         return $this->successJsonResponse('Students fetched successfully', $students);
+    }
+
+    public function updateGeneralInfo(StudentGeneralInfoRequest $request, $id, StudentService $studentService)
+    {
+
+        try {
+            $student = Student::findOrFail($id);
+
+            $data = array_merge(['id' => $student->id], $request->validated()['general_info']);
+
+            $updatedStudent = $studentService->storeGeneralInfo($data);
+
+            return $this->successJsonResponse('General info updated successfully', $updatedStudent);
+        } catch (\Throwable $th) {
+            Log::error('Failed to update general info', ['error' => $th->getMessage()]);
+            return $this->exceptionJsonResponse('Failed to update general info', $th);
+        }
+    }
+
+    public function updateInterestedUniversity(StudentInterestedUniversityRequest $request, $id, StudentService $studentService)
+    {
+        try {
+            $student = Student::findOrFail($id);
+            $universitiesData = $request->validated()['interested_university'] ?? [];
+
+            $studentService->storeInterestedUniversities($student, $universitiesData);
+
+            return $this->successJsonResponse(
+                'University preferences updated successfully',
+                $student->load('interestedUniversities.university', 'interestedUniversities.course')
+            );
+        } catch (\Throwable $th) {
+            Log::error('Failed to update university preferences', ['error' => $th->getMessage()]);
+            return $this->exceptionJsonResponse('Failed to update university preferences', $th);
+        }
+    }
+
+    public function updateEducationalHistory(StudentEducationalHistoryRequest $request, $id, StudentService $studentService)
+    {
+        try {
+            $student = Student::findOrFail($id);
+            $historiesData = $request->validated()['educational_history'] ?? [];
+
+            $studentService->storeEducationalHistories($student, $historiesData);
+
+            return $this->successJsonResponse(
+                'Educational history updated successfully',
+                $student->load('educationalHistories')
+            );
+        } catch (\Throwable $th) {
+            Log::error('Failed to update educational history', ['error' => $th->getMessage()]);
+            return $this->exceptionJsonResponse('Failed to update educational history', $th);
+        }
+    }
+
+    public function updateEnglishProficiency(StudentEnglishProficiencyRequest $request, $id, StudentService $studentService)
+    {
+        try {
+            $student = Student::findOrFail($id);
+            $proficienciesData = $request->validated()['english_proficiency'] ?? [];
+
+            $studentService->storeEnglishProficiencies($student, $proficienciesData);
+
+            return $this->successJsonResponse(
+                'English proficiency updated successfully',
+                $student->load('englishProficiency')
+            );
+        } catch (\Throwable $th) {
+            Log::error('Failed to update English proficiency', ['error' => $th->getMessage()]);
+            return $this->exceptionJsonResponse('Failed to update English proficiency', $th);
+        }
+    }
+
+    public function updateEmploymentHistory(StudentEmploymentHistoryRequest $request, $id, StudentService $studentService)
+    {
+        try {
+            $student = Student::findOrFail($id);
+            $employmentData = $request->validated()['employment_history'] ?? [];
+
+            $studentService->storeEmploymentHistories($student, $employmentData);
+
+            return $this->successJsonResponse(
+                'Employment history updated successfully',
+                $student->load('employmentHistories')
+            );
+        } catch (\Throwable $th) {
+            Log::error('Failed to update employment history', ['error' => $th->getMessage()]);
+            return $this->exceptionJsonResponse('Failed to update employment history', $th);
+        }
+    }
+
+    public function updateDocuments(StudentDocumentRequest $request, $id, StudentService $studentService)
+    {
+        try {
+            $student = Student::findOrFail($id);
+            $documentPaths = $request->validated()['document_paths'] ?? [];
+
+            if (!empty($documentPaths)) {
+                $studentService->handleDocumentUploads($student, $documentPaths);
+            }
+
+            return $this->successJsonResponse(
+                'Documents updated successfully',
+                $student->load('document')
+            );
+        } catch (\Throwable $th) {
+            Log::error('Failed to update documents', ['error' => $th->getMessage()]);
+            return $this->exceptionJsonResponse('Failed to update documents', $th);
+        }
     }
 
 }

@@ -119,8 +119,7 @@ export const useStudentStore = defineStore({
 
         const documentRequest = {
           document_paths: formData.documentPaths.map((path) => ({
-            path: path.path,
-            document_name: path.document_name,
+            path: path,
           })),
         };
 
@@ -304,6 +303,202 @@ export const useStudentStore = defineStore({
           : ["An unexpected error occurred"];
         throw error;
       }
+    },
+
+    async updateGeneralInfo(studentId, generalInfo) {
+      try {
+        const response = await $api(`/students/${studentId}/general-info`, {
+          method: "PUT",
+          body: JSON.stringify({
+            general_info: {
+              student_first_name: generalInfo.first_name,
+              student_last_name: generalInfo.last_name,
+              student_email: generalInfo.email,
+              student_whatsapp_number: generalInfo.mobile,
+              date_of_birth: formatDate(generalInfo.date_of_birth),
+              gender: generalInfo.gender,
+              student_passport_no: generalInfo.passport_number,
+              student_address: generalInfo.address,
+              student_city: generalInfo.city,
+              student_country: generalInfo.country,
+              student_region_state: generalInfo.state,
+              visa_refusal: generalInfo.visa_refusal,
+            },
+          }),
+        });
+
+        this.studentInfo.generalInfo = response.data;
+        this.successMessage = "General info updated successfully";
+        return response.data;
+      } catch (error) {
+        this.handleError(error);
+        throw error;
+      }
+    },
+
+    async updateInterestedUniversity(studentId, universityEntry) {
+      try {
+        console.log("Updating university preferences with data:", {
+          studentId,
+          universityEntry,
+        });
+
+        const requestBody = {
+          interested_university: universityEntry?.length
+            ? universityEntry
+                .map((entry) => ({
+                  id: entry.id || null,
+                  country_id: entry.country_id || null,
+                  intake_id: entry.intake_id || null,
+                  university_id: entry.university_id || null,
+                  course_id: entry.course_id || null,
+                }))
+                .filter(
+                  (entry) =>
+                    entry.country_id ||
+                    entry.intake_id ||
+                    entry.university_id ||
+                    entry.course_id
+                )
+            : [],
+        };
+
+        console.log("Request body:", requestBody);
+
+        const response = await $api(
+          `/students/${studentId}/interested-university`,
+          {
+            method: "PUT",
+            body: JSON.stringify(requestBody),
+          }
+        );
+
+        console.log("API Response:", response);
+
+        this.studentInfo.interestedUniversity = response.data;
+        this.successMessage = "University preferences updated successfully";
+        return response.data;
+      } catch (error) {
+        console.error("Error in updateInterestedUniversity:", error);
+        this.handleError(error);
+        throw error;
+      }
+    },
+
+    async updateEducationalHistory(studentId, educationalHistory) {
+      try {
+        const response = await $api(
+          `/students/${studentId}/educational-history`,
+          {
+            method: "PUT",
+            body: JSON.stringify({
+              educational_history: educationalHistory?.length
+                ? educationalHistory
+                    .map((edu) => ({
+                      id: edu.id || null,
+                      degree_name: edu.degree || null,
+                      institution_name: edu.institution || null,
+                      passing_year: edu.passing_year || null,
+                      result: edu.result || null,
+                    }))
+                    .filter(
+                      (edu) =>
+                        edu.degree_name ||
+                        edu.institution_name ||
+                        edu.passing_year ||
+                        edu.result
+                    )
+                : [],
+            }),
+          }
+        );
+
+        this.studentInfo.educationalHistory = response.data;
+        this.successMessage = "Educational history updated successfully";
+        return response.data;
+      } catch (error) {
+        this.handleError(error);
+        throw error;
+      }
+    },
+
+    async updateEnglishProficiency(studentId, englishProficiency) {
+      try {
+        const response = await $api(
+          `/students/${studentId}/english-proficiency`,
+          {
+            method: "PUT",
+            body: JSON.stringify({
+              english_proficiency: englishProficiency?.length
+                ? englishProficiency
+                    .map((prof) => ({
+                      id: prof.id || null,
+                      proficiency_title: prof.proficiencyTitle || null,
+                      overall_score: prof.overallScore || null,
+                      reading: prof.reading || null,
+                      writing: prof.writing || null,
+                      speaking: prof.speaking || null,
+                      listening: prof.listening || null,
+                    }))
+                    .filter(
+                      (prof) =>
+                        prof.proficiency_title ||
+                        prof.overall_score ||
+                        prof.reading ||
+                        prof.writing ||
+                        prof.speaking ||
+                        prof.listening
+                    )
+                : [],
+            }),
+          }
+        );
+
+        this.successMessage = "English proficiency updated successfully";
+        return this.studentInfo.englishProficiency;
+      } catch (error) {
+        this.handleError(error);
+        throw error;
+      }
+    },
+
+    async updateEmploymentHistory(studentId, employmentHistory) {
+      try {
+        const response = await $api(
+          `/students/${studentId}/employment-history`,
+          {
+            method: "PUT",
+            body: JSON.stringify({
+              employment_history: employmentHistory?.length
+                ? employmentHistory
+                    .map((emp) => ({
+                      id: emp.id || null,
+                      company_name: emp.company_name || null,
+                      designation: emp.designation || null,
+                      year: emp.year || null,
+                    }))
+                    .filter(
+                      (emp) => emp.company_name || emp.designation || emp.year
+                    )
+                : [],
+            }),
+          }
+        );
+
+        this.studentInfo.employmentHistory = response.data;
+        this.successMessage = "Employment history updated successfully";
+        return response.data;
+      } catch (error) {
+        this.handleError(error);
+        throw error;
+      }
+    },
+
+    handleError(error) {
+      console.error("API Error:", error);
+      this.errors = error.response?.data?.errors || [
+        "An unexpected error occurred",
+      ];
     },
 
     clearErrors() {

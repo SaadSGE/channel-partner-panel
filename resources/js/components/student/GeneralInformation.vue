@@ -2,6 +2,8 @@
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useFileStore } from "@/@core/stores/fileStore";
 import { computed, ref } from 'vue';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 const commonFunctionStore = commonFunction();
 const fileStore = useFileStore();
 const props = defineProps({
@@ -30,9 +32,27 @@ const props = defineProps({
 
 const isEditing = ref(false);
 
-const toggleEdit = () => {
+const toggleEdit = async () => {
   if (isEditing.value) {
-    emit('saveChanges', props.generalInfo);
+    try {
+      const hasChanges = JSON.stringify(formData.value) !== JSON.stringify(props.generalInfo);
+      if (hasChanges) {
+        await emit('updateGeneralInfo', props.generalInfo);
+        toast("General information updated successfully", {
+          type: "success",
+          position: "top-right",
+          theme: "colored",
+        });
+      }
+    } catch (error) {
+      console.error('Error saving general information:', error);
+      toast("Error updating general information", {
+        type: "error",
+        position: "top-right",
+        theme: "colored",
+      });
+      return;
+    }
   }
   isEditing.value = !isEditing.value;
 };

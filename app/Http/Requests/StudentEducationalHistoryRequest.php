@@ -15,6 +15,7 @@ class StudentEducationalHistoryRequest extends FormRequest
     {
         return [
             'educational_history' => 'nullable|array',
+            'educational_history.*.id' => 'nullable',
             'educational_history.*.degree_name' => 'nullable|string|max:255',
             'educational_history.*.institution_name' => 'nullable|string|max:255',
             'educational_history.*.passing_year' => 'nullable|date_format:Y',

@@ -15,10 +15,11 @@ class StudentInterestedUniversityRequest extends FormRequest
     {
         return [
             'interested_university' => 'nullable|array',
-            'interested_university.*.country_id' => 'nullable|exists:application_countries,id',
-            'interested_university.*.intake_id' => 'nullable|exists:intakes,id',
-            'interested_university.*.university_id' => 'nullable|exists:universities,id',
-            'interested_university.*.course_id' => 'nullable|exists:courses,id',
+            'interested_university.*.id' => 'nullable',
+            'interested_university.*.country_id' => 'nullable',
+            'interested_university.*.intake_id' => 'nullable',
+            'interested_university.*.university_id' => 'nullable',
+            'interested_university.*.course_id' => 'nullable',
         ];
     }
     public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)

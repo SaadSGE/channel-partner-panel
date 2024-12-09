@@ -7,6 +7,9 @@ import EnglishProficiency from '@/components/student/EnglishProficiency.vue';
 import GeneralInformation from '@/components/student/GeneralInformation.vue';
 import StudentDocuments from '@/components/student/StudentDocuments.vue';
 import UniversityEntry from '@/components/student/UniversityEntry.vue';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+
 definePage({
   meta: {
     action: 'read',
@@ -108,30 +111,94 @@ const getStudentDetails = async (id) => {
 };
 
 // Handler functions (read-only versions)
-const handleGeneralInfoUpdate = (data) => {
-  // Read-only implementation
-  console.log('General info update attempted:', data);
+const handleGeneralInfoUpdate = async (data) => {
+  try {
+    await studentStore.updateGeneralInfo(id, data);
+  } catch (error) {
+    console.error('Error updating general info:', error);
+  }
 };
 
-const handleUniversityEntryUpdate = (data) => {
-  // Read-only implementation
-  console.log('University entry update attempted:', data);
+const handleUniversityEntryUpdate = async (data) => {
+
+  try {
+    isLoading.value = true;
+    await studentStore.updateInterestedUniversity(id, data);
+
+    toast.success('University entry updated successfully', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } catch (error) {
+    console.error('Error updating university entry:', error);
+    // Show error message
+    toast.error('Failed to update university entry', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const handleEducationalHistoryUpdate = (data) => {
-  // Read-only implementation
-  console.log('Educational history update attempted:', data);
+const handleEducationalHistoryUpdate = async (data) => {
+  try {
+    isLoading.value = true;
+    await studentStore.updateEducationalHistory(id, data);
+    toast.success('Educational history updated successfully', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } catch (error) {
+    console.error('Error updating educational history:', error);
+    toast.error('Failed to update educational history', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const handleEnglishProficiencyUpdate = (data) => {
-  // Read-only implementation
-  console.log('English proficiency update attempted:', data);
+const handleEnglishProficiencyUpdate = async (data) => {
+  try {
+    isLoading.value = true;
+    await studentStore.updateEnglishProficiency(id, data);
+    toast.success('English proficiency updated successfully', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } catch (error) {
+    console.error('Error updating English proficiency:', error);
+    toast.error('Failed to update English proficiency', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const handleEmploymentHistoryUpdate = (data) => {
-  // Read-only implementation
-  console.log('Employment history update attempted:', data);
+const handleEmploymentHistoryUpdate = async (data) => {
+  try {
+    isLoading.value = true;
+    await studentStore.updateEmploymentHistory(id, data);
+    toast.success('Employment history updated successfully', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } catch (error) {
+    console.error('Error updating employment history:', error);
+    toast.error('Failed to update employment history', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
+
+
 </script>
 
 <template>
@@ -148,6 +215,9 @@ const handleEmploymentHistoryUpdate = (data) => {
       <VTab value="general-info">
         General Info
       </VTab>
+      <VTab value="documents">
+        Documents
+      </VTab>
       <VTab value="interested-university">
         Interested University
       </VTab>
@@ -160,9 +230,7 @@ const handleEmploymentHistoryUpdate = (data) => {
       <VTab value="employment-history">
         Employment History
       </VTab>
-      <VTab value="documents">
-        Documents
-      </VTab>
+
     </VTabs>
 
     <VCardText>

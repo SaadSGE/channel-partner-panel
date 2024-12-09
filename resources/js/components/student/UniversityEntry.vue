@@ -28,11 +28,12 @@
                 </tr>
                 <tr>
                   <td class="font-weight-bold">University</td>
-                  <td>{{ getUniversityName(university.university_id, university.universities) || '-' }}</td>
+                  <td>{{ getUniversityName(university.university_id, university.universities) || '-' }} </td>
                 </tr>
                 <tr>
                   <td class="font-weight-bold">Course</td>
-                  <td>{{ getCourseName(university.course_id, university.courses) || '-' }}</td>
+                  <td>{{ getCourseName(university.course_id, university.courses) || '-' }}
+                  </td>
                 </tr>
 
               </tbody>
@@ -72,7 +73,7 @@
 
         <VCol cols="12" md="3">
           <AppAutocomplete v-model="university.course_id" :items="university.courses" item-title="course_name"
-            item-value="id" label="Course" placeholder="Select Course" :disabled="!university.university_id"
+            item-value="course_id" label="Course" placeholder="Select Course" :disabled="!university.university_id"
             density="compact" class="small-dropdown" />
         </VCol>
 
@@ -122,7 +123,7 @@ const isEditing = ref(false);
 
 const toggleEdit = () => {
   if (isEditing.value) {
-    emit('saveChanges', props.universityEntry);
+    emit('updateUniversityEntry', props.universityEntry);
   }
   isEditing.value = !isEditing.value;
 };
@@ -148,7 +149,6 @@ watch(() => props.universityEntry, (newValue) => {
       courses: []
     });
   }
-  emit('updateUniversityEntry', newValue);
 }, { deep: true, immediate: true });
 
 const onCountryChange = async (index) => {
@@ -157,53 +157,39 @@ const onCountryChange = async (index) => {
   entry.course_type = null;
   entry.university_id = null;
   entry.course_id = null;
-  // Fetch new intakes
   entry.intakes = await commonFunctionStore.getIntakesByCountry(entry.country_id);
-  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const onIntakeChange = async (index) => {
   const entry = props.universityEntry[index];
-  // Reset dependent fields
   entry.course_type = null;
   entry.university_id = null;
   entry.course_id = null;
-
-  // Fetch course types
   entry.courseTypes = await commonFunctionStore.getCourseTypesByCountryIntake(
     entry.country_id,
     entry.intake_id
   );
-  console.log(entry.courseTypes);
-  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const onCourseTypeChange = async (index) => {
   const entry = props.universityEntry[index];
-  // Reset dependent fields
   entry.university_id = null;
   entry.course_id = null;
-
-  // Fetch universities
   entry.universities = await commonFunctionStore.getUniversitiesByCountryIntakeCourseType(
     entry.country_id,
     entry.intake_id,
     entry.course_type
   );
-  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const onUniversityChange = async (index) => {
   const entry = props.universityEntry[index];
   entry.course_id = null;
-
-  // Fetch courses
   entry.courses = await commonFunctionStore.getCourseDetails(
     entry.intake_id,
     entry.university_id,
     entry.course_type
   );
-  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const addInterestedUniversity = () => {
@@ -233,13 +219,11 @@ const addInterestedUniversity = () => {
     universities: [],
     courses: []
   });
-  emit('updateUniversityEntry', props.universityEntry);
 };
 
 const removeInterestedUniversity = (index) => {
   if (index !== 0) {
     props.universityEntry.splice(index, 1);
-    emit('updateUniversityEntry', props.universityEntry);
   }
 };
 
@@ -268,7 +252,7 @@ const getUniversityName = (universityId, universities) => {
 };
 
 const getCourseName = (courseId, courses) => {
-  const course = courses.find(c => c.id === courseId);
+  const course = courses.find(c => c.course_id === courseId);
   return course ? course.course_name : null;
 };
 </script>

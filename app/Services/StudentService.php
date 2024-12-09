@@ -48,10 +48,12 @@ class StudentService
         foreach ($universitiesData as &$data) {
             $data['student_id'] = $student->id;
         }
+
+
         StudentInterestedUniversity::upsert(
             $universitiesData,
             ['id'],
-            ['student_id', 'country_id', 'intake_id', 'university_id', 'course_id', 'updated_at']
+            ['student_id', 'country_id', 'intake_id', 'university_id', 'course_id']
         );
     }
 

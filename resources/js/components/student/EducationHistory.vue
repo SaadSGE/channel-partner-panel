@@ -13,6 +13,7 @@ const props = defineProps({
     type: Array,
     required: true,
     default: () => [{
+      id: null,
       degree: '',
       institution: '',
       passing_year: '',
@@ -21,13 +22,13 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['updateEducationalHistory', 'saveChanges']);
+const emit = defineEmits(['updateEducationalHistory']);
 const fileStore = useFileStore();
 const isEditing = ref(false);
 
 onMounted(() => {
   if (props.educationalHistory.length === 0) {
-    props.educationalHistory.push({ degree: '', institution: '', passing_year: '', result: '' });
+    props.educationalHistory.push({ id: null, degree: '', institution: '', passing_year: '', result: '' });
   }
 
   if (fileStore.studentInfo.educationalHistory?.length) {
@@ -37,7 +38,7 @@ onMounted(() => {
 
 watch(() => props.educationalHistory.length, (newLength) => {
   if (newLength === 0) {
-    props.educationalHistory.push({ degree: '', institution: '', passing_year: '', result: '' });
+    props.educationalHistory.push({ id: null, degree: '', institution: '', passing_year: '', result: '' });
   }
 });
 
@@ -54,24 +55,26 @@ const addEducationalHistory = () => {
   }
 
   props.educationalHistory.push({
+    id: null,
     degree: '',
     institution: '',
     passing_year: '',
     result: ''
   });
-  emit('updateEducationalHistory', props.educationalHistory);
+
 }
 
 const removeEducationalHistory = (index) => {
   if (index !== 0) {
     props.educationalHistory.splice(index, 1);
-    emit('updateEducationalHistory', props.educationalHistory);
+
   }
 }
 
 const toggleEdit = () => {
   if (isEditing.value) {
-    emit('saveChanges', props.educationalHistory);
+
+    emit('updateEducationalHistory', props.educationalHistory);
   }
   isEditing.value = !isEditing.value;
 };

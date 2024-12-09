@@ -15,6 +15,7 @@ class StudentDocumentRequest extends FormRequest
     {
         return [
             'document_paths' => 'nullable|array',
+            'document_paths.*.id' => 'nullable',
             'document_paths.*.path' => 'required|string',
             'document_paths.*.document_name' => 'nullable|string',
         ];

@@ -6,10 +6,6 @@ import 'vue3-toastify/dist/index.css';
 
 const fileStore = useFileStore();
 const props = defineProps({
-  readonly: {
-    type: Boolean,
-    default: false,
-  },
   isEdit: {
     type: Boolean,
     default: false,
@@ -25,7 +21,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['updateEmploymentHistory', 'saveChanges']);
+const emit = defineEmits(['updateEmploymentHistory']);
 const isEditing = ref(false);
 
 onMounted(() => {
@@ -39,7 +35,14 @@ onMounted(() => {
 
 watch(() => props.employmentHistory.length, (newLength) => {
   if (newLength === 0) {
-    props.employmentHistory.push({ company_name: '', designation: '', year: '' });
+    props.employmentHistory.push({
+      company_name: '',
+      designation: '',
+      year: ''
+    });
+  }
+  if (isEditing.value) {
+
   }
 });
 
@@ -60,19 +63,19 @@ const addEmploymentHistory = () => {
     designation: '',
     year: ''
   });
-  emit('updateEmploymentHistory', props.employmentHistory);
+
 }
 
 const removeEmploymentHistory = (index) => {
   if (index !== 0) {
     props.employmentHistory.splice(index, 1);
-    emit('updateEmploymentHistory', props.employmentHistory);
+
   }
 }
 
 const toggleEdit = () => {
   if (isEditing.value) {
-    emit('saveChanges', props.employmentHistory);
+    emit('updateEmploymentHistory', props.employmentHistory);
   }
   isEditing.value = !isEditing.value;
 };
@@ -112,15 +115,14 @@ const toggleEdit = () => {
       <VRow v-else v-for="(employment, index) in employmentHistory" :key="index">
         <VCol cols="12" md="3">
           <AppTextField v-model="employment.company_name" label="Company Name" placeholder="Company Name"
-            density="compact" :readonly="readonly" />
+            density="compact" />
         </VCol>
         <VCol cols="12" md="3">
-          <AppTextField v-model="employment.designation" label="Designation" placeholder="Designation" density="compact"
-            :readonly="readonly" />
+          <AppTextField v-model="employment.designation" label="Designation" placeholder="Designation"
+            density="compact" />
         </VCol>
         <VCol cols="12" md="4">
-          <AppTextField v-model="employment.year" label="Year" placeholder="Year" density="compact"
-            :readonly="readonly" />
+          <AppTextField v-model="employment.year" label="Year" placeholder="Year" density="compact" />
         </VCol>
         <VCol cols="12" md="2" class="d-flex align-center mt-5">
           <VBtn v-if="index !== 0" icon="tabler-x" color="error" @click="removeEmploymentHistory(index)" class="me-2"

@@ -15,6 +15,7 @@ class StudentEnglishProficiencyRequest extends FormRequest
     {
         return [
             'english_proficiency' => 'nullable|array',
+            'english_proficiency.*.id' => 'nullable',
             'english_proficiency.*.proficiency_title' => 'nullable|string|max:255',
             'english_proficiency.*.overall_score' => 'nullable|numeric',
             'english_proficiency.*.listening' => 'nullable|numeric',

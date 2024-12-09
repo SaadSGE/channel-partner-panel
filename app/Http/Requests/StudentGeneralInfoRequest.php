@@ -13,7 +13,8 @@ class StudentGeneralInfoRequest extends FormRequest
 
     public function rules(): array
     {
-        $studentId = $this->route('student');
+        $studentId = $this->route('id');
+
 
         return [
             'general_info' => 'required|array',

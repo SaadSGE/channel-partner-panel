@@ -9,8 +9,8 @@ const props = defineProps({
     type: Array,
     required: true,
     default: () => [{
-      title: '',
-      overall_score: '',
+      proficiencyTitle: '',
+      overallScore: '',
       reading: '',
       writing: '',
       speaking: '',
@@ -31,7 +31,7 @@ const isEditing = ref(false);
 onMounted(() => {
   if (props.englishProficiency.length === 0) {
     props.englishProficiency.push({
-      title: '', overall_score: '', reading: '',
+      proficiencyTitle: '', overallScore: '', reading: '',
       writing: '', speaking: '', listening: ''
     });
   }
@@ -44,7 +44,7 @@ onMounted(() => {
 const addEnglishProficiency = () => {
   const lastEntry = props.englishProficiency[props.englishProficiency.length - 1];
 
-  if (!lastEntry.title || !lastEntry.overall_score) {
+  if (!lastEntry.proficiencyTitle || !lastEntry.overallScore) {
     toast("Please fill all required fields before adding a new entry", {
       type: "error",
       position: "top-right",
@@ -54,33 +54,36 @@ const addEnglishProficiency = () => {
   }
 
   props.englishProficiency.push({
-    title: '',
-    overall_score: '',
+    proficiencyTitle: '',
+    overallScore: '',
     reading: '',
     writing: '',
     speaking: '',
     listening: ''
   });
-  emit('updateEnglishProficiency', props.englishProficiency);
+
 }
 
 const removeEnglishProficiency = (index) => {
   if (index !== 0) {
     props.englishProficiency.splice(index, 1);
-    emit('updateEnglishProficiency', props.englishProficiency);
+
   }
 }
 
 const toggleEdit = () => {
   if (isEditing.value) {
-    emit('saveChanges', props.englishProficiency);
+
+    emit('updateEnglishProficiency', props.englishProficiency);
   }
   isEditing.value = !isEditing.value;
 };
 
 // Watch for changes and emit updates
 watch(() => props.englishProficiency, (newValue) => {
-  emit('updateEnglishProficiency', newValue);
+  if (isEditing.value) {
+
+  }
 }, { deep: true });
 </script>
 
@@ -126,11 +129,11 @@ watch(() => props.englishProficiency, (newValue) => {
         <p class="text-center">Add English Proficiency</p>
         <VRow v-for="(proficiency, index) in englishProficiency" :key="index">
           <VCol cols="12" md="3">
-            <AppTextField v-model="proficiency.title" label="Proficiency Title" placeholder="Proficiency Title"
-              density="compact" />
+            <AppTextField v-model="proficiency.proficiencyTitle" label="Proficiency Title"
+              placeholder="Proficiency Title" density="compact" />
           </VCol>
           <VCol cols="12" md="3">
-            <AppTextField v-model="proficiency.overall_score" label="Overall Score" placeholder="Overall Score"
+            <AppTextField v-model="proficiency.overallScore" label="Overall Score" placeholder="Overall Score"
               density="compact" />
           </VCol>
           <VCol cols="12" md="1">
