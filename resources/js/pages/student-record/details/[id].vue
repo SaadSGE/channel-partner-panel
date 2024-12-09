@@ -98,7 +98,7 @@ const getStudentDetails = async (id) => {
       educationalHistory: studentStore.studentInfo.educationalHistory,
       englishProficiency: studentStore.studentInfo.englishProficiency,
       employmentHistory: studentStore.studentInfo.employmentHistory,
-      documents: studentStore.studentInfo.documents
+      documents: studentStore.studentInfo.documentPaths
     };
   } catch (error) {
     console.error('Error fetching student details:', error);
@@ -193,7 +193,7 @@ const handleEmploymentHistoryUpdate = (data) => {
         </VWindowItem>
 
         <VWindowItem value="documents">
-          <StudentDocuments :documents="formData.documents" />
+          <StudentDocuments :documents="formData.documents" :is-edit="true" />
         </VWindowItem>
       </VWindow>
     </VCardText>

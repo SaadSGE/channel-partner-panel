@@ -172,6 +172,7 @@ class StudentController extends Controller
             // Handle document uploads if any, passing the student object directly
             $documentPaths = $documentRequest->validated()['document_paths'] ?? [];
             if (!empty($documentPaths)) {
+
                 $studentService->handleDocumentUploads($student, $documentPaths);
             }
 
@@ -238,7 +239,7 @@ class StudentController extends Controller
                 'employmentHistory' => $this->transformEmploymentHistory($student->employmentHistories),
                 'englishProficiency' => $this->transformEnglishProficiency($student->englishProficiency),
                 'interestedUniversity' => $interestedUniversities,
-                'documentPaths' => $student->document,
+                'documentPaths' => $student->document->pluck('path'),
             ];
 
             // Log activity

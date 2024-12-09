@@ -34,7 +34,9 @@ class StudentDocument extends Model
         return [
             'path' => "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/".$value,
             'file_name' => basename($value),
-            'file_type' => $fileType
+            'file_type' => $fileType,
+            'document_name' => $this->document_name,
+
         ];
 
     }

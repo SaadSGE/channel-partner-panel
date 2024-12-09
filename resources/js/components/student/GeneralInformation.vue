@@ -1,7 +1,7 @@
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useFileStore } from "@/@core/stores/fileStore";
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 const commonFunctionStore = commonFunction();
 const fileStore = useFileStore();
 const props = defineProps({
@@ -21,31 +21,51 @@ const props = defineProps({
       country: '',
       visa_refusal: ''
     })
+  },
+  isEdit: {
+    type: Boolean,
+    default: false
   }
 });
 
+const isEditing = ref(false);
+
+const toggleEdit = () => {
+  if (isEditing.value) {
+    emit('saveChanges', props.generalInfo);
+  }
+  isEditing.value = !isEditing.value;
+};
 
 const formData = ref(props.generalInfo);
 
+props.generalInfo.first_name = fileStore.studentInfo.generalInfo.first_name;
+props.generalInfo.last_name = fileStore.studentInfo.generalInfo.last_name;
+props.generalInfo.email = fileStore.studentInfo.generalInfo.email;
+props.generalInfo.mobile = fileStore.studentInfo.generalInfo.mobile;
+props.generalInfo.date_of_birth = fileStore.studentInfo.generalInfo.date_of_birth;
+props.generalInfo.gender = fileStore.studentInfo.generalInfo.gender;
+props.generalInfo.passport_number = fileStore.studentInfo.generalInfo.passport_number;
+props.generalInfo.address = fileStore.studentInfo.generalInfo.address;
+props.generalInfo.city = fileStore.studentInfo.generalInfo.city;
+props.generalInfo.country = fileStore.studentInfo.generalInfo.country;
+
 const emit = defineEmits(['updateGeneralInfo', 'saveChanges']);
-
-// Watch for changes in any field and emit updates
-
-
-
 
 const genderOptions = ['Male', 'Female', 'Other'];
 
-// Add this computed property
 const formattedDateOfBirth = computed({
   get: () => {
     const dob = props.generalInfo.date_of_birth;
     if (!dob) return '';
 
-    // Convert date string to YYYY-MM-DD format for input[type="date"]
     try {
       const date = new Date(dob);
-      return date.toISOString().split('T')[0];
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
     } catch (e) {
       return '';
     }
@@ -63,26 +83,6 @@ const countries = ref([
   "Ghana",
   "Pakistan",
 ])
-
-// Remove the watch as we're now using a computed with getter/setter
-
-const isEditing = ref(false);
-
-const toggleEdit = () => {
-  if (isEditing.value) {
-    emit('saveChanges', props.generalInfo);
-  }
-  isEditing.value = !isEditing.value;
-};
-
-// Add a watch to emit updates when form data changes
-watch(
-  () => props.generalInfo,
-  (newValue) => {
-    emit('updateGeneralInfo', newValue);
-  },
-  { deep: true }
-);
 </script>
 
 <template>
@@ -90,13 +90,12 @@ watch(
     <VCardText>
       <div class="d-flex justify-space-between align-center">
         <VCardTitle class="padding-bottom">General Info</VCardTitle>
-        <VBtn :color="isEditing ? 'success' : 'primary'" @click="toggleEdit">
+        <VBtn v-if="props.isEdit" :color="isEditing ? 'success' : 'primary'" @click="toggleEdit">
           {{ isEditing ? 'Save Changes' : 'Edit' }}
         </VBtn>
       </div>
 
-      <!-- Table View -->
-      <div v-if="!isEditing">
+      <div v-if="props.isEdit && !isEditing">
         <VRow>
           <VCol cols="12" md="6">
             <VTable density="compact" class="info-table custom-table">
@@ -128,12 +127,13 @@ watch(
               </tbody>
             </VTable>
           </VCol>
+
           <VCol cols="12" md="6">
             <VTable density="compact" class="info-table custom-table">
               <tbody>
 
                 <tr>
-                  <td class="font-weight-bold">Passport Number</td>
+                  <td class="font-weight-bold">Passport No</td>
                   <td>{{ props.generalInfo.passport_number || '-' }}</td>
                 </tr>
                 <tr>
@@ -158,7 +158,6 @@ watch(
         </VRow>
       </div>
 
-      <!-- Form View -->
       <div v-else>
         <VRow>
           <VCol cols="12" md="6">

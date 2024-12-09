@@ -119,7 +119,8 @@ export const useStudentStore = defineStore({
 
         const documentRequest = {
           document_paths: formData.documentPaths.map((path) => ({
-            path: path,
+            path: path.path,
+            document_name: path.document_name,
           })),
         };
 

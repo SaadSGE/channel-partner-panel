@@ -98,13 +98,14 @@ class StudentService
             $newPath = "channelPartnerPanel/studentDocument/{$student->email}/{$student->email}_{$filename}";
 
             Storage::disk('do_spaces')->move($path['path'], $newPath);
-
+            Log::info($path);
             StudentDocument::updateOrCreate(
                 ['id' => $path['id'] ?? null],
                 [
                     'student_id' => $student->id,
                     'application_id' => $applicationId,
                     'path' => $newPath,
+                    'document_name' => $path['document_name'],
                     'updated_at' => now(),
                 ]
             );

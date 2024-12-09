@@ -111,8 +111,8 @@ watch(() => props.englishProficiency, (newValue) => {
               <td colspan="6" class="text-center text-medium-emphasis">No English proficiency records found.</td>
             </tr>
             <tr v-else v-for="(proficiency, index) in englishProficiency" :key="index">
-              <td>{{ proficiency.title || '-' }}</td>
-              <td>{{ proficiency.overall_score || '-' }}</td>
+              <td>{{ proficiency.proficiencyTitle || '-' }}</td>
+              <td>{{ proficiency.overallScore || '-' }}</td>
               <td>{{ proficiency.listening || '-' }}</td>
               <td>{{ proficiency.speaking || '-' }}</td>
               <td>{{ proficiency.writing || '-' }}</td>
