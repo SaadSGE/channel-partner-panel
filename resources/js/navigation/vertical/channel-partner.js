@@ -180,6 +180,27 @@ export default [
       // },
     ],
   },
+
+  {
+    title: "Daily Task",
+    icon: { icon: "tabler-clipboard-copy" },
+    action: "read",
+    subject: "dashboard",
+    children: [
+      {
+        title: "Add New",
+        to: "task-add",
+        action: "read",
+        subject: "dashboard",
+      },
+      {
+        title: "Task Schedule",
+        to: "task",
+        action: "read",
+        subject: "dashboard",
+      },
+    ],
+  },
   {
     title: "Notices",
     icon: { icon: "tabler-help-triangle" },

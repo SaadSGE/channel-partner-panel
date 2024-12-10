@@ -93,10 +93,6 @@ onUnmounted(() => {
   // Clear the timer on component unmount
   clearInterval(noticeTimer);
 });
-
-
-
-
 </script>
 
 <template>
