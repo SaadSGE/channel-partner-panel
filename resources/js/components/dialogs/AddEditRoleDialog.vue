@@ -170,7 +170,7 @@ const onReset = () => {
           <VTable class="permission-table text-no-wrap mb-6">
             <!-- Group for Read, Create, Edit, Delete -->
             <template v-for="permission in permissions" :key="permission.name">
-              <tr v-if="!permission.custom"> <!-- Only show non-custom permissions -->
+              <tr> <!-- Only show non-custom permissions -->
                 <td>
                   <h6 class="text-h6">{{ formatKey(permission.name) }}</h6>
                 </td>

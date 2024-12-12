@@ -144,3 +144,4 @@ Route::post('/generate', [AIController::class, 'generateResponse']);
 Route::apiResource('students', StudentController::class);
 Route::apiResource('leads', LeadController::class);
 Route::post('/application/{id}/aco-ao-communication', [ApplicationController::class, 'addAcoAoCommunication']);
+Route::post('/leads/upload', [LeadController::class, 'uploadLeads']);

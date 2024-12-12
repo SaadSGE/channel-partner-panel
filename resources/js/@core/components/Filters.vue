@@ -125,11 +125,14 @@ const props = defineProps({
     type: Object,
     Required: false,
   },
-
+  selectedAssignedStatus: {
+    type: Number,
+    Required: false,
+  },
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedLeadStatus = ref(props.selectedLeadStatus);
@@ -149,6 +152,7 @@ const localSelectedEditor = ref(props.selectedEditor);
 const localSelectedUserStatus = ref(props.selectedUserStatus);
 const localSelectedCourseType = ref(props.selectedCourseType);
 const localSelectedMou = ref(props.selectedMou);
+const localSelectedAssignedStatus = ref(props.selectedAssignedStatus);
 
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
@@ -202,6 +206,9 @@ watch(localSelectedCourseType, (newValue) => {
 });
 watch(localSelectedMou, (newValue) => {
   emit('update-mou', newValue);
+});
+watch(localSelectedAssignedStatus, (newValue) => {
+  emit('update-assignedStatus', newValue);
 });
 
 const fetchFilterOptions = async () => {
@@ -338,11 +345,20 @@ const loadEditors = async () => {
   }
 };
 
+// Add new assignedStatuses array
+const assignedStatuses = ref([
+  { id: 1, name: 'Assigned' },
+  { id: 0, name: 'Not Assigned' },
+]);
 
 </script>
 
 
 <template>
+  <VCol cols="12" md="3" v-if="props.selectedAssignedStatus !== undefined">
+    <AppAutocomplete v-model="localSelectedAssignedStatus" :items="assignedStatuses" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Assigned Status" placeholder="Select Assigned Status" clearable />
+  </VCol>
   <VCol cols="12" md="3" v-if="props.selectedLeadStatus !== undefined">
     <AppAutocomplete v-model="localSelectedLeadStatus" :items="leadStatuses" :item-title="(item) => item.text"
       :item-value="(item) => item.id" label="Lead Status" placeholder="Select Lead Status" clearable />
@@ -428,5 +444,7 @@ const loadEditors = async () => {
   <VCol cols="12" md="3" v-if="props.selectedDateTo !== undefined">
     <AppDateTimePicker v-model="localSelectedDateTo" label="To Date" placeholder="Select To Date" />
   </VCol>
+
+
 
 </template>

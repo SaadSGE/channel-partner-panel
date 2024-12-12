@@ -1,6 +1,6 @@
 // src/stores/applicationStore.ts
 import { defineStore } from "pinia";
-
+import { handleErrorResponse } from "../utils/helpers";
 export const useLeadStore = defineStore({
   id: "lead-store",
   state: () => ({
@@ -17,7 +17,8 @@ export const useLeadStore = defineStore({
       orderBy = "",
       status = null,
       dateFrom = null,
-      dateTo = null
+      dateTo = null,
+      assignedStatus = null
     ) {
       try {
         return await $api("/leads", {
@@ -35,6 +36,7 @@ export const useLeadStore = defineStore({
             status,
             dateFrom,
             dateTo,
+            assigned_status: assignedStatus,
           },
         });
       } catch (error) {
@@ -89,6 +91,20 @@ export const useLeadStore = defineStore({
           ? error.response.data.errors
           : ["An unexpected error occurred"];
         throw error;
+      }
+    },
+
+    async uploadLeads(formData) {
+      try {
+        const response = await $api("/leads/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        this.successMessage = response.data.message;
+        return response.data;
+      } catch (error) {
+        handleErrorResponse(error);
       }
     },
   },
