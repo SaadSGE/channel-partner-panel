@@ -25,6 +25,7 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\NoticeController;
+use App\Http\Controllers\DailyTaskController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -109,6 +110,8 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/students/{id}/employment-history', [StudentController::class, 'updateEmploymentHistory']);
     Route::put('/students/{id}/documents', [StudentController::class, 'updateDocuments']);
 });
+
+Route::apiResource('daily-tasks', DailyTaskController::class);
 Route::get('/active-notices', [NoticeController::class, 'getActiveNotices']);
 Route::apiResource('notices', NoticeController::class);
 Route::apiResource('students', StudentController::class);
@@ -144,3 +147,4 @@ Route::post('/generate', [AIController::class, 'generateResponse']);
 Route::apiResource('students', StudentController::class);
 Route::apiResource('leads', LeadController::class);
 Route::post('/application/{id}/aco-ao-communication', [ApplicationController::class, 'addAcoAoCommunication']);
+Route::post('/leads/upload', [LeadController::class, 'uploadLeads']);

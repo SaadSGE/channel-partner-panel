@@ -1,15 +1,15 @@
 <script lang="js" setup>
 const props = defineProps({
-    userId: {
-        type: String,
-        default: null,
-    },
+  userId: {
+    type: String,
+    default: null,
+  },
 })
 definePage({
-    meta: {
-        action: 'read',
-        subject: 'dashboard',
-    },
+  meta: {
+    action: 'read',
+    subject: 'dashboard',
+  },
 })
 
 import Filters from "@/@core/components/Filters.vue";
@@ -17,6 +17,23 @@ import { useLeadStore } from "@/@core/stores/leadStore";
 import { resolveLeadStatusName } from '@/@core/utils/helpers';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { reactive, ref } from "vue";
+// Add these imports at the top
+import { commonFunction } from "@/@core/stores/commonFunction";
+import { onMounted } from "vue";
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+
+// Add these refs
+const commonFunctionStore = commonFunction();
+const selectedCountry = ref(null);
+const selectedBranch = ref(null);
+const isUploading = ref(false);
+
+// Add this to your onMounted hook
+onMounted(async () => {
+  await commonFunctionStore.getAllCountries();
+  await commonFunctionStore.getBranches();
+});
 
 const leadStore = useLeadStore();
 // Reactive state
@@ -39,448 +56,658 @@ const showAddNoteModal = ref(false) // Modal visibility state for comments
 const newNote = ref("") // New comment
 const isNoteLoading = ref(false)
 const showAllNotes = reactive({});
+const fileInput = ref(null);
+
+// Add new ref for assigned status
+const selectedAssignedStatus = ref(null)
 
 // Function to toggle between showing all notes and only the first two for each lead
 const toggleShowNotes = (leadId) => {
-    showAllNotes[leadId] = !showAllNotes[leadId];
+  showAllNotes[leadId] = !showAllNotes[leadId];
 }
 const headers = [
-    { title: 'Name', key: 'name' },
-    { title: 'Phone', key: 'phone' },
-    { title: 'Email', key: 'email' },
-    { title: 'Note', key: 'notes' },
-    { title: 'Lead Date', key: 'lead_date' },
-    { title: 'Branch Name', key: 'branch' },
-    { title: 'Interested Course & Country', key: 'course_country' },
-    { title: 'Status', key: 'status' },
-    { title: 'Assigned Branch', key: 'assigned_branch' },
-    { title: 'Assigned User', key: 'assigned_user' },
-    { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Name', key: 'name' },
+  { title: 'Phone', key: 'phone' },
+  { title: 'Email', key: 'email' },
+  { title: 'Assigned Branch', key: 'branch.branch_name_with_country' },
+  { title: 'Assigned User', key: 'assigned_user' },
+  { title: 'Note', key: 'notes' },
+  { title: 'Interested Course & Country', key: 'course_country' },
+  { title: 'Status', key: 'status' },
+  { title: 'Actions', key: 'actions', sortable: false },
 ];
 
 // Watchers
 watch([
-    search,
-    selectedLeadStatus,
-    selectedDateFrom,
-    selectedDateTo,
+  search,
+  selectedLeadStatus,
+  selectedDateFrom,
+  selectedDateTo,
+  selectedAssignedStatus,
 ], () => {
-    fetchLeads()
+  fetchLeads()
 })
 
 onMounted(async () => {
-    await fetchLeads();
+  await fetchLeads();
 });
 
 
 const toggleUploadCard = () => {
-    showUploadCard.value = !showUploadCard.value;
+  showUploadCard.value = !showUploadCard.value;
 };
 
 // Sample File Download Function
 const downloadSampleFile = () => {
-    // Logic to download sample file
+  // Logic to download sample file
 };
 
 // File Upload Logic
 const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    console.log("Selected file:", file);
+  fileInput.value = event.target.files[0];
 };
 
-const uploadFile = () => {
-    // Logic to handle file upload
+const uploadFile = async () => {
+  // Validate file selection
+  if (!fileInput.value) {
+    toast.error("Please select a file to upload", {
+      position: "top-right",
+      theme: "colored",
+    });
+    return;
+  }
+
+  // Validate file type
+  const allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel', 'text/csv'];
+  if (!allowedTypes.includes(fileInput.value.type)) {
+    toast.error("Please upload only Excel or CSV files", {
+      position: "top-right",
+      theme: "colored",
+    });
+    return;
+  }
+
+  // Validate country and branch selection
+  if (!selectedCountry.value) {
+    toast.error("Please select a Country", {
+      position: "top-right",
+      theme: "colored",
+    });
+    return;
+  }
+
+  if (!selectedBranch.value) {
+    toast.error("Please select a Branch", {
+      position: "top-right",
+      theme: "colored",
+    });
+    return;
+  }
+
+  isUploading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('file', fileInput.value);
+    formData.append('assigned_branch', selectedBranch.value);
+    formData.append('lead_country_id', selectedCountry.value);
+
+    const response = await leadStore.uploadLeads(formData);
+
+    // Reset all form fields after successful upload
+    selectedBranch.value = null;
+    selectedCountry.value = null;
+    if (document.querySelector('input[type="file"]')) {
+      document.querySelector('input[type="file"]').value = '';
+    }
+    fileInput.value = null;
+    showUploadCard.value = false;
+
+    toast.success("File uploaded successfully!", {
+      position: "top-right",
+      theme: "colored",
+    });
+    await fetchLeads();
+  } catch (error) {
+    console.log("error", error);
+    // Show the actual error message from the API
+    const errorMessage = error?.message || "Some records contain empty values.";
+    toast.error(errorMessage, {
+      position: "top-right",
+      theme: "colored",
+    });
+  } finally {
+    isUploading.value = false;
+  }
 };
 
 // Methods
 const fetchLeads = async () => {
-    isLoading.value = true
-    try {
-        const response = await leadStore.getLeads(
-            props.userId,
-            page.value,
-            itemsPerPage.value,
-            search.value,
-            sortBy.value,
-            orderBy.value,
-            selectedLeadStatus.value,
-            selectedDateFrom.value,
-            selectedDateTo.value,
-        )
-        leads.value = response.data;
-        total.value = response.total;
-    } catch (error) {
-        console.error('Error fetching leads:', error)
-    } finally {
-        isLoading.value = false
-    }
+  isLoading.value = true
+  try {
+    const response = await leadStore.getLeads(
+      props.userId,
+      page.value,
+      itemsPerPage.value,
+      search.value,
+      sortBy.value,
+      orderBy.value,
+      selectedLeadStatus.value,
+      selectedDateFrom.value,
+      selectedDateTo.value,
+      selectedAssignedStatus.value,
+    )
+    leads.value = response.data;
+    total.value = response.total;
+  } catch (error) {
+    console.error('Error fetching leads:', error)
+  } finally {
+    isLoading.value = false
+  }
 }
 const updateOptions = options => {
-    sortBy.value = options.sortBy[0]?.key
-    orderBy.value = options.sortBy[0]?.order
+  sortBy.value = options.sortBy[0]?.key
+  orderBy.value = options.sortBy[0]?.order
 }
 
 // Open dialog and set selected lead ID
 const openChangeStatusDialog = (leadId, statusId) => {
-    selectedLeadId.value = leadId;
-    selectedStatusId.value = statusId;
-    showDialog.value = true;
+  selectedLeadId.value = leadId;
+  selectedStatusId.value = statusId;
+  showDialog.value = true;
 };
 
 // Handle status update from dialog
 const handleLeadStatusUpdate = async ({ leadId, statusId }) => {
-    console.log(leadId, statusId);
-    const updateStatus = {
-        status: statusId,
-    }
-    await leadStore.updateLeadStatus(leadId, updateStatus);
-    console.log('Updated status');
-    await fetchLeads(); // Refresh leads after updating status
-    showDialog.value = false;  // Close the dialog
+  console.log(leadId, statusId);
+  const updateStatus = {
+    status: statusId,
+  }
+  await leadStore.updateLeadStatus(leadId, updateStatus);
+  console.log('Updated status');
+  await fetchLeads(); // Refresh leads after updating status
+  showDialog.value = false;  // Close the dialog
 };
 
 
 const handleAddNote = async (leadId) => {
-    try {
-        showAddNoteModal.value = true;
-        isNoteLoading.value = true
-        console.log(newNote.value);
-        const noteData = {
-            notes: newNote.value
-        }
-        await leadStore.addNote(leadId, noteData)
-        newNote.value = "" // Clear the note input
-        showAddNoteModal.value = false // Close the note modal
-    } catch (error) {
-        console.error("Error adding note:", error)
-    } finally {
-        isNoteLoading.value = false
-        fetchLeads();
+  try {
+    isNoteLoading.value = true
+    const noteData = {
+      notes: newNote.value
     }
+    await leadStore.addNote(leadId, noteData)
+
+    // Clear the note input and close the modal
+    newNote.value = "" // Clear the note input
+    showAddNoteModal.value = false // Close the modal
+
+    // Refresh the leads data
+    await fetchLeads()
+  } catch (error) {
+    console.error("Error adding note:", error)
+  } finally {
+    isNoteLoading.value = false
+  }
 }
 </script>
 
 <template>
-    <section>
-        <VCard class="mb-6">
-            <VCardItem class="pb-4" v-if="$can('filter', 'user')">
-                <VCardTitle>Filter</VCardTitle>
-            </VCardItem>
+  <section>
+    <VCard class="mb-6">
+      <VCardItem class="pb-4" v-if="$can('filter', 'user')">
+        <VCardTitle>Filter</VCardTitle>
+      </VCardItem>
 
-            <VCardText v-if="$can('filter', 'user')">
-                <VRow>
-                    <!-- 👉 Select status -->
-                    <Filters :selected-lead-status="selectedLeadStatus"
-                        @update-lead-status="selectedLeadStatus = $event" :selected-dateFrom="selectedDateFrom"
-                        :selected-dateTo="selectedDateTo" @update-dateFrom="selectedDateFrom = $event"
-                        @update-dateTo="selectedDateTo = $event">
-                    </Filters>
-                </VRow>
+      <VCardText v-if="$can('filter', 'user')">
+        <VRow>
+          <!-- 👉 Select status -->
+          <Filters :selected-assigned-status="selectedAssignedStatus" :selected-lead-status="selectedLeadStatus"
+            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
+            @update-assignedStatus="selectedAssignedStatus = $event" @update-lead-status="selectedLeadStatus = $event"
+            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
+          </Filters>
+        </VRow>
 
 
-                <!-- Modal for adding a comment -->
-                <VDialog v-model="showAddNoteModal" max-width="500px">
-                    <VCard>
-                        <VCardTitle>Add a New Note</VCardTitle>
-                        <VCardText>
-                            <VForm @submit.prevent="handleAddNote">
-                                <VLabel class="mt-2">
-                                    New Note
-                                </VLabel>
-                                <AppTextarea v-model="newNote" placeholder="Add a new note" class="mt-2" />
-                            </VForm>
-                        </VCardText>
-                        <VCardActions>
-                            <VSpacer />
-                            <VBtn color="primary" :loading="isNoteLoading" :disabled="isNoteLoading"
-                                @click="handleAddNote">
-                                Submit Note
-                            </VBtn>
-                            <VBtn :disabled="isNoteLoading" @click="showAddNoteModal = false">
-                                Cancel
-                            </VBtn>
-                        </VCardActions>
-                    </VCard>
-                </VDialog>
+        <!-- Modal for adding a comment -->
+        <VDialog v-model="showAddNoteModal" max-width="500px">
+          <VCard>
+            <VCardTitle>Add a New Note</VCardTitle>
+            <VCardText>
+              <VForm @submit.prevent="handleAddNote">
+                <VLabel class="mt-2">
+                  New Note
+                </VLabel>
+                <AppTextarea v-model="newNote" placeholder="Add a new note" class="mt-2" />
+              </VForm>
             </VCardText>
+            <VCardActions>
+              <VSpacer />
+              <VBtn color="primary" :loading="isNoteLoading" :disabled="isNoteLoading" @click="handleAddNote">
+                Submit Note
+              </VBtn>
+              <VBtn :disabled="isNoteLoading" @click="showAddNoteModal = false">
+                Cancel
+              </VBtn>
+            </VCardActions>
+          </VCard>
+        </VDialog>
+      </VCardText>
 
-            <VDivider />
+      <VDivider />
 
-            <VCardText class="d-flex flex-wrap gap-4">
-                <div class="me-3 d-flex gap-3">
-                    <AppSelect :model-value="itemsPerPage" :items="[
-                        { value: 10, title: '10' },
-                        { value: 25, title: '25' },
-                        { value: 50, title: '50' },
-                        { value: 100, title: 100 },
-                        { value: -1, title: 'All' },
-                    ]" style="inline-size: 6.25rem;" @update:model-value="itemsPerPage = parseInt($event, 10)" />
-                </div>
-                <VSpacer />
-                <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-                    <!-- 👉 Search  -->
-                    <div style="inline-size: 15.625rem;">
-                        <AppTextField v-model="search" placeholder="Search Lead" />
-                    </div>
-
-                    <!-- 👉 Upload lead button-->
-                    <VBtn prepend-icon="tabler-plus" @click="toggleUploadCard">
-                        Upload Lead
-                    </VBtn>
-
-                </div>
-                <!-- Upload Lead VCard (Initially Hidden) -->
-                <VCard v-if="showUploadCard" class="mt-4 w-100 full-width-card">
-                    <VCardText>
-                        <!-- Card Header with Title and Close Button -->
-                        <VRow justify="space-between" class="align-center">
-                            <span>Upload Lead Excel/csv File</span>
-                            <VBtn icon @click="toggleUploadCard">
-                                <VIcon icon="tabler-x" />
-                            </VBtn>
-                        </VRow>
-
-                        <!-- Main Form Area -->
-                        <div class="form-padding mt-6">
-                            <VRow justify="center" align="center" class="gap-4">
-                                <!-- File Upload Input with Half Width -->
-                                <VCol cols="12" md="6">
-                                    <VFileInput accept=".xlsx, .csv" label="Upload Excel/CSV file"
-                                        @change="handleFileUpload" variant="outlined" color="purple-lighten-4" />
-                                </VCol>
-
-                                <!-- Upload Button -->
-                                <VBtn prepend-icon="tabler-cloud-upload" @click="uploadFile" color="purple-lighten-4">
-                                    Upload
-                                </VBtn>
-                            </VRow>
-
-                            <!-- File Format Notice with Margin Top -->
-                            <VRow justify="center" class="mt-2">
-                                <p class="text-muted">Only Excel/CSV file support</p>
-                            </VRow>
-
-                            <!-- Download Sample Section with Bold Text Button -->
-                            <VRow justify="center" align="center" class="mt-6 gap-2">
-                                <span class="text-lg font-bold">Download Sample Excel/CSV File</span>
-                                <VBtn prepend-icon="tabler-cloud-download" @click="downloadSampleFile"
-                                    class="ml-4 font-bold">
-                                    Download
-                                </VBtn>
-                            </VRow>
-                        </div>
-                    </VCardText>
-                </VCard>
+      <VCardText class="d-flex flex-wrap gap-4">
+        <div class="me-3 d-flex gap-3">
+          <AppSelect :model-value="itemsPerPage" :items="[
+            { value: 10, title: '10' },
+            { value: 25, title: '25' },
+            { value: 50, title: '50' },
+            { value: 100, title: 100 },
+            { value: -1, title: 'All' },
+          ]" style="inline-size: 6.25rem;" @update:model-value="itemsPerPage = parseInt($event, 10)" />
+        </div>
+        <VSpacer />
+        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+          <!-- 👉 Search  -->
 
 
+          <!-- 👉 Upload lead button-->
+          <VBtn prepend-icon="tabler-plus" @click="toggleUploadCard">
+            Upload Lead
+          </VBtn>
 
-            </VCardText>
-            <VDivider />
-            <!-- SECTION datatable -->
-            <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :loading="isLoading"
-                @update:options="updateOptions" :items-length="total" :headers="headers" :items="leads"
-                item-value="total" class="text-no-wrap text-sm rounded-0">
+        </div>
+        <!-- Upload Lead VCard (Initially Hidden) -->
+        <VCard v-if="showUploadCard" class="mt-4 w-100 full-width-card upload-card">
+          <VCardText>
+            <!-- Card Header with Title and Close Button -->
+            <VRow justify="space-between" class="align-center">
+              <span class="text-h6 upload-title">Upload Lead Excel/csv File</span>
+              <VBtn color="error" icon @click="toggleUploadCard" class="close-btn">
+                <VIcon icon="tabler-x" />
+              </VBtn>
+            </VRow>
 
-                <!-- Slot for 'course_country' column with combined Interested Course and Country -->
-                <template #item.course_country="{ item }">
-                    <div class="d-flex flex-column ms-3">
-                        <span class="d-block font-weight-medium text-truncate text-high-emphasis">
-                            {{ item.interested_course }}
-                        </span>
-                        <span class="text-md">{{ item.interested_country }}</span>
-                    </div>
-                </template>
+            <!-- Main Form Area -->
+            <div class="form-padding mt-6 upload-form">
+              <!-- Add Country and Branch Dropdowns -->
+              <VRow class="mb-4 fade-in">
+                <VCol cols="12" md="6">
+                  <AppAutocomplete v-model="selectedCountry" :items="commonFunctionStore.allCountries"
+                    :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Country"
+                    placeholder="Select Country" clearable class="slide-in" />
+                </VCol>
+                <VCol cols="12" md="6">
+                  <AppAutocomplete v-model="selectedBranch" :items="commonFunctionStore.branches"
+                    :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Branch"
+                    placeholder="Select Branch" clearable class="slide-in" />
+                </VCol>
+              </VRow>
 
-                <!-- Other slots and configurations remain the same -->
-                <template #item.notes="{ item }">
-                    <ul style="list-style-type: disc; padding-inline-start: 20px;">
-                        <!-- Display first two notes or all notes based on showAllNotes toggle -->
-                        <template v-for="(note, index) in (showAllNotes[item.id] ? item.notes : item.notes.slice(0, 2))"
-                            :key="note.id">
-                            <li class="note" style="font-size: 1.1em; margin-block-end: 8px;">
-                                {{ note.note }}
-                                ( <small style="color: #757575;">
-                                    <span style="color: #007acc;">{{ note.created_by }}</span>,
-                                    <span style="color: orange;">{{ note.created_at ? new
-                                        Date(note.created_at).toLocaleDateString() : 'N/A' }}</span>
-                                </small> )
-                            </li>
-                        </template>
-                    </ul>
-                    <!-- Show More / Show Less link with custom style -->
-                    <p v-if="item.notes.length > 2" @click="toggleShowNotes(item.id)"
-                        style="color: blue; cursor: pointer; font-weight: bold; padding-inline-start: 10px; text-decoration: underline;">
-                        {{ showAllNotes[item.id] ? 'Show Less' : 'Show More' }}
-                    </p>
-                </template>
-                <template #item.status="{ item }">
-                    <VChip :color="resolveLeadStatusColor(item.status)"
-                        :class="`text-${resolveStatusColor(item.status)}`" size="small" class="font-weight-medium">
-                        {{ resolveLeadStatusName(item.status) }}
-                    </VChip>
-                </template>
-                <template #item.assigned_branch="{ item }">
-                    <span>{{ item.assigned_branch || 'Not Assigned' }}</span>
-                </template>
-                <template #item.assigned_user="{ item }">
-                    <span>{{ item.assigned_user || 'Not Assigned' }}</span>
-                </template>
-                <template #item.actions="{ item }">
-                    <VBtn icon variant="text" color="medium-emphasis">
-                        <VIcon icon="tabler-dots-vertical" />
-                        <VMenu activator="parent">
-                            <VList>
-                                <!-- Change Status option opens the dialog -->
-                                <VListItem @click="openChangeStatusDialog(item.id, item.status)">
-                                    <template #prepend>
-                                        <VIcon icon="tabler-analyze" />
-                                    </template>
-                                    <VListItemTitle>Change Status</VListItemTitle>
-                                </VListItem>
-                                <VListItem @click="showAddNoteModal = true">
-                                    <template #prepend>
-                                        <VIcon icon=" tabler-clipboard-text" />
-                                    </template>
-                                    <VListItemTitle>Add Note</VListItemTitle>
-                                </VListItem>
-                            </VList>
-                        </VMenu>
-                    </VBtn>
-                </template>
-                <template #bottom>
-                    <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="total" />
-                </template>
+              <VRow justify="center" align="center" class="gap-4 fade-in">
 
-            </VDataTableServer>
+                <VCol cols="12" md="6">
+                  <VFileInput accept=".xlsx, .csv" label="Upload Excel/CSV file" @change="handleFileUpload"
+                    variant="outlined" color="purple-lighten-4" class="file-input-animate"
+                    :class="{ 'has-file': fileInput }" />
+                </VCol>
+
+
+                <VBtn prepend-icon="tabler-cloud-upload" @click="uploadFile" color="purple-lighten-4" class="upload-btn"
+                  :loading="isUploading" :disabled="isUploading">
+                  {{ isUploading ? 'Uploading...' : 'Upload' }}
+                </VBtn>
+              </VRow>
+
+              <!-- File Format Notice with Margin Top -->
+              <VRow justify="center" class="mt-2 fade-in">
+                <p class="text-caption text-primary">Only Excel/CSV file support</p>
+              </VRow>
+
+              <!-- Download Sample Section -->
+              <VRow justify="center" align="center" class="mt-6 gap-2 sample-section fade-in">
+                <span class="font-weight-bold">Download Sample Excel/CSV File</span>
+                <VBtn prepend-icon="tabler-cloud-download" @click="downloadSampleFile" class="download-btn btn-small "
+                  variant="outlined">
+                  Download Sample
+                </VBtn>
+              </VRow>
+            </div>
+          </VCardText>
         </VCard>
-        <!-- Change Status Dialog Component -->
-        <ChangeStatusDialog :showDialog="showDialog" :leadId="selectedLeadId" :statusId='selectedStatusId'
-            @updateStatus="handleLeadStatusUpdate" @closeDialog="showDialog = false" />
-    </section>
+
+
+
+      </VCardText>
+      <VDivider />
+
+      <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :loading="isLoading"
+        @update:options="updateOptions" :items-length="total" :headers="headers" :items="leads" item-value="total"
+        class="text-no-wrap text-sm rounded-0">
+
+        <!-- Slot for 'course_country' column with combined Interested Course and Country -->
+        <template #item.course_country="{ item }">
+          <div class="d-flex flex-column ms-3">
+            <span class="d-block font-weight-medium text-truncate text-high-emphasis">
+              {{ item.interested_course }}
+            </span>
+            <span class="text-md">{{ item.interested_country }}</span>
+          </div>
+        </template>
+
+        <!-- Other slots and configurations remain the same -->
+        <template #item.notes="{ item }">
+          <ul style="list-style-type: disc; padding-inline-start: 20px;">
+            <!-- Display first two notes or all notes based on showAllNotes toggle -->
+            <template v-for="(note, index) in (showAllNotes[item.id] ? item.notes : item.notes.slice(0, 2))"
+              :key="note.id">
+              <li class="note" style="font-size: 1.1em; margin-block-end: 8px;">
+                {{ note.note }}
+                ( <small style="color: #757575;">
+                  <span style="color: #007acc;">{{ note.created_by }}</span>,
+                  <span style="color: orange;">{{ note.created_at ? new
+                    Date(note.created_at).toLocaleDateString() : 'N/A' }}</span>
+                </small> )
+              </li>
+            </template>
+          </ul>
+          <!-- Show More / Show Less link with custom style -->
+          <p v-if="item.notes.length > 2" @click="toggleShowNotes(item.id)"
+            style="color: blue; cursor: pointer; font-weight: bold; padding-inline-start: 10px; text-decoration: underline;">
+            {{ showAllNotes[item.id] ? 'Show Less' : 'Show More' }}
+          </p>
+        </template>
+        <template #item.status="{ item }">
+          <VChip :color="resolveLeadStatusColor(item.status)" :class="`text-${resolveStatusColor(item.status)}`"
+            size="small" class="font-weight-medium">
+            {{ resolveLeadStatusName(item.status) }}
+          </VChip>
+        </template>
+        <template #item.assigned_branch="{ item }">
+          <span v-if="item.assigned_branch">{{ item.assigned_branch }}</span>
+          <VChip v-else color="error" size="small" variant="flat">Not Assigned</VChip>
+        </template>
+        <template #item.assigned_user="{ item }">
+          <span v-if="item.assigned_user">{{ item.assigned_user }}</span>
+          <VChip v-else color="error" size="small" variant="flat">Not Assigned</VChip>
+        </template>
+        <template #item.actions="{ item }">
+          <VBtn icon variant="text" color="medium-emphasis">
+            <VIcon icon="tabler-dots-vertical" />
+            <VMenu activator="parent">
+              <VList>
+                <!-- Change Status option opens the dialog -->
+                <VListItem @click="openChangeStatusDialog(item.id, item.status)">
+                  <template #prepend>
+                    <VIcon icon="tabler-analyze" />
+                  </template>
+                  <VListItemTitle>Change Status</VListItemTitle>
+                </VListItem>
+                <VListItem @click="showAddNoteModal = true">
+                  <template #prepend>
+                    <VIcon icon=" tabler-clipboard-text" />
+                  </template>
+                  <VListItemTitle>Add Note</VListItemTitle>
+                </VListItem>
+              </VList>
+            </VMenu>
+          </VBtn>
+        </template>
+        <template #bottom>
+          <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="total" />
+        </template>
+
+      </VDataTableServer>
+    </VCard>
+    <!-- Change Status Dialog Component -->
+    <ChangeStatusDialog :showDialog="showDialog" :leadId="selectedLeadId" :statusId='selectedStatusId'
+      @updateStatus="handleLeadStatusUpdate" @closeDialog="showDialog = false" />
+  </section>
 </template>
 
 <style lang="scss">
 .full-width-card {
-    padding: 10px;
-    border-radius: 8px;
-    margin: 0;
-    background-color: #f6f6fa;
-    inline-size: 100%;
-    max-inline-size: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 0;
+  background-color: #f6f6fa;
+  inline-size: 100%;
+  max-inline-size: 100%;
 }
 
 .font-bold {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .text-muted {
-    color: #04c434;
+  color: #04c434;
 }
 
 .text-lg {
-    font-size: 1.25rem;
+  font-size: 1.25rem;
 }
 
 .font-medium {
-    font-weight: 500;
+  font-weight: 500;
 }
 
 .sample-file-text {
-    font-size: 1.2em;
-    font-weight: bold;
+  font-size: 1.2em;
+  font-weight: bold;
 }
 
 .form-padding {
-    padding-block: 0 2rem;
-    padding-inline: 2rem;
+  padding-block: 0 2rem;
+  padding-inline: 2rem;
 }
 
 .label {
-    color: black;
+  color: black;
 }
 
 .ql-editor {
-    overflow: auto;
-    block-size: 250px;
-    max-block-size: 250px;
+  overflow: auto;
+  block-size: 250px;
+  max-block-size: 250px;
 }
 
 .v-data-table>.v-data-table__wrapper>table>thead>tr>th,
 td {
-    overflow: auto;
-    max-inline-size: 30rem;
+  overflow: auto;
+  max-inline-size: 30rem;
 
-    /* Adjust the max-width as needed */
-    white-space: nowrap;
-    word-wrap: break-word;
+  /* Adjust the max-width as needed */
+  white-space: nowrap;
+  word-wrap: break-word;
 }
 
 .v-table__wrapper {
-    max-block-size: 35rem !important;
+  max-block-size: 35rem !important;
 }
 
 /* Status color classes */
 .status-color-1 {
-    color: rgb(237, 46, 46);
+  color: rgb(237, 46, 46);
 }
 
 .status-color-2 {
-    color: #04c434;
+  color: #04c434;
 }
 
 .status-color-3 {
-    color: #ffa500;
+  color: #ffa500;
 }
 
 .status-color-4 {
-    color: #ff0;
+  color: #ff0;
 }
 
 .status-color-5 {
-    color: #9acd32;
+  color: #9acd32;
 }
 
 .status-color-6 {
-    color: #008000;
+  color: #008000;
 }
 
 .status-color-7 {
-    color: #20b2aa;
+  color: #20b2aa;
 }
 
 .status-color-8 {
-    color: #00ced1;
+  color: #00ced1;
 }
 
 .status-color-9 {
-    color: #1e90ff;
+  color: #1e90ff;
 }
 
 .status-color-10 {
-    color: #4169e1;
+  color: #4169e1;
 }
 
 .status-color-11 {
-    color: #6a5acd;
+  color: #6a5acd;
 }
 
 .status-color-12 {
-    color: #8a2be2;
+  color: #8a2be2;
 }
 
 .status-color-13 {
-    color: #9400d3;
+  color: #9400d3;
 }
 
 .status-color-14 {
-    color: #ff1493;
+  color: #ff1493;
 }
 
 .status-color-15 {
-    color: #ff69b4;
+  color: #ff69b4;
 }
 
 .default-status-color {
-    color: #000;
+  color: #000;
+}
+
+.upload-card {
+  border: 1px solid rgba(99, 102, 241, 10%);
+  border-radius: 12px;
+  animation: slideDown 0.3s ease-out;
+  background: linear-gradient(145deg, #fff, #f8f7ff);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 8%);
+}
+
+.upload-title {
+  background: linear-gradient(45deg, #818cf8, #a78bfa);
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
+
+.close-btn {
+  color: #999;
+  transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.upload-form {
+  border: 1px solid rgba(99, 102, 241, 10%);
+  background-color: rgba(255, 255, 255, 70%);
+
+  .v-label {
+    color: #6366f1;
+  }
+}
+
+.slide-in {
+  animation: slide-in 0.5s ease forwards;
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.file-input-animate {
+  &:hover {
+    background-color: rgba(99, 102, 241, 3%);
+  }
+
+  &.has-file {
+    border-color: #818cf8;
+    background-color: rgba(99, 102, 241, 5%);
+  }
+}
+
+.upload-btn {
+  background-color: #818cf8 !important;
+  color: white !important;
+
+  &:hover {
+    background-color: #6366f1 !important;
+  }
+}
+
+.download-btn {
+  border: 1px solid #818cf8 !important;
+  background-color: #e0e7ff !important;
+  color: #4f46e5 !important;
+
+  &:hover {
+    background-color: #c7d2fe !important;
+  }
+}
+
+.sample-section {
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: rgba(99, 102, 241, 3%);
+  border-block-start: 1px dashed #c7d2fe;
+
+  .text-lg {
+    color: #6366f1;
+  }
+}
+
+.v-file-input {
+  .v-field {
+    background-color: rgba(255, 255, 255, 90%) !important;
+
+    &:hover {
+      background-color: rgba(99, 102, 241, 3%) !important;
+    }
+  }
+}
+
+.v-autocomplete {
+  .v-field {
+    background-color: rgba(255, 255, 255, 90%) !important;
+
+    &:hover {
+      background-color: rgba(99, 102, 241, 3%) !important;
+    }
+  }
+}
+
+.text-caption.text-primary {
+  color: #6366f1 !important;
+  font-weight: 500;
+}
+
+.text-red {
+  color: rgb(237, 46, 46);
 }
 </style>

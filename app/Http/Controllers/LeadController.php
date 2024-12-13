@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Lead;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\LeadsImport;
+use Illuminate\Validation\ValidationException;
 
 class LeadController extends Controller
 {
@@ -21,7 +24,7 @@ class LeadController extends Controller
         $query = Lead::query();
 
 
-        $query->with('notes.creator:id,first_name,last_name');
+        $query->with(['notes.creator:id,first_name,last_name','branch']);
 
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
@@ -117,10 +120,78 @@ class LeadController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource froms storage.
      */
     public function destroy(string $id)
     {
         //
+    }
+
+    public function uploadLeads(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|mimes:xlsx,csv',
+                'assigned_branch' => 'required|exists:branches,id',
+                'lead_country_id' => 'required|exists:countries,id',
+            ], [
+                'file.required' => 'Please select a file to upload.',
+                'file.mimes' => 'Please upload only Excel or CSV files.',
+                'assigned_branch.required' => 'Please select a branch.',
+                'assigned_branch.exists' => 'Selected branch is invalid.',
+                'lead_country_id.required' => 'Please select a country.',
+                'lead_country_id.exists' => 'Selected country is invalid.',
+            ]);
+
+            // Check if file is empty
+            if ($request->file('file')->getSize() === 0) {
+                return $this->errorJsonResponse(
+                    'The uploaded file is empty.',
+                    ['message' => 'empty_records'],
+                    422
+                );
+            }
+
+            // Import the leads
+            $import = new LeadsImport($request->assigned_branch, $request->lead_country_id);
+            Excel::import($import, $request->file('file'));
+
+            // Check if any records were imported
+            if ($import->getRowCount() === 0) {
+                return $this->errorJsonResponse(
+                    'The uploaded file contains no valid records.',
+                    ['message' => 'empty_records'],
+                    422
+                );
+            }
+
+            return $this->successJsonResponse(
+                'Leads uploaded successfully!',
+                ['count' => $import->getRowCount()]
+            );
+
+        } catch (ValidationException $e) {
+            return $this->handleValidationErrors($e);
+        } catch (\Exception $e) {
+            // Check if the error is from our empty column validation
+            $errors = json_decode($e->getMessage(), true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($errors)) {
+                return $this->errorJsonResponse(
+                    'Some records contain empty values.',
+                    [
+                        'message' => 'validation_error',
+                        'errors' => $errors
+                    ],
+                    422
+                );
+            }
+
+            return $this->exceptionJsonResponse(
+                $e,
+                'Error uploading leads.',
+                'leads',
+                500
+            );
+        }
     }
 }
