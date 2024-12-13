@@ -5,7 +5,6 @@ import { useLeadStore } from "@/@core/stores/leadStore";
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
 import { useUserStore } from "@/@core/stores/user.js";
 import EditNewUserDrawer from "@/pages/user/add/EditNewUserDrawer.vue";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { computed, onMounted, ref, watch } from "vue";
 
@@ -267,25 +266,41 @@ const fetchLeads = async () => {
   }
 };
 
+
 const saveAssignedLeads = async () => {
   isLoading.value = true;
   try {
     const assignedData = users.value.map(user => ({
       user_id: user.id,
-      assigned_leads: user.assigned_number_of_leads
-    }));
+      assigned_leads: user.assigned_number_of_leads || 0
+    })).filter(data => data.assigned_leads > 0); // Only include users with assigned leads
 
-    // TODO: Replace with actual API endpoint
-    const response = await axios.post('/api/save-assigned-leads', {
-      assigned_data: assignedData
-    });
+    const response = await leadStore.saveAssignedLeads(assignedData, selectedCountry.value, selectedAssignedBranch.value);
 
-    if (response.data.success) {
-      Swal.fire('Success!', 'Leads assigned successfully', 'success');
+    if (response.success) {
+      Swal.fire({
+        title: 'Success!',
+        text: 'Leads assigned successfully',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
+      // Optionally reset or refresh the page
+      currentStep.value = 1;
+      selectedAssignedBranch.value = null;
+      users.value = users.value.map(user => ({
+        ...user,
+        assigned_number_of_leads: 0
+      }));
     }
   } catch (error) {
     console.error('Error saving assigned leads:', error);
-    Swal.fire('Error!', 'Failed to save assigned leads', 'error');
+    Swal.fire({
+      title: 'Error!',
+      text: 'Failed to save assigned leads',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
   } finally {
     isLoading.value = false;
   }
@@ -348,11 +363,6 @@ const getAllBranches = async () => {
       <!-- Step 2: Only show if there are leads to assign -->
       <div v-if="currentStep === 2 && totalLeadCount > 0">
         <VDivider class="my-4" />
-        <VCardText>
-          <VAlert color="info" class="mb-4">
-            Total number of leads to be assigned: {{ totalLeadCount }}
-          </VAlert>
-        </VCardText>
 
         <VCardItem>
           <VCardTitle>Assign Leads to Counsellors(To complete this step, select a branch)</VCardTitle>

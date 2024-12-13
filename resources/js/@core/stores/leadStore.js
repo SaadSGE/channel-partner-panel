@@ -123,5 +123,26 @@ export const useLeadStore = defineStore({
         throw error;
       }
     },
+
+    async saveAssignedLeads(assignedData, leadCountry, branchId) {
+      try {
+        const response = await $api("/leads/assign", {
+          method: "POST",
+          body: JSON.stringify({
+            assigned_data: assignedData,
+            lead_country: leadCountry,
+            branch_id: branchId,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        return response.data;
+      } catch (error) {
+        console.error("Error saving assigned leads:", error);
+        throw error;
+      }
+    },
   },
 });
