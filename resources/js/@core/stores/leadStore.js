@@ -107,5 +107,21 @@ export const useLeadStore = defineStore({
         handleErrorResponse(error);
       }
     },
+
+    async fetchLeadCount(country, branch) {
+      try {
+        const response = await $api("/leads/count", {
+          method: "GET",
+          params: {
+            country,
+            branch_id: branch,
+          },
+        });
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching lead count:", error);
+        throw error;
+      }
+    },
   },
 });

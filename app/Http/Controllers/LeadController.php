@@ -194,4 +194,22 @@ class LeadController extends Controller
             );
         }
     }
+
+    public function getLeadCount(Request $request)
+    {
+        $branchId = $request->query('branch_id', null);
+
+
+        $count = Lead::where('lead_country_id', $request->country)
+                     ->when($branchId, function ($query, $branchId) {
+                         return $query->where('assigned_branch', $branchId);
+                     })
+                     ->whereNull('assigned_user')
+                     ->count();
+        $data = [
+            'total' => $count
+        ];
+
+        return $this->successJsonResponse("Leads found successfully!", $data);
+    }
 }
