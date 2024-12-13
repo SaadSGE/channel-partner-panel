@@ -204,12 +204,14 @@ const updateAssignedLeads = async (user, value) => {
   try {
     const numValue = parseInt(value);
 
-    // Validate if it's a number
-    if (isNaN(numValue) || numValue < 0) {
-      Swal.fire('Error!', 'Please enter a valid number', 'error');
+    // If value is 0, just update without showing alert
+    if (numValue === 0) {
       user.assigned_number_of_leads = 0;
       return;
     }
+
+    // Validate if it's a valid number
+
 
     // Calculate total excluding current user's previous value
     const otherUsersTotal = users.value.reduce((sum, u) => {
@@ -221,7 +223,12 @@ const updateAssignedLeads = async (user, value) => {
 
     // Check if new total would exceed available leads
     if (otherUsersTotal + numValue > totalLeadCount.value) {
-      Swal.fire('Warning!', `Total assigned leads cannot exceed ${totalLeadCount.value}`, 'warning');
+      Swal.fire({
+        title: 'Warning!',
+        text: `Total assigned leads cannot exceed ${totalLeadCount.value}`,
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
       user.assigned_number_of_leads = 0;
       return;
     }
