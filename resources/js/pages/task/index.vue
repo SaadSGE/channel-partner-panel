@@ -23,11 +23,21 @@ const tasks = ref([
 ])
 
 const isLoading = ref(false)
+const totalTasks = ref(0)
+const itemsPerPage = ref(10)
 
 const sortedTasks = computed(() => {
     return [...tasks.value].sort((a, b) => new Date(b.date) - new Date(a.date))
 })
+const headers = ref([
+    { title: 'Date', key: 'date' },
+    // { title: 'User', key: 'student.name' },
+    { title: 'Yesterday', key: 'yesterday' },
+    { title: 'Today', key: 'today' },
+    { title: 'Blockages', key: 'blockages' },
 
+
+])
 onMounted(async () => {
     try {
         isLoading.value = true
@@ -41,42 +51,49 @@ onMounted(async () => {
 </script>
 
 <template>
-    <VCard>
-        <VCardTitle class="text-h5 pa-4">
-            Task Schedule
-        </VCardTitle>
 
-        <VCardText>
-            <VTable v-if="!isLoading">
-                <thead>
-                    <tr>
-                        <th class="text-left">
-                            Date
-                        </th>
-                        <th class="text-left">
-                            Yesterday
-                        </th>
-                        <th class="text-left">
-                            Today
-                        </th>
-                        <th class="text-left">
-                            Blockages
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="task in sortedTasks" :key="task.date">
-                        <td>{{ new Date(task.date).toLocaleDateString() }}</td>
-                        <td>{{ task.yesterday }}</td>
-                        <td>{{ task.today }}</td>
-                        <td>{{ task.blockages }}</td>
-                    </tr>
-                </tbody>
-            </VTable>
+    <section>
+        <VCard class="mb-6">
+            <AppCardActions title="Tasks" :loading="isLoading" no-actions>
 
-            <div v-else class="d-flex justify-center align-center pa-4">
-                <VProgressCircular indeterminate />
-            </div>
-        </VCardText>
-    </VCard>
+                <VCardText v-if="$can('filter', 'user')">
+                    <VRow>
+                        <!-- 👉 Select status -->
+                        <!-- <Filters :selected-assigned-status="selectedAssignedStatus"
+                        :selected-lead-status="selectedLeadStatus" :selected-dateFrom="selectedDateFrom"
+                        :selected-dateTo="selectedDateTo" @update-assignedStatus="selectedAssignedStatus = $event"
+                        @update-lead-status="selectedLeadStatus = $event" @update-dateFrom="selectedDateFrom = $event"
+                        @update-dateTo="selectedDateTo = $event">
+                    </Filters> -->
+                    </VRow>
+
+                </VCardText>
+
+                <VCardText class="d-flex flex-wrap gap-4">
+                    <div class="me-3 d-flex gap-3">
+                        <AppSelect :model-value="itemsPerPage" :items="[
+                            { value: 10, title: '10' },
+                            { value: 25, title: '25' },
+                            { value: 50, title: '50' },
+                            { value: 100, title: 100 },
+                            { value: -1, title: 'All' },
+                        ]" style="inline-size: 6.25rem;" @update:model-value="itemsPerPage = parseInt($event, 10)" />
+                    </div>
+                    <VSpacer />
+                    <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+                        <!-- 👉 Search  -->
+                        <div style="inline-size: 15.625rem;">
+                            <AppTextField v-model="search" placeholder="Search here" />
+                        </div>
+                    </div>
+                </VCardText>
+
+
+                <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :loading="isLoading"
+                    @update:options="updateOptions" :items-length="tasks.length" :headers="headers" :items="tasks"
+                    item-value="total" class="text-no-wrap text-sm rounded-0">
+                </VDataTableServer>
+            </AppCardActions>
+        </VCard>
+    </section>
 </template>
