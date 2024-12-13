@@ -217,23 +217,7 @@ const getAllBranches = async () => {
     @update:isDrawerOpen="isEditUserDrawerVisible = $event" @userUpdated="handleUserUpdate" />
   <section>
 
-    <VDialog v-model="isParentDialogVisible" max-width="500px">
-      <VCard>
-        <VCardTitle>Set Parent</VCardTitle>
-        <VCardText>
-          <VForm @submit.prevent="handleParentSet">
-            <AppAutocomplete v-model="parentId" :items="userStore.parentUsers"
-              :item-title="(item) => item.name_with_email" :item-value="(item) => item.id" label="Parent"
-              placeholder="Select Parent" :rules="[requiredValidator]" />
-          </VForm>
-        </VCardText>
-        <VCardActions>
-          <VSpacer></VSpacer>
-          <VBtn color="primary" @click="handleParentSet">Submit</VBtn>
-          <VBtn @click="isParentDialogVisible = false">Cancel</VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+
 
     <VCard class="mb-6">
       <VCardItem class="pb-4" v-if="$can('filter', 'user')">
@@ -273,12 +257,7 @@ const getAllBranches = async () => {
             <AppTextField v-model="searchQuery" placeholder="Search User" />
           </div>
 
-          <!-- 👉 Export button -->
 
-          <!-- 👉 Add user button -->
-          <VBtn prepend-icon="tabler-plus" @click="isAddNewUserDrawerVisible = true" v-if="$can('create', 'user')">
-            Add New User
-          </VBtn>
         </div>
       </VCardText>
 
@@ -289,41 +268,7 @@ const getAllBranches = async () => {
         :items-length="totalUsers" :headers="headers" class="text-no-wrap" show-select :height="tableHeight"
         @update:options="updateOptions">
         <template #item.actions="{ item }">
-          <VBtn icon variant="text" color="medium-emphasis">
-            <VIcon icon="tabler-dots-vertical" />
-            <VMenu activator="parent">
-              <VList>
-                <VListItem :to="{ name: 'user-view-id', params: { id: item.id } }">
-                  <template #prepend>
-                    <VIcon icon="tabler-eye" />
-                  </template>
 
-                  <VListItemTitle>View</VListItemTitle>
-                </VListItem>
-
-                <VListItem @click="editUser(item)" v-if="$can('edit', 'user')">
-                  <template #prepend>
-                    <VIcon icon="tabler-pencil" />
-                  </template>
-                  <VListItemTitle>Edit</VListItemTitle>
-                </VListItem>
-
-                <VListItem @click="setParent(item)" v-if="$can('edit', 'user')">
-                  <template #prepend>
-                    <VIcon icon="tabler-pencil" />
-                  </template>
-                  <VListItemTitle>Set Parent</VListItemTitle>
-                </VListItem>
-
-                <VListItem @click="deleteUser(item.id)" v-if="$can('delete', 'user')">
-                  <template #prepend>
-                    <VIcon icon="tabler-trash" />
-                  </template>
-                  <VListItemTitle>Delete</VListItemTitle>
-                </VListItem>
-              </VList>
-            </VMenu>
-          </VBtn>
         </template>
         <template #item.status="{ item }">
           <VSwitch v-model="item.status" :true-value="1" :false-value="0" @change="updateUserStatus(item)"
