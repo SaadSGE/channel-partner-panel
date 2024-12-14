@@ -8,31 +8,37 @@ definePage({
 import { commonFunction } from "@/@core/stores/commonFunction";
 import Swal from 'sweetalert2';
 import { onMounted, ref } from "vue";
-import BranchAdd from "./add.vue";
-import BranchEdit from "./edit.vue";
+import StatusAdd from "./add.vue";
+import StatusEdit from "./edit.vue";
 const commonFunctionStore = commonFunction();
-const branches = ref([]);
+const leadStatuses = ref([]);
 const isNavDrawerOpen = ref(false)
 const isNavDrawerOpenEdit = ref(false)
 onMounted(async () => {
-    await getAllBranches();
+    await getAllLeadStatuses();
 });
 
-const getAllBranches = async () => {
+const getAllLeadStatuses = async () => {
     isLoading.value = true
-    await commonFunctionStore.getBranches();
-    branches.value = commonFunctionStore.branches;
+    await commonFunctionStore.getLeadStatus();
+    leadStatuses.value = commonFunctionStore.leadStatus;
     isLoading.value = false
 }
 
 const headers = [
-    { title: 'Branch Name', key: 'name' },
-    { title: 'Country Name', key: 'country.name' },
+    { title: 'Status Name', key: 'name' },
+    { title: 'Description', key: 'description' },
+    { title: 'Color Code', key: 'color_code' },
+    { title: 'Health Rating', key: 'health_rating' },
     { title: 'Actions', key: 'actions', sortable: false },
 ];
+
 const defaultItem = ref({
     id: '',
     name: '',
+    description: '',
+    color_code: '',
+    health_rating: '',
 })
 const isLoading = ref(false)
 const editedItem = ref(defaultItem.value)
@@ -46,7 +52,7 @@ const deleteItem = async (item) => {
     const data = { ...item };
     const result = await Swal.fire({
         title: 'Are you sure?',
-        text: 'Do you want to delete this item?',
+        text: 'Do you want to delete this status?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -57,33 +63,28 @@ const deleteItem = async (item) => {
 
     if (result.isConfirmed) {
         try {
-            await commonFunctionStore.deleteBranch(data.id);
-            branches.value = commonFunctionStore.branches;
+            await commonFunctionStore.deleteLeadStatus(data.id);
+            leadStatuses.value = commonFunctionStore.leadStatuses;
             Swal.fire(
                 'Deleted!',
-                'The item has been deleted.',
+                'The status has been deleted.',
                 'success'
             );
         } catch (error) {
             Swal.fire(
                 'Error!',
-                'There was an error deleting the item.',
+                'There was an error deleting the status.',
                 'error'
             );
         }
     }
 };
-
-
-
 </script>
 
 <template>
-
-
-    <BranchAdd :isNavDrawerOpen="isNavDrawerOpen" @update:isNavDrawerOpen="isNavDrawerOpen = $event"
-        @updateBranches="getAllBranches" />
-    <BranchEdit :isNavDrawerOpen="isNavDrawerOpenEdit" @update:isNavDrawerOpen="isNavDrawerOpenEdit = $event"
+    <StatusAdd :isNavDrawerOpen="isNavDrawerOpen" @update:isNavDrawerOpen="isNavDrawerOpen = $event"
+        @updateLeadStatuses="getAllLeadStatuses" />
+    <StatusEdit :isNavDrawerOpen="isNavDrawerOpenEdit" @update:isNavDrawerOpen="isNavDrawerOpenEdit = $event"
         :editedItem="editedItem" />
     <VCard :loading="isLoading">
         <VCardText>
@@ -95,12 +96,10 @@ const deleteItem = async (item) => {
                 <VCol cols="12" md="2">
                     <VBtn style="z-index: 1001;" @click="isNavDrawerOpen = true">Add New</VBtn>
                 </VCol>
-
             </VRow>
         </VCardText>
-        <VDataTable :headers="headers" :items="branches || []" :items-per-page="10"
+        <VDataTable :headers="headers" :items="leadStatuses || []" :items-per-page="10"
             class="text-no-wrap color-black table-padding">
-
             <template #item.actions="{ item }">
                 <div class="d-flex gap-1">
                     <IconBtn @click="editItem(item)">

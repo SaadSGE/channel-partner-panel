@@ -11,6 +11,7 @@ export const commonFunction = defineStore({
     notices: [],
     activeNotices: [],
     tasks: [],
+    leadStatus: [],
     errors: [],
     universities: [],
     courseDetails: [],
@@ -534,7 +535,6 @@ export const commonFunction = defineStore({
         const response = await $api("/active-notices", {
           method: "GET",
         });
-        console.log(response.data);
         this.activeNotices = response.data;
       } catch (error) {
         console.error("Error fetching active notices:", error);
@@ -621,7 +621,6 @@ export const commonFunction = defineStore({
             dateTo,
           },
         });
-        console.log(response.data);
         this.tasks = response.data;
       } catch (error) {
         console.error("Error fetching daily tasks:", error);
@@ -640,6 +639,18 @@ export const commonFunction = defineStore({
         this.tasks.push(response.data);
       } catch (error) {
         console.error("Error adding task:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async getLeadStatus() {
+      try {
+        const response = await $api("/lead-statuses", { method: "GET" });
+        console.log(response.data);
+        this.leadStatus = response.data;
+      } catch (error) {
+        console.error("Error fetching lead status:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];

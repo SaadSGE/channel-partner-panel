@@ -216,7 +216,7 @@ class LeadController extends Controller
     public function assignLeads(Request $request)
     {
         try {
-            \Log::info('Starting lead assignment with payload:', $request->all());
+
 
             return \DB::transaction(function () use ($request) {
                 // 1. Build the base query for unassigned leads
@@ -224,17 +224,33 @@ class LeadController extends Controller
                     ->where('lead_country_id', $request->lead_country)
                     ->whereNull('assigned_user');
 
-                \Log::info('Initial lead count:', [
-                    'count' => $query->count()
-                ]);
+                $initialCount = $query->count();
+
+
+                if ($initialCount === 0) {
+                    return $this->errorJsonResponse(
+                        'No unassigned leads found for the selected country.',
+                        ['message' => 'no_leads_found'],
+                        404
+                    );
+                }
 
                 // 2. Add branch filter if provided
                 if ($request->branch_id) {
                     $query->where('assigned_branch', $request->branch_id);
-                    \Log::info('After branch filter count:', [
-                        'branch_id' => $request->branch_id,
-                        'count' => $query->count()
-                    ]);
+                    $branchCount = $query->count();
+
+
+                    if ($branchCount === 0) {
+                        return $this->errorJsonResponse(
+                            'No unassigned leads found for the selected branch.',
+                            [
+                                'message' => 'no_leads_found_in_branch',
+                                'total_leads' => $initialCount
+                            ],
+                            404
+                        );
+                    }
                 }
 
                 $assignmentResults = [];
@@ -251,49 +267,52 @@ class LeadController extends Controller
                             ->limit($count)
                             ->get();
 
-                        \Log::info('Leads selected for assignment:', [
-                            'user_id' => $userId,
-                            'requested_count' => $count,
-                            'actual_count' => $leadsToAssign->count(),
-                            'lead_ids' => $leadsToAssign->pluck('id')->toArray()
-                        ]);
 
-                        // Update the assigned leads
-                        foreach ($leadsToAssign as $lead) {
-                            $beforeUpdate = $lead->toArray();
 
-                            $lead->assigned_user = $userId;
-                            $lead->assigned_date = now();
-                            $lead->save();
+                        if ($leadsToAssign->count() > 0) {
+                            // Update the assigned leads
+                            foreach ($leadsToAssign as $lead) {
+                                $beforeUpdate = $lead->toArray();
 
-                            $afterUpdate = $lead->fresh()->toArray();
+                                $lead->assigned_user = $userId;
+                                $lead->assigned_user_date = now();
+                                $lead->save();
 
-                            \Log::info('Lead update details:', [
-                                'lead_id' => $lead->id,
-                                'before' => $beforeUpdate,
-                                'after' => $afterUpdate
-                            ]);
+                                $afterUpdate = $lead->fresh()->toArray();
+
+                                \Log::info('Lead update details:', [
+                                    'lead_id' => $lead->id,
+                                    'before' => $beforeUpdate,
+                                    'after' => $afterUpdate
+                                ]);
+                            }
+
+                            $assignmentResults[] = [
+                                'user_id' => $userId,
+                                'assigned_count' => $leadsToAssign->count(),
+                                'lead_ids' => $leadsToAssign->pluck('id')->toArray()
+                            ];
                         }
-
-                        $assignmentResults[] = [
-                            'user_id' => $userId,
-                            'assigned_count' => $leadsToAssign->count(),
-                            'lead_ids' => $leadsToAssign->pluck('id')->toArray()
-                        ];
                     }
                 }
 
-                \Log::info('Assignment completed:', $assignmentResults);
+                if (empty($assignmentResults)) {
+                    return $this->errorJsonResponse(
+                        'No leads were assigned. Please check the available leads and try again.',
+                        ['message' => 'no_assignments_made'],
+                        400
+                    );
+                }
+
+
 
                 return $this->successJsonResponse('Leads assigned successfully!', [
-                    'assignments' => $assignmentResults
+                    'assignments' => $assignmentResults,
+                    'total_assigned' => collect($assignmentResults)->sum('assigned_count')
                 ]);
             });
 
         } catch (\Exception $e) {
-            \Log::error('Error in assignLeads: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return $this->errorJsonResponse(
                 'Failed to assign leads.',
