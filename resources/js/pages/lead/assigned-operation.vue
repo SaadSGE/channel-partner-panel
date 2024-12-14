@@ -113,7 +113,7 @@ const fetchUsers = async () => {
     const response = await userStore.fetchUsers(
       page.value,
       searchQuery.value,
-      'Counselllor',
+      'Counsellor',
       null,
       null,
       null,
@@ -173,8 +173,12 @@ const headers = [
   { title: "Branch", key: "branch.name" },
   { title: "Name", key: "full_name" },
   { title: "Email", key: "email" },
-  { title: "Current Lead", key: "current_lead" },
-  { title: "Role", key: "role" },
+  {
+    title: "Current Lead",
+    key: "current_lead",
+    width: '200px'
+  },
+
   {
     title: "Assigned Number of Leads",
     key: "assigned_number_of_leads",
@@ -434,7 +438,7 @@ const getAllBranches = async () => {
           <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="users"
             :items-length="totalUsers" :headers="headers" class="text-no-wrap" :height="tableHeight">
             <template #item.branch.name="{ item }">
-              {{ item.branch?.name || 'N/A' }}
+              {{ item.branch?.branch_name_with_country || 'N/A' }}
             </template>
 
             <template #item.full_name="{ item }">
@@ -446,7 +450,22 @@ const getAllBranches = async () => {
             </template>
 
             <template #item.current_lead="{ item }">
-              {{ item.current_lead || 0 }}
+              <div v-if="item.lead_counts">
+                <div class="d-flex align-center justify-space-between my-1 country-lead-item pa-2">
+                  <VChip size="small" color="error" variant="elevated" class="mr-2">
+                    Total: {{ item.lead_counts.lead_count_all }}
+                  </VChip>
+                </div>
+                <VDivider class="my-1" />
+                <div v-for="countryLead in item.lead_counts.lead_by_country" :key="countryLead.country_id"
+                  class="d-flex align-center justify-space-between my-1 country-lead-item pa-2">
+                  <VChip size="small" color="primary" variant="elevated" class="mr-2">
+                    {{ countryLead.country_name }}
+                  </VChip>
+                  <VBadge :content="countryLead.count" color="success" class="count-badge" />
+                </div>
+              </div>
+              <span v-else class="text-grey">0</span>
             </template>
 
             <template #item.role="{ item }">
@@ -455,7 +474,7 @@ const getAllBranches = async () => {
 
             <template #item.assigned_number_of_leads="{ item }">
               <VTextField v-model="item.assigned_number_of_leads" type="number" min="0" density="compact"
-                variant="outlined" hide-details class="w-20"
+                variant="outlined" hide-details class="w-20" placeholder="Enter number"
                 @update:model-value="value => updateAssignedLeads(item, value)" />
             </template>
           </VDataTableServer>
@@ -474,5 +493,25 @@ const getAllBranches = async () => {
 
 .v-card:hover {
   transform: translateY(-2px);
+}
+
+.country-lead-item {
+  border-radius: 6px;
+  background-color: rgb(var(--v-theme-primary), 0.1);
+  transition: all 0.2s ease;
+}
+
+.country-lead-item:hover {
+  background-color: rgb(var(--v-theme-primary), 0.15);
+  transform: translateX(2px);
+}
+
+.count-badge {
+  border-radius: 4px;
+  background-color: rgb(var(--v-theme-success), 0.1);
+  color: rgb(var(--v-theme-success));
+  font-weight: bold;
+  padding-block: 4px;
+  padding-inline: 8px;
 }
 </style>

@@ -9,8 +9,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
-
-use function Symfony\Component\String\b;
+use App\Models\LeadCountByCountry;
+use App\Models\LeadCountAll;
 
 class User extends Authenticatable
 {
@@ -21,7 +21,7 @@ class User extends Authenticatable
 
     protected $guarded = [];
 
-    protected $appends = ['full_name', 'record_count','name_with_email','company_name_with_email'];
+    protected $appends = ['full_name', 'record_count','name_with_email','company_name_with_email','lead_counts'];
 
     protected $hidden = [
         'password',
@@ -216,5 +216,34 @@ class User extends Authenticatable
     public function applicationOfficerAssignments()
     {
         return $this->hasMany(ApplicationOfficerAssignment::class, 'user_id');
+    }
+
+    public function leadCountByCountry()
+    {
+        return $this->hasMany(LeadCountByCountry::class, 'user_id');
+    }
+
+    public function leadCountAll()
+    {
+        return $this->hasOne(LeadCountAll::class, 'user_id');
+    }
+
+    public function getLeadCountsAttribute(): array
+    {
+        if ($this->role !== 'Counsellor') {
+            return [];
+        }
+
+        return [
+            'lead_by_country' => $this->leadCountByCountry()
+                ->join('countries', 'lead_count_by_country.lead_country_id', '=', 'countries.id')
+                ->select([
+                    'lead_country_id as country_id',
+                    'countries.name as country_name',
+                    'lead_count as count'
+                ])
+                ->get(),
+            'lead_count_all' => $this->leadCountAll()->value('total_lead_count') ?? 0
+        ];
     }
 }
