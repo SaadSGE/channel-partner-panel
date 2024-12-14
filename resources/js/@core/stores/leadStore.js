@@ -138,7 +138,7 @@ export const useLeadStore = defineStore({
           },
         });
 
-        return response.data;
+        return response;
       } catch (error) {
         console.error("Error saving assigned leads:", error);
         throw error;

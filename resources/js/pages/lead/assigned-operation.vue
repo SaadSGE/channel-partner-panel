@@ -6,7 +6,9 @@ import { useRolePermissionStore } from "@/@core/stores/rolePermission";
 import { useUserStore } from "@/@core/stores/user.js";
 import EditNewUserDrawer from "@/pages/user/add/EditNewUserDrawer.vue";
 import Swal from "sweetalert2";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 // Define page meta
 definePage({
@@ -266,6 +268,38 @@ const fetchLeads = async () => {
   }
 };
 
+const resetForm = () => {
+  // Temporarily remove the watch effect by setting step to 0
+  currentStep.value = 0;
+
+  // Reset all form fields with explicit null assignments
+  selectedAssignedBranch.value = null;
+  selectedBranch.value = null;
+  selectedCountry.value = null;
+  totalLeadCount.value = 0;
+  users.value = users.value.map(user => ({
+    ...user,
+    assigned_number_of_leads: 0
+  }));
+
+  // Reset the data table
+  page.value = 1;
+  itemsPerPage.value = 10;
+
+  // Force a re-render by using nextTick
+  nextTick(() => {
+    // Double-check that values are actually reset
+    console.log('After reset - Country:', selectedCountry.value);
+    console.log('After reset - Branch:', selectedBranch.value);
+    console.log('After reset - Assigned Branch:', selectedAssignedBranch.value);
+
+    // Set the step back to 1
+    currentStep.value = 1;
+
+    // Force a re-fetch of the data
+    fetchUsers();
+  });
+};
 
 const saveAssignedLeads = async () => {
   isLoading.value = true;
@@ -273,33 +307,38 @@ const saveAssignedLeads = async () => {
     const assignedData = users.value.map(user => ({
       user_id: user.id,
       assigned_leads: user.assigned_number_of_leads || 0
-    })).filter(data => data.assigned_leads > 0); // Only include users with assigned leads
+    })).filter(data => data.assigned_leads > 0);
 
-    const response = await leadStore.saveAssignedLeads(assignedData, selectedCountry.value, selectedAssignedBranch.value);
+    const response = await leadStore.saveAssignedLeads(assignedData, selectedCountry.value, selectedBranch.value);
 
-    if (response.success) {
-      Swal.fire({
-        title: 'Success!',
-        text: 'Leads assigned successfully',
-        icon: 'success',
-        confirmButtonText: 'OK'
+    if (response.status) {
+      toast("Leads assigned successfully", {
+        type: "success",
+        position: "top-right",
+        theme: "colored",
       });
 
-      // Optionally reset or refresh the page
-      currentStep.value = 1;
-      selectedAssignedBranch.value = null;
-      users.value = users.value.map(user => ({
-        ...user,
-        assigned_number_of_leads: 0
-      }));
+      // Call resetForm and verify values immediately after
+      await resetForm();
+
+      // Verify values after reset
+      console.log('After save - Country:', selectedCountry.value);
+      console.log('After save - Branch:', selectedBranch.value);
+      console.log('After save - Assigned Branch:', selectedAssignedBranch.value);
+
+    } else {
+      toast("Failed to save assigned leads", {
+        type: "error",
+        position: "top-right",
+        theme: "colored",
+      });
     }
   } catch (error) {
     console.error('Error saving assigned leads:', error);
-    Swal.fire({
-      title: 'Error!',
-      text: 'Failed to save assigned leads',
-      icon: 'error',
-      confirmButtonText: 'OK'
+    toast("Failed to save assigned leads", {
+      type: "error",
+      position: "top-right",
+      theme: "colored",
     });
   } finally {
     isLoading.value = false;
@@ -314,9 +353,17 @@ onMounted(async () => {
   getAllBranches();
 });
 
-watch([searchQuery, selectedCountry, selectedBranch, selectedAssignedBranch], () => {
+watch([searchQuery, selectedAssignedBranch], () => {
   fetchUsers();
 });
+
+// Separate watches for country and branch to avoid unnecessary fetches during reset
+watch([selectedCountry, selectedBranch], () => {
+  if (currentStep.value === 1) {
+    // Only fetch if we're on step 1 and values are not being reset
+    fetchUsers();
+  }
+}, { deep: true });
 
 // Fetch branches from API
 const getAllBranches = async () => {
@@ -338,15 +385,16 @@ const getAllBranches = async () => {
   <section>
     <VCard class="mb-6">
       <!-- Step 1: Select Country and Branch (Always visible) -->
-      <div>
+      <div :key="`form-${currentStep}`">
         <VCardItem>
           <VCardTitle>Select Lead Location</VCardTitle>
         </VCardItem>
 
         <VCardText>
           <VRow>
-            <Filters :selected-country="selectedCountry" @update-country="selectedCountry = $event"
-              :selected-branch="selectedBranch" @update-branch="selectedBranch = $event" country-label="Lead Country"
+            <Filters :key="`filters-${Date.now()}`" :selected-country="selectedCountry"
+              @update-country="selectedCountry = $event" :selected-branch="selectedBranch"
+              @update-branch="selectedBranch = $event" country-label="Lead Country"
               branch-label="Lead Branch (Optional)" />
           </VRow>
 

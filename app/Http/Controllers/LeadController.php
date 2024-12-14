@@ -224,17 +224,36 @@ class LeadController extends Controller
                     ->where('lead_country_id', $request->lead_country)
                     ->whereNull('assigned_user');
 
-                \Log::info('Initial lead count:', [
-                    'count' => $query->count()
-                ]);
+                $initialCount = $query->count();
+                \Log::info('Initial lead count:', ['count' => $initialCount]);
+
+                if ($initialCount === 0) {
+                    return $this->errorJsonResponse(
+                        'No unassigned leads found for the selected country.',
+                        ['message' => 'no_leads_found'],
+                        404
+                    );
+                }
 
                 // 2. Add branch filter if provided
                 if ($request->branch_id) {
                     $query->where('assigned_branch', $request->branch_id);
+                    $branchCount = $query->count();
                     \Log::info('After branch filter count:', [
                         'branch_id' => $request->branch_id,
-                        'count' => $query->count()
+                        'count' => $branchCount
                     ]);
+
+                    if ($branchCount === 0) {
+                        return $this->errorJsonResponse(
+                            'No unassigned leads found for the selected branch.',
+                            [
+                                'message' => 'no_leads_found_in_branch',
+                                'total_leads' => $initialCount
+                            ],
+                            404
+                        );
+                    }
                 }
 
                 $assignmentResults = [];
@@ -258,35 +277,46 @@ class LeadController extends Controller
                             'lead_ids' => $leadsToAssign->pluck('id')->toArray()
                         ]);
 
-                        // Update the assigned leads
-                        foreach ($leadsToAssign as $lead) {
-                            $beforeUpdate = $lead->toArray();
+                        if ($leadsToAssign->count() > 0) {
+                            // Update the assigned leads
+                            foreach ($leadsToAssign as $lead) {
+                                $beforeUpdate = $lead->toArray();
 
-                            $lead->assigned_user = $userId;
-                            $lead->assigned_date = now();
-                            $lead->save();
+                                $lead->assigned_user = $userId;
+                                $lead->assigned_user_date = now();
+                                $lead->save();
 
-                            $afterUpdate = $lead->fresh()->toArray();
+                                $afterUpdate = $lead->fresh()->toArray();
 
-                            \Log::info('Lead update details:', [
-                                'lead_id' => $lead->id,
-                                'before' => $beforeUpdate,
-                                'after' => $afterUpdate
-                            ]);
+                                \Log::info('Lead update details:', [
+                                    'lead_id' => $lead->id,
+                                    'before' => $beforeUpdate,
+                                    'after' => $afterUpdate
+                                ]);
+                            }
+
+                            $assignmentResults[] = [
+                                'user_id' => $userId,
+                                'assigned_count' => $leadsToAssign->count(),
+                                'lead_ids' => $leadsToAssign->pluck('id')->toArray()
+                            ];
                         }
-
-                        $assignmentResults[] = [
-                            'user_id' => $userId,
-                            'assigned_count' => $leadsToAssign->count(),
-                            'lead_ids' => $leadsToAssign->pluck('id')->toArray()
-                        ];
                     }
+                }
+
+                if (empty($assignmentResults)) {
+                    return $this->errorJsonResponse(
+                        'No leads were assigned. Please check the available leads and try again.',
+                        ['message' => 'no_assignments_made'],
+                        400
+                    );
                 }
 
                 \Log::info('Assignment completed:', $assignmentResults);
 
                 return $this->successJsonResponse('Leads assigned successfully!', [
-                    'assignments' => $assignmentResults
+                    'assignments' => $assignmentResults,
+                    'total_assigned' => collect($assignmentResults)->sum('assigned_count')
                 ]);
             });
 
