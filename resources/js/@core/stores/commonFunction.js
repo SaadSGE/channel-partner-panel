@@ -656,5 +656,50 @@ export const commonFunction = defineStore({
           : ["An unexpected error occurred"];
       }
     },
+    async addLeadStatus(leadStatus) {
+      try {
+        console.log(leadStatus);
+        const response = await $api("/lead-statuses", {
+          method: "POST",
+          body: leadStatus,
+        });
+        this.leadStatus.push(response.data);
+      } catch (error) {
+        console.error("Error adding lead status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async updateLeadStatus(id, leadStatus) {
+      try {
+        const response = await $api(`/lead-statuses/${id}`, {
+          method: "PUT",
+          body: leadStatus,
+        });
+        const index = this.leadStatus.findIndex((status) => status.id === id);
+        if (index !== -1) {
+          this.leadStatus[index] = response.data;
+        }
+      } catch (error) {
+        console.error("Error updating lead status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async deleteLeadStatus(id) {
+      try {
+        await $api(`/lead-statuses/${id}`, {
+          method: "DELETE",
+        });
+        this.leadStatus = this.leadStatus.filter((status) => status.id !== id);
+      } catch (error) {
+        console.error("Error deleting lead status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
   },
 });

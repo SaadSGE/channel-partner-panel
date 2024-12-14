@@ -1,58 +1,47 @@
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
-import { defineEmits, defineProps, onMounted, ref } from "vue";
-const loadings = ref([]);
-
+import { defineEmits, defineProps, ref } from "vue";
 const commonFunctionStore = commonFunction();
-const branchName = ref(""); // Branch name input
-const countryName = ref(null); // Selected country (ID)
-const countriesName = ref([]); // List of countries
+const statusName = ref(""); // Status name input
+const description = ref(""); // Description input
+const colorCode = ref(""); // Color code input
+const healthRating = ref(null); // Health rating input
 const isLoading = ref(false);
 const props = defineProps({
     isNavDrawerOpen: Boolean,
-    updateBranches: Function,
+    updateLeadStatuses: Function,
 });
 const refForm = ref(null);
-const emits = defineEmits(["update:isNavDrawerOpen", "updateBranches"]);
+const emits = defineEmits(["update:isNavDrawerOpen", "updateLeadStatuses"]);
 
 // Validation rule for required fields
 const requiredValidator = (value) => !!value || "Required field";
 
-// Fetch countries on component mount
-onMounted(async () => {
-    await getCountries();
-});
-
-// Fetch countries from API
-const getCountries = async () => {
-    try {
-        await commonFunctionStore.getAllCountries();
-        countriesName.value = commonFunctionStore.allCountries;
-    } catch (error) {
-        console.error("Error fetching countries:", error);
-    }
-};
-
 // Function to handle form submission
-const addBranch = async () => {
+const addStatus = async () => {
     const isValid = await refForm.value.validate();
     if (!isValid) return;
 
-    const branchData = {
-        name: branchName.value,
-        country_id: countryName.value,
+    const statusData = {
+        name: statusName.value,
+        description: description.value,
+        color_code: colorCode.value,
+        health_rating: healthRating.value,
     };
-
+    console.log(statusData);
     try {
         isLoading.value = true;
-        await commonFunctionStore.addBranch(branchData);
+        await commonFunctionStore.addLeadStatus(statusData);
         isLoading.value = false;
-        branchName.value = "";
-        countryName.value = null;
+        // Reset form fields
+        statusName.value = "";
+        description.value = "";
+        colorCode.value = "";
+        healthRating.value = null;
         emits("update:isNavDrawerOpen", false);
-        emits("updateBranches");
+        emits("updateLeadStatuses");
     } catch (error) {
-        console.error("Failed to add branch:", error);
+        console.error("Failed to add lead status:", error);
     }
 };
 </script>
@@ -62,7 +51,7 @@ const addBranch = async () => {
         elevation="10" :scrim="false" class="app-customizer">
         <div class="customizer-heading d-flex align-center justify-space-between">
             <div>
-                <h6 class="text-h6">Add New Branch</h6>
+                <h6 class="text-h6">Add New Lead Status</h6>
             </div>
             <div class="d-flex align-center gap-1">
                 <VBtn icon variant="text" color="medium-emphasis" size="small"
@@ -73,23 +62,19 @@ const addBranch = async () => {
         </div>
 
         <VDivider />
-        <VForm ref="refForm" @submit.prevent="addBranch" class="form-padding mt-4">
-            <AppTextField v-model="branchName" label="Branch Name" :rules="[requiredValidator]" class="mb-2" />
-            <!-- Country Select Field -->
-            <AppAutocomplete v-model="countryName" :items="countriesName" :item-title="(item) => item.name"
-                :item-value="(item) => item.id" label="Country Name" placeholder="Select Country"
-                :rules="[requiredValidator]" clearable />
+        <VForm ref="refForm" @submit.prevent="addStatus" class="form-padding mt-4">
+            <AppTextField v-model="statusName" label="Status Name" :rules="[requiredValidator]" class="mb-2" />
 
-            <VBtn :loading="isLoading" :disabled="isLoading" color="primary" @click="addBranch" class="mt-4" block>
+            <AppTextarea v-model="description" label="Description" :rules="[requiredValidator]" class="mb-2" />
+
+            <AppTextField v-model="colorCode" label="Color Code" :rules="[requiredValidator]" class="mb-2" />
+
+            <AppTextField v-model="healthRating" type="number" label="Health Rating" :rules="[requiredValidator]"
+                class="mb-2" />
+
+            <VBtn :loading="isLoading" :disabled="isLoading" color="primary" @click="addStatus" class="mt-4" block>
                 Add
             </VBtn>
         </VForm>
     </VNavigationDrawer>
 </template>
-
-<!-- <style lang="scss">
-.form-padding {
-    padding-block: 0 2rem;
-    padding-inline: 2rem;
-}
-</style> -->

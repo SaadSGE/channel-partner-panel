@@ -64,7 +64,7 @@ const deleteItem = async (item) => {
     if (result.isConfirmed) {
         try {
             await commonFunctionStore.deleteLeadStatus(data.id);
-            leadStatuses.value = commonFunctionStore.leadStatuses;
+            leadStatuses.value = commonFunctionStore.leadStatus;
             Swal.fire(
                 'Deleted!',
                 'The status has been deleted.',
