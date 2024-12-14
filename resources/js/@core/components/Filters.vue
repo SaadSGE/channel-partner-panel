@@ -129,10 +129,30 @@ const props = defineProps({
     type: Number,
     Required: false,
   },
+  selectedBranch: {
+    type: Number,
+    Required: false,
+  },
+  selectedAssignedBranch: {
+    type: Number,
+    Required: false,
+  },
+  countryLabel: {
+    type: String,
+    default: 'Filter by Country'
+  },
+  branchLabel: {
+    type: String,
+    default: 'Branch'
+  },
+  assignedBranchLabel: {
+    type: String,
+    default: 'Assigned User of Branch'
+  }
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedLeadStatus = ref(props.selectedLeadStatus);
@@ -153,6 +173,8 @@ const localSelectedUserStatus = ref(props.selectedUserStatus);
 const localSelectedCourseType = ref(props.selectedCourseType);
 const localSelectedMou = ref(props.selectedMou);
 const localSelectedAssignedStatus = ref(props.selectedAssignedStatus);
+const localSelectedBranch = ref(props.selectedBranch);
+const localSelectedAssignedBranch = ref(props.selectedAssignedBranch);
 
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
@@ -209,6 +231,12 @@ watch(localSelectedMou, (newValue) => {
 });
 watch(localSelectedAssignedStatus, (newValue) => {
   emit('update-assignedStatus', newValue);
+});
+watch(localSelectedBranch, (newValue) => {
+  emit('update-branch', newValue);
+});
+watch(localSelectedAssignedBranch, (newValue) => {
+  emit('update-assigned-branch', newValue);
 });
 
 const fetchFilterOptions = async () => {
@@ -387,7 +415,7 @@ const assignedStatuses = ref([
 
   <VCol cols="12" sm="6" md="3" v-if="props.selectedCountry !== undefined">
     <AppAutocomplete v-model="localSelectedCountry" :items="countries" :item-title="(item) => item.name"
-      :item-value="(item) => item.id" label="Filter by Country" placeholder="Select Country" clearable />
+      :item-value="(item) => item.id" :label="countryLabel" placeholder="Select Country" clearable />
   </VCol>
   <VCol cols="12" sm="6" md="3" v-if="props.selectedIntake !== undefined">
     <AppAutocomplete v-model="localSelectedIntake" :items="intakes" :item-title="(item) => item.name"
@@ -445,6 +473,16 @@ const assignedStatuses = ref([
     <AppDateTimePicker v-model="localSelectedDateTo" label="To Date" placeholder="Select To Date" />
   </VCol>
 
+  <VCol cols="12" md="3" v-if="props.selectedBranch !== undefined">
+    <AppAutocomplete v-model="localSelectedBranch" :items="commonFunctionStore.branches"
+      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="branchLabel" placeholder="Select Branch"
+      clearable />
+  </VCol>
 
+  <VCol cols="12" md="3" v-if="props.selectedAssignedBranch !== undefined">
+    <AppAutocomplete v-model="localSelectedAssignedBranch" :items="commonFunctionStore.branches"
+      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="assignedBranchLabel"
+      placeholder="Select Branch" clearable />
+  </VCol>
 
 </template>

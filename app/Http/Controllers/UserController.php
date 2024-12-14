@@ -24,6 +24,8 @@ class UserController extends Controller
         $parentId = request()->query('parentId', null);
         $fetchAll = filter_var(request()->query('fetchAll'), FILTER_VALIDATE_BOOLEAN);
         $statusFilter = request()->query('status', null); // New status filter
+        $branchId = request()->query('branch_id', null);
+        $assignedBranchId = request()->query('assigned_branch_id', null);
 
         if (auth('api')->user()->role != 'admin') {
             $parentId = auth('api')->user()->id;
@@ -40,6 +42,12 @@ class UserController extends Controller
                         // ... added company_name search
                         ->orWhere('company_name', 'LIKE', "%$searchQuery%"); // New search condition for company_name
                 });
+            })
+            ->when($branchId, function ($query, $branchId) {
+                return $query->where('branch_id', $branchId);
+            })
+            ->when($assignedBranchId, function ($query, $assignedBranchId) {
+                return $query->where('branch_id', $assignedBranchId);
             })
             ->when($roleFilter, function ($query, $roleFilter) {
                 return $query->where('role', 'LIKE', "%$roleFilter%");

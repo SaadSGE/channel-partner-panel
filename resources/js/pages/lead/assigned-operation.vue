@@ -1,12 +1,12 @@
 <script setup>
 import Filters from "@/@core/components/Filters.vue";
 import { commonFunction } from "@/@core/stores/commonFunction";
+import { useLeadStore } from "@/@core/stores/leadStore";
 import { useRolePermissionStore } from "@/@core/stores/rolePermission";
 import { useUserStore } from "@/@core/stores/user.js";
-import AddNewUserDrawer from "@/pages/user/add/AddNewUserDrawer.vue";
 import EditNewUserDrawer from "@/pages/user/add/EditNewUserDrawer.vue";
 import Swal from "sweetalert2";
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 // Define page meta
 definePage({
@@ -47,6 +47,20 @@ const parentId = ref(null);
 const userToSetParent = ref(null);
 const isAdmin = ref(getUserRole() === 'admin');
 const branches = ref([]);
+const selectedBranch = ref(null);
+const selectedAssignedBranch = ref(null);
+const currentStep = ref(1);
+const leads = ref([]);
+const leadStore = useLeadStore();
+const totalLeadCount = ref(0);
+
+// Add computed property for total assigned leads
+const totalAssignedLeads = computed(() => {
+  return users.value.reduce((sum, user) => {
+    return sum + (parseInt(user.assigned_number_of_leads) || 0);
+  }, 0);
+});
+
 // Methods
 const setParent = (user) => {
   userToSetParent.value = user;
@@ -97,11 +111,13 @@ const fetchUsers = async () => {
     const response = await userStore.fetchUsers(
       page.value,
       searchQuery.value,
-      selectedRole.value,
-      selectedParent.value,
-      selectedUserStatus.value,
-      selectedCountry.value,
-      selectedMou.value
+      'Counselllor',
+      null,
+      null,
+      null,
+      null,
+      null,
+      selectedAssignedBranch.value,
     );
     users.value = response.data;
     totalUsers.value = response.total;
@@ -152,19 +168,16 @@ const updateOptions = (options) => {
 };
 
 const headers = [
+  { title: "Branch", key: "branch.name" },
   { title: "Name", key: "full_name" },
-  { title: "Company", key: "company_name_with_email" },
+  { title: "Email", key: "email" },
+  { title: "Current Lead", key: "current_lead" },
   { title: "Role", key: "role" },
-  ...(isAdmin.value
-    ? [{ title: "Parent", key: "parent.full_name" }]
-    : []),
-
-  { title: "Record Count", key: "record_count" },
-
-  ...(isAdmin.value
-    ? [{ title: "Status", key: "status", sortable: false }]
-    : []),
-  { title: "Actions", key: "actions", sortable: false },
+  {
+    title: "Assigned Number of Leads",
+    key: "assigned_number_of_leads",
+    align: 'center',
+  },
 ];
 
 const updateUserStatus = async (user) => {
@@ -186,6 +199,113 @@ const updateUserStatus = async (user) => {
   }
 };
 
+const updateAssignedLeads = async (user, value) => {
+  try {
+    const numValue = parseInt(value);
+
+    // If value is 0, just update without showing alert
+    if (numValue === 0) {
+      user.assigned_number_of_leads = 0;
+      return;
+    }
+
+    // Validate if it's a valid number
+
+
+    // Calculate total excluding current user's previous value
+    const otherUsersTotal = users.value.reduce((sum, u) => {
+      if (u.id !== user.id) {
+        return sum + (parseInt(u.assigned_number_of_leads) || 0);
+      }
+      return sum;
+    }, 0);
+
+    // Check if new total would exceed available leads
+    if (otherUsersTotal + numValue > totalLeadCount.value) {
+      Swal.fire({
+        title: 'Warning!',
+        text: `Total assigned leads cannot exceed ${totalLeadCount.value}`,
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
+      user.assigned_number_of_leads = 0;
+      return;
+    }
+
+    // Update the value if validation passes
+    user.assigned_number_of_leads = numValue;
+  } catch (error) {
+    console.error('Error updating assigned leads:', error);
+    Swal.fire('Error!', 'Failed to update assigned leads', 'error');
+  }
+};
+
+const fetchLeads = async () => {
+  isLoading.value = true;
+  try {
+    // First fetch the lead count
+    const countResponse = await leadStore.fetchLeadCount(
+      selectedCountry.value,
+      selectedBranch.value
+    );
+    totalLeadCount.value = countResponse.total || 0;
+
+    // Check if lead count is 0
+    if (totalLeadCount.value === 0) {
+      Swal.fire('Warning!', 'No unassigned leads found for the selected country', 'warning');
+      return; // Don't proceed to step 2
+    }
+
+    // Then move to next step
+    currentStep.value = 2;
+  } catch (error) {
+    console.error('Error fetching leads:', error);
+    Swal.fire('Error!', 'Failed to fetch leads', 'error');
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+
+const saveAssignedLeads = async () => {
+  isLoading.value = true;
+  try {
+    const assignedData = users.value.map(user => ({
+      user_id: user.id,
+      assigned_leads: user.assigned_number_of_leads || 0
+    })).filter(data => data.assigned_leads > 0); // Only include users with assigned leads
+
+    const response = await leadStore.saveAssignedLeads(assignedData, selectedCountry.value, selectedAssignedBranch.value);
+
+    if (response.success) {
+      Swal.fire({
+        title: 'Success!',
+        text: 'Leads assigned successfully',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
+      // Optionally reset or refresh the page
+      currentStep.value = 1;
+      selectedAssignedBranch.value = null;
+      users.value = users.value.map(user => ({
+        ...user,
+        assigned_number_of_leads: 0
+      }));
+    }
+  } catch (error) {
+    console.error('Error saving assigned leads:', error);
+    Swal.fire({
+      title: 'Error!',
+      text: 'Failed to save assigned leads',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 onMounted(async () => {
   await roleStore.getAllRoles();
   roles.value = roleStore.roles;
@@ -194,7 +314,7 @@ onMounted(async () => {
   getAllBranches();
 });
 
-watch([searchQuery, selectedRole, selectedParent, selectedUserStatus, selectedCountry, selectedMou], () => {
+watch([searchQuery, selectedCountry, selectedBranch, selectedAssignedBranch], () => {
   fetchUsers();
 });
 
@@ -216,73 +336,128 @@ const getAllBranches = async () => {
   <EditNewUserDrawer :isDrawerOpen="isEditUserDrawerVisible" :editedUser="selectedUser" :branches="branches"
     @update:isDrawerOpen="isEditUserDrawerVisible = $event" @userUpdated="handleUserUpdate" />
   <section>
-
-
-
     <VCard class="mb-6">
-      <VCardItem class="pb-4" v-if="$can('filter', 'user')">
-        <VCardTitle>Filter</VCardTitle>
-      </VCardItem>
+      <!-- Step 1: Select Country and Branch (Always visible) -->
+      <div>
+        <VCardItem>
+          <VCardTitle>Select Lead Location</VCardTitle>
+        </VCardItem>
 
-      <VCardText v-if="$can('filter', 'user')">
-        <VRow>
-          <!-- 👉 Select Role -->
-          <Filters :selected-role="selectedRole" @update-role="selectedRole = $event" :selected-parent="selectedParent"
-            @update-parent="selectedParent = $event" :selected-userStatus="selectedUserStatus"
-            @update-userStatus="selectedUserStatus = $event" :selected-country="selectedCountry"
-            @update-country="selectedCountry = $event" :selected-mou="selectedMou" @update-mou="selectedMou = $event">
-          </Filters>
+        <VCardText>
+          <VRow>
+            <Filters :selected-country="selectedCountry" @update-country="selectedCountry = $event"
+              :selected-branch="selectedBranch" @update-branch="selectedBranch = $event" country-label="Lead Country"
+              branch-label="Lead Branch (Optional)" />
+          </VRow>
 
+          <VRow class="mt-4">
+            <VCol cols="12" class="text-center">
+              <VBtn color="primary" :disabled="!selectedCountry" :loading="isLoading" @click="fetchLeads">
+                Continue
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VCardText>
+      </div>
 
-        </VRow>
-      </VCardText>
+      <!-- Step 2: Only show if there are leads to assign -->
+      <div v-if="currentStep === 2 && totalLeadCount > 0">
+        <VDivider class="my-4" />
 
-      <VDivider />
+        <VCardItem>
+          <VCardTitle>Assign Leads to Counsellors(To complete this step, select a branch)</VCardTitle>
+        </VCardItem>
 
-      <VCardText class="d-flex flex-wrap gap-4">
-        <div class="me-3 d-flex gap-3">
-          <AppSelect :model-value="itemsPerPage" :items="[
-            { value: 10, title: '10' },
-            { value: 25, title: '25' },
-            { value: 50, title: '50' },
-            { value: 100, title: 100 },
-            { value: -1, title: 'All' },
-          ]" style="inline-size: 6.25rem;" @update:model-value="itemsPerPage = parseInt($event, 10)" />
-        </div>
-        <VSpacer />
+        <VCardText>
+          <VRow>
+            <VCol cols="12" md="4">
+              <VSelect v-model="selectedAssignedBranch" :items="branches" item-title="name" item-value="id"
+                label="Select Branch" />
+            </VCol>
+          </VRow>
+        </VCardText>
 
-        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-          <!-- 👉 Search  -->
-          <div style="inline-size: 15.625rem;">
-            <AppTextField v-model="searchQuery" placeholder="Search User" />
-          </div>
+        <!-- Only show DataTable and Save button when branch is selected -->
+        <template v-if="selectedAssignedBranch">
+          <VCardText class="text-end mb-4">
+            <VBtn color="primary" :loading="isLoading" @click="saveAssignedLeads">
+              Save Assigned Leads
+            </VBtn>
+          </VCardText>
 
+          <VCardText v-if="selectedAssignedBranch">
+            <VRow>
+              <VCol cols="12" md="4">
+                <VCard class="bg-primary">
+                  <VCardText class="text-center">
+                    <div class="text-h6 text-white mb-1">Total Leads Available</div>
+                    <div class="text-h4 text-white">{{ totalLeadCount }}</div>
+                  </VCardText>
+                </VCard>
+              </VCol>
 
-        </div>
-      </VCardText>
+              <VCol cols="12" md="4">
+                <VCard class="bg-success">
+                  <VCardText class="text-center">
+                    <div class="text-h6 text-white mb-1">Total Leads Assigned</div>
+                    <div class="text-h4 text-white">{{ totalAssignedLeads }}</div>
+                  </VCardText>
+                </VCard>
+              </VCol>
 
-      <VDivider />
+              <VCol cols="12" md="4">
+                <VCard class="bg-info">
+                  <VCardText class="text-center">
+                    <div class="text-h6 text-white mb-1">Remaining Leads</div>
+                    <div class="text-h4 text-white">{{ totalLeadCount - totalAssignedLeads }}</div>
+                  </VCardText>
+                </VCard>
+              </VCol>
+            </VRow>
+          </VCardText>
 
-      <!-- SECTION datatable -->
-      <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="users"
-        :items-length="totalUsers" :headers="headers" class="text-no-wrap" show-select :height="tableHeight"
-        @update:options="updateOptions">
-        <template #item.actions="{ item }">
+          <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="users"
+            :items-length="totalUsers" :headers="headers" class="text-no-wrap" :height="tableHeight">
+            <template #item.branch.name="{ item }">
+              {{ item.branch?.name || 'N/A' }}
+            </template>
 
+            <template #item.full_name="{ item }">
+              {{ item.full_name }}
+            </template>
+
+            <template #item.email="{ item }">
+              {{ item.email }}
+            </template>
+
+            <template #item.current_lead="{ item }">
+              {{ item.current_lead || 0 }}
+            </template>
+
+            <template #item.role="{ item }">
+              {{ item.role }}
+            </template>
+
+            <template #item.assigned_number_of_leads="{ item }">
+              <VTextField v-model="item.assigned_number_of_leads" type="number" min="0" density="compact"
+                variant="outlined" hide-details class="w-20"
+                @update:model-value="value => updateAssignedLeads(item, value)" />
+            </template>
+          </VDataTableServer>
         </template>
-        <template #item.status="{ item }">
-          <VSwitch v-model="item.status" :true-value="1" :false-value="0" @change="updateUserStatus(item)"
-            :loading="item.statusLoading" />
-        </template>
-
-        <!-- pagination -->
-        <template #bottom>
-          <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalUsers" />
-        </template>
-      </VDataTableServer>
-      <!-- SECTION -->
+      </div>
     </VCard>
-    <!-- 👉 Add New User -->
-    <AddNewUserDrawer v-model:isDrawerOpen="isAddNewUserDrawerVisible" :branches="branches" @user-data="addUser" />
+
   </section>
 </template>
+
+<style scoped>
+.v-card {
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+}
+</style>

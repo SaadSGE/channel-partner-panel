@@ -111,6 +111,8 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/students/{id}/documents', [StudentController::class, 'updateDocuments']);
 });
 
+Route::get('/leads/count', [LeadController::class, 'getLeadCount']);
+Route::post('/leads/assign', [LeadController::class, 'assignLeads']);
 Route::apiResource('daily-tasks', DailyTaskController::class);
 Route::get('/active-notices', [NoticeController::class, 'getActiveNotices']);
 Route::apiResource('notices', NoticeController::class);

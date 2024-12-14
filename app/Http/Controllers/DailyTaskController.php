@@ -12,29 +12,84 @@ class DailyTaskController extends Controller
      */
     public function index(Request $request)
     {
-        $query = DailyTask::query();
+        $user = auth('api')->user();
+        $perPage = (int) $request->query('perPage', 10);
+        $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
+        $sortBy = $request->query('sortBy', 'created_at');
+        $orderBy = $request->query('orderBy', 'desc');
 
-        // Search by user_id if provided
-        $query->when($request->user_id, function ($q) use ($request) {
-            return $q->where('user_id', $request->user_id);
+        $query = DailyTask::with(['user:id,first_name,last_name,email']);
+
+        // Search functionality
+        $query->when($searchQuery, function ($q) use ($searchQuery) {
+            return $q->where(function ($q) use ($searchQuery) {
+                $q->where('yesterday_tasks', 'LIKE', "%$searchQuery%")
+                    ->orWhere('today_plans', 'LIKE', "%$searchQuery%")
+                    ->orWhere('blockers', 'LIKE', "%$searchQuery%")
+                    ->orWhereHas('user', function ($q) use ($searchQuery) {
+                        $q->where('first_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('last_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%");
+                    });
+            });
         });
 
-        // Search by date range if provided
-        $query->when($request->dateFrom, function ($q) use ($request) {
-            return $q->whereDate('created_at', '>=', $request->dateFrom);
+        // Filters
+        $query->when($request->filled('user_id'), function ($q) use ($request) {
+            return $q->where('user_id', $request->query('user_id'));
         });
 
-        $query->when($request->dateTo, function ($q) use ($request) {
-            return $q->whereDate('created_at', '<=', $request->dateTo);
+        $query->when($request->filled('dateFrom'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '>=', $request->query('dateFrom'));
         });
 
-        // Order by latest first
-        $query->latest();
+        $query->when($request->filled('dateTo'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '<=', $request->query('dateTo'));
+        });
 
-        // Paginate results (15 items per page by default)
-        $dailyTasks = $query->paginate($request->per_page ?? 15);
+        // Sorting
+        $query->orderBy($sortBy, $orderBy);
 
-        return $this->successJsonResponse('Daily tasks fetched successfully', $dailyTasks);
+        // Pagination
+        $dailyTasks = $query->paginate($perPage);
+
+        // Log the activity
+        //$this->logIndexActivity($request, $dailyTasks->total());
+
+        return $this->successJsonResponse(
+            'Daily tasks fetched successfully',
+            $dailyTasks->items(),
+            $dailyTasks->total()
+        );
+    }
+
+    private function logIndexActivity(Request $request, int $totalResults)
+    {
+        $activityType = 'daily_task_index_view';
+        $properties = [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'total_results' => $totalResults,
+        ];
+
+        // Check if any filter or search is applied
+        $filterParams = ['user_id', 'dateFrom', 'dateTo'];
+        $appliedFilters = array_filter($request->only($filterParams));
+
+        if (!empty($appliedFilters)) {
+            $activityType = 'daily_task_filter';
+            $properties['filters'] = $appliedFilters;
+        }
+
+        if ($request->filled('searchQuery')) {
+            $activityType = 'daily_task_search';
+            $properties['search_query'] = $request->query('searchQuery');
+        }
+
+        activity()
+            ->causedBy(auth('api')->user())
+            ->withProperties($properties)
+                ->log($activityType);
     }
 
     /**
