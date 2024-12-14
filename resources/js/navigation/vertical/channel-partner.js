@@ -143,19 +143,17 @@ export default [
     subject: "dashboard",
     children: [
       {
+        title: "Lead Status",
+        to: "lead-status",
+        action: "read",
+        subject: "dashboard",
+      },
+      {
         title: "All Leads",
         to: "lead",
         action: "read",
         subject: "dashboard",
       },
-
-      // {
-      //   title: ' Assigned Lead',
-      //   to: 'record-university',
-      //   action: 'read',
-      //   subject: 'record',
-
-      // },
 
       // {
       //   title: 'Unassigned Lead',

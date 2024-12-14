@@ -10,6 +10,7 @@ export const commonFunction = defineStore({
     intakes: [],
     notices: [],
     activeNotices: [],
+    tasks: [],
     errors: [],
     universities: [],
     courseDetails: [],
@@ -590,6 +591,55 @@ export const commonFunction = defineStore({
         this.notices = this.notices.filter((notice) => notice.id !== id);
       } catch (error) {
         console.error("Error deleting notice:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+
+    async getDailyTasks(
+      id = null,
+      page = 1,
+      itemsPerPage = 10,
+      searchQuery = "",
+      sortBy = "",
+      orderBy = "",
+      dateFrom = null,
+      dateTo = null
+    ) {
+      try {
+        const response = await $api("/daily-tasks", {
+          method: "GET",
+          params: {
+            id,
+            page,
+            perPage: itemsPerPage,
+            searchQuery,
+            sortBy,
+            orderBy,
+            dateFrom,
+            dateTo,
+          },
+        });
+        console.log(response.data);
+        this.tasks = response.data;
+      } catch (error) {
+        console.error("Error fetching daily tasks:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+
+    async addDailyTask(task) {
+      try {
+        const response = await $api("/daily-tasks", {
+          method: "POST",
+          body: task,
+        });
+        this.tasks.push(response.data);
+      } catch (error) {
+        console.error("Error adding task:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];

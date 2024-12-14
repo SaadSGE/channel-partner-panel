@@ -5,48 +5,64 @@ definePage({
         subject: 'dashboard',
     },
 })
-import { computed, onMounted, ref } from 'vue';
+import { commonFunction } from '@/@core/stores/commonFunction';
+import { ref } from 'vue';
 
-const tasks = ref([
-    {
-        date: '2024-12-05',
-        yesterday: 'Completed module A.',
-        today: 'Work on module B.',
-        blockages: 'None'
-    },
-    {
-        date: '2024-12-04',
-        yesterday: 'Attended client calls.',
-        today: 'Finalize designs.',
-        blockages: 'Delayed feedback.'
-    }
-])
-
+const tasks = ref([]);
+const commonFunctionStore = commonFunction();
 const isLoading = ref(false)
 const totalTasks = ref(0)
 const itemsPerPage = ref(10)
+const page = ref(1)
+const sortBy = ref()
+const orderBy = ref()
+const search = ref('')
+const selectedDateFrom = ref(null)
+const selectedDateTo = ref(null)
 
-const sortedTasks = computed(() => {
-    return [...tasks.value].sort((a, b) => new Date(b.date) - new Date(a.date))
-})
 const headers = ref([
-    { title: 'Date', key: 'date' },
-    // { title: 'User', key: 'student.name' },
-    { title: 'Yesterday', key: 'yesterday' },
-    { title: 'Today', key: 'today' },
-    { title: 'Blockages', key: 'blockages' },
+    { title: 'Date', key: 'created_at' },
+    { title: 'User', key: 'user.full_name' },
+    { title: 'Yesterday', key: 'yesterday_tasks' },
+    { title: 'Today', key: 'today_plans' },
+    { title: 'Blockages', key: 'blockers' },
 
 
 ])
-onMounted(async () => {
+onMounted(() => {
+    fetchTasks()
+})
+
+
+const fetchTasks = async () => {
     try {
         isLoading.value = true
-        // Add API call here to fetch tasks
+        await commonFunctionStore.getDailyTasks(
+            null,
+            page.value,
+            itemsPerPage.value,
+            search.value,
+            sortBy.value,
+            orderBy.value,
+            selectedDateFrom.value,
+            selectedDateTo.value,
+        )
+        tasks.value = commonFunctionStore.tasks
+        totalTasks.value = commonFunctionStore.tasks.total
     } catch (error) {
         console.error('Failed to fetch tasks:', error)
     } finally {
         isLoading.value = false
     }
+}
+
+// Watchers
+watch([
+    search,
+    selectedDateFrom,
+    selectedDateTo,
+], () => {
+    fetchTasks()
 })
 </script>
 
@@ -59,12 +75,9 @@ onMounted(async () => {
                 <VCardText v-if="$can('filter', 'user')">
                     <VRow>
                         <!-- 👉 Select status -->
-                        <!-- <Filters :selected-assigned-status="selectedAssignedStatus"
-                        :selected-lead-status="selectedLeadStatus" :selected-dateFrom="selectedDateFrom"
-                        :selected-dateTo="selectedDateTo" @update-assignedStatus="selectedAssignedStatus = $event"
-                        @update-lead-status="selectedLeadStatus = $event" @update-dateFrom="selectedDateFrom = $event"
-                        @update-dateTo="selectedDateTo = $event">
-                    </Filters> -->
+                        <Filters :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
+                            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
+                        </Filters>
                     </VRow>
 
                 </VCardText>
