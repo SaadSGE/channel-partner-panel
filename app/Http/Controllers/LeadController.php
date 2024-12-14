@@ -216,7 +216,7 @@ class LeadController extends Controller
     public function assignLeads(Request $request)
     {
         try {
-            \Log::info('Starting lead assignment with payload:', $request->all());
+
 
             return \DB::transaction(function () use ($request) {
                 // 1. Build the base query for unassigned leads
@@ -225,7 +225,7 @@ class LeadController extends Controller
                     ->whereNull('assigned_user');
 
                 $initialCount = $query->count();
-                \Log::info('Initial lead count:', ['count' => $initialCount]);
+
 
                 if ($initialCount === 0) {
                     return $this->errorJsonResponse(
@@ -239,10 +239,7 @@ class LeadController extends Controller
                 if ($request->branch_id) {
                     $query->where('assigned_branch', $request->branch_id);
                     $branchCount = $query->count();
-                    \Log::info('After branch filter count:', [
-                        'branch_id' => $request->branch_id,
-                        'count' => $branchCount
-                    ]);
+
 
                     if ($branchCount === 0) {
                         return $this->errorJsonResponse(
@@ -270,12 +267,7 @@ class LeadController extends Controller
                             ->limit($count)
                             ->get();
 
-                        \Log::info('Leads selected for assignment:', [
-                            'user_id' => $userId,
-                            'requested_count' => $count,
-                            'actual_count' => $leadsToAssign->count(),
-                            'lead_ids' => $leadsToAssign->pluck('id')->toArray()
-                        ]);
+
 
                         if ($leadsToAssign->count() > 0) {
                             // Update the assigned leads
@@ -312,7 +304,7 @@ class LeadController extends Controller
                     );
                 }
 
-                \Log::info('Assignment completed:', $assignmentResults);
+
 
                 return $this->successJsonResponse('Leads assigned successfully!', [
                     'assignments' => $assignmentResults,
@@ -321,9 +313,6 @@ class LeadController extends Controller
             });
 
         } catch (\Exception $e) {
-            \Log::error('Error in assignLeads: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return $this->errorJsonResponse(
                 'Failed to assign leads.',
