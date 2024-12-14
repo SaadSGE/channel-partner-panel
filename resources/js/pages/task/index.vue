@@ -19,10 +19,11 @@ const orderBy = ref()
 const search = ref('')
 const selectedDateFrom = ref(null)
 const selectedDateTo = ref(null)
+const selectedUser = ref(null)
 
 const headers = ref([
     { title: 'Date', key: 'created_at' },
-    { title: 'User', key: 'user.full_name' },
+    { title: 'User', key: 'user.name_with_email' },
     { title: 'Yesterday', key: 'yesterday_tasks' },
     { title: 'Today', key: 'today_plans' },
     { title: 'Blockages', key: 'blockers' },
@@ -31,14 +32,16 @@ const headers = ref([
 ])
 onMounted(() => {
     fetchTasks()
+    console.log(selectedUser.value)
 })
 
 
 const fetchTasks = async () => {
     try {
         isLoading.value = true
+        console.log(selectedUser.value)
         await commonFunctionStore.getDailyTasks(
-            null,
+            selectedUser.value,
             page.value,
             itemsPerPage.value,
             search.value,
@@ -61,6 +64,7 @@ watch([
     search,
     selectedDateFrom,
     selectedDateTo,
+    selectedUser,
 ], () => {
     fetchTasks()
 })
@@ -76,7 +80,8 @@ watch([
                     <VRow>
                         <!-- 👉 Select status -->
                         <Filters :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
-                            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
+                            :selected-user="selectedUser" @update-dateFrom="selectedDateFrom = $event"
+                            @update-dateTo="selectedDateTo = $event" @update-user="selectedUser = $event">
                         </Filters>
                     </VRow>
 

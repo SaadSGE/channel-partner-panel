@@ -41,6 +41,7 @@ const selectedParent = ref(null);
 const selectedUserStatus = ref(null);
 const selectedLeadStatus = ref(null);
 const users = ref([]);
+const userforLead = ref([]);
 const totalUsers = ref(0);
 const roleStore = useRolePermissionStore();
 
@@ -148,11 +149,15 @@ const props = defineProps({
   assignedBranchLabel: {
     type: String,
     default: 'Assigned User of Branch'
-  }
+  },
+  selectedUser: {
+    type: Number,
+    Required: false,
+  },
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch', 'update-user']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedLeadStatus = ref(props.selectedLeadStatus);
@@ -175,7 +180,7 @@ const localSelectedMou = ref(props.selectedMou);
 const localSelectedAssignedStatus = ref(props.selectedAssignedStatus);
 const localSelectedBranch = ref(props.selectedBranch);
 const localSelectedAssignedBranch = ref(props.selectedAssignedBranch);
-
+const localSelectedUser = ref(props.selectedUser);
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
 });
@@ -237,6 +242,9 @@ watch(localSelectedBranch, (newValue) => {
 });
 watch(localSelectedAssignedBranch, (newValue) => {
   emit('update-assigned-branch', newValue);
+});
+watch(localSelectedUser, (newValue) => {
+  emit('update-user', newValue);
 });
 
 const fetchFilterOptions = async () => {
@@ -340,13 +348,30 @@ const fetchUsers = async () => {
   }
 };
 
+const fetchUserforLead = async () => {
+  isLoading.value = true;
+  try {
+    const response = await userStore.fetcAllhUser();
+
+    userforLead.value = userStore.allUsers;
+
+  } catch (error) {
+    console.error("Error fetching leadusers:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 // Watch for changes to specific props and fetch users conditionally
 watch([selectedRole, selectedParent], () => {
   if (selectedRole.value || selectedParent.value) {
     fetchUsers();
   }
 });
-
+onMounted(async () => {
+  if (props.selectedUser !== undefined) {
+    await fetchUserforLead();
+  }
+});
 onMounted(async () => {
   if (props.selectedRole !== undefined) {
     await roleStore.getAllRoles();
@@ -358,7 +383,6 @@ onMounted(async () => {
 });
 onMounted(async () => {
   await loadEditors();
-  console.log(selectedLeadStatus, localSelectedLeadStatus);
 });
 
 const loadEditors = async () => {
@@ -434,7 +458,10 @@ const assignedStatuses = ref([
       :item-value="(item) => item.id" label="Filter by coursetype" placeholder="Select Coursetype" clearable />
   </VCol>
   <!-- user -->
-
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedUser !== undefined">
+    <AppAutocomplete v-model="localSelectedUser" :items="userforLead" :item-title="(item) => item.name_with_email"
+      :item-value="(item) => item.id" label="By User" placeholder="Select User" clearable />
+  </VCol>
   <VCol cols="12" sm="6" md="3" v-if="props.selectedRole !== undefined">
     <AppSelect v-model="localSelectedRole" label="Filter by Role" placeholder="Select role" :items="roles" clearable
       clear-icon="tabler-x" :item-title="(item) => item.role" :item-value="(item) => item.role" />

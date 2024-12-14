@@ -14,6 +14,7 @@ const commonFunctionStore = commonFunction();
 const leadStatuses = ref([]);
 const isNavDrawerOpen = ref(false)
 const isNavDrawerOpenEdit = ref(false)
+const search = ref('')
 onMounted(async () => {
     await getAllLeadStatuses();
 });
@@ -98,7 +99,7 @@ const deleteItem = async (item) => {
                 </VCol>
             </VRow>
         </VCardText>
-        <VDataTable :headers="headers" :items="leadStatuses || []" :items-per-page="10"
+        <VDataTable :headers="headers" :items="leadStatuses || []" :items-per-page="10" :search="search"
             class="text-no-wrap color-black table-padding">
             <template #item.actions="{ item }">
                 <div class="d-flex gap-1">

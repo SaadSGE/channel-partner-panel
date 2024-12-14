@@ -284,16 +284,16 @@ onUnmounted(() => {
 
 .button-neon {
   animation: neon 1.5s ease-in-out infinite alternate;
-  box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 10px #0ff;
+  box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 10px rgb(214, 44, 6);
 }
 
 @keyframes neon {
   from {
-    box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 10px #0ff;
+    box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 10px rgb(214, 44, 6);
   }
 
   to {
-    box-shadow: 0 0 20px #fff, 0 0 30px #0ff, 0 0 20px #0ff;
+    box-shadow: 0 0 10px #fff, 0 0 20px rgb(214, 44, 6), 0 0 20px rgb(214, 44, 6);
   }
 }
 </style>

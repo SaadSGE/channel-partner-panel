@@ -598,7 +598,7 @@ export const commonFunction = defineStore({
     },
 
     async getDailyTasks(
-      id = null,
+      id,
       page = 1,
       itemsPerPage = 10,
       searchQuery = "",
@@ -608,10 +608,11 @@ export const commonFunction = defineStore({
       dateTo = null
     ) {
       try {
+        console.log(id);
         const response = await $api("/daily-tasks", {
           method: "GET",
           params: {
-            id,
+            user_id: id,
             page,
             perPage: itemsPerPage,
             searchQuery,
@@ -646,8 +647,12 @@ export const commonFunction = defineStore({
     },
     async getLeadStatus() {
       try {
-        const response = await $api("/lead-statuses", { method: "GET" });
-        console.log(response.data);
+        const response = await $api("/lead-statuses", {
+          method: "GET",
+          params: {
+            searchQuery,
+          },
+        });
         this.leadStatus = response.data;
       } catch (error) {
         console.error("Error fetching lead status:", error);
