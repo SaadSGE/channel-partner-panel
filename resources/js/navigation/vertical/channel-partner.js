@@ -143,6 +143,12 @@ export default [
     subject: "dashboard",
     children: [
       {
+        title: "Lead Status",
+        to: "lead-status",
+        action: "read",
+        subject: "dashboard",
+      },
+      {
         title: "All Leads",
         to: "lead",
         action: "read",

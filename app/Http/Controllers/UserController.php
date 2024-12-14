@@ -32,7 +32,7 @@ class UserController extends Controller
         }
 
         // Query the users
-        $query = User::with(['parent:id,parent_id,first_name,last_name,role','documents'])
+        $query = User::with(['parent:id,parent_id,first_name,last_name,role','documents','branch'])
             ->where('role', '!=', 'admin')
             ->when($searchQuery, function ($query, $searchQuery) {
                 return $query->where(function ($query) use ($searchQuery) {

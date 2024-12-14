@@ -72,6 +72,7 @@ declare module 'vue-router/auto/routes' {
     'forgot-password': RouteRecordInfo<'forgot-password', '/forgot-password', Record<never, never>, Record<never, never>>,
     'lead': RouteRecordInfo<'lead', '/lead', Record<never, never>, Record<never, never>>,
     'lead-assigned-operation': RouteRecordInfo<'lead-assigned-operation', '/lead/assigned-operation', Record<never, never>, Record<never, never>>,
+    'lead-status': RouteRecordInfo<'lead-status', '/lead/status', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'nigeria': RouteRecordInfo<'nigeria', '/nigeria', Record<never, never>, Record<never, never>>,
     'not-authorized': RouteRecordInfo<'not-authorized', '/not-authorized', Record<never, never>, Record<never, never>>,
