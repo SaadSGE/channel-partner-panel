@@ -143,19 +143,17 @@ export default [
     subject: "dashboard",
     children: [
       {
+        title: "Lead Status",
+        to: "lead-status",
+        action: "read",
+        subject: "dashboard",
+      },
+      {
         title: "All Leads",
         to: "lead",
         action: "read",
         subject: "dashboard",
       },
-
-      // {
-      //   title: ' Assigned Lead',
-      //   to: 'record-university',
-      //   action: 'read',
-      //   subject: 'record',
-
-      // },
 
       // {
       //   title: 'Unassigned Lead',
@@ -178,6 +176,27 @@ export default [
       //   subject: 'record',
 
       // },
+    ],
+  },
+
+  {
+    title: "Daily Task",
+    icon: { icon: "tabler-clipboard-copy" },
+    action: "read",
+    subject: "dashboard",
+    children: [
+      {
+        title: "Add New",
+        to: "task-add",
+        action: "read",
+        subject: "dashboard",
+      },
+      {
+        title: "Task Schedule",
+        to: "task",
+        action: "read",
+        subject: "dashboard",
+      },
     ],
   },
   {

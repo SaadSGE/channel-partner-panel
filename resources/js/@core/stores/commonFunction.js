@@ -8,11 +8,14 @@ export const commonFunction = defineStore({
     branches: [],
     courses: [],
     intakes: [],
+    notices: [],
+    activeNotices: [],
+    tasks: [],
+    leadStatus: [],
     errors: [],
     universities: [],
     courseDetails: [],
     courseTypes: [],
-    students: [],
     countryIntakeUniversityCourse: [],
     selectedCountryId: null,
     selectedCourseId: null,
@@ -57,7 +60,7 @@ export const commonFunction = defineStore({
     },
 
     getFilteredCourseDetails:
-      (state) => (countryId, courseId, intakeId, universityId, studentId) => {
+      (state) => (countryId, courseId, intakeId, universityId) => {
         state.selectedCountryId = countryId;
         state.selectedCourseId = courseId;
         state.selectedIntakeId = intakeId;
@@ -119,7 +122,6 @@ export const commonFunction = defineStore({
           method: "GET",
         });
         this.intakes = response.data;
-        return response.data;
       } catch (error) {
         console.error("Error fetching intakes:", error);
         this.errors = error.response
@@ -133,7 +135,6 @@ export const commonFunction = defineStore({
           method: "GET",
         });
         this.courseTypes = response.data;
-        return response.data;
       } catch (error) {
         console.error("Error fetching course types:", error);
         this.errors = error.response
@@ -152,7 +153,6 @@ export const commonFunction = defineStore({
           { method: "GET" }
         );
         this.universities = response.data;
-        return response.data;
       } catch (error) {
         console.error("Error fetching universities:", error);
         this.errors = error.response
@@ -171,7 +171,6 @@ export const commonFunction = defineStore({
         this.courseDetails = response.data;
         this.selectedIntakeId = intakeId;
         this.selectedUniversityId = universityId;
-        return response.data;
       } catch (error) {
         console.error("Error fetching course details:", error);
         this.errors = error.response
@@ -204,7 +203,6 @@ export const commonFunction = defineStore({
 
         // Convert Map values to array
         this.countries = Array.from(countryMap.values());
-        return response.data;
       } catch (error) {
         console.error("Error fetching countries:", error);
         this.errors = error.response
@@ -217,7 +215,6 @@ export const commonFunction = defineStore({
         const response = await $api("/application-country", { method: "GET" });
 
         this.countries = response.data;
-        return response.data;
       } catch (error) {
         console.error("Error fetching countries:", error);
         this.errors = error.response
@@ -230,7 +227,6 @@ export const commonFunction = defineStore({
         const response = await $api("/course", { method: "GET" });
 
         this.courses = response.data;
-        return response.data;
       } catch (error) {
         console.error("Error fetching courses:", error);
         this.errors = error.response
@@ -243,7 +239,6 @@ export const commonFunction = defineStore({
         const response = await $api("/intake", { method: "GET" });
 
         this.intakes = response.data;
-        return response.data;
       } catch (error) {
         console.error("Error fetching intakes:", error);
         this.errors = error.response
@@ -522,39 +517,190 @@ export const commonFunction = defineStore({
       }
     },
 
-    async getAllStudents() {
+    async getNotices() {
       try {
-        const response = await $api("/students", { method: "GET" });
-        this.students = response.data;
+        const response = await $api("/notices", {
+          method: "GET",
+        });
+        this.notices = response.data;
       } catch (error) {
-        console.error("Error fetching students:", error);
+        console.error("Error fetching notices:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];
       }
     },
+    async getActiveNotices() {
+      try {
+        const response = await $api("/active-notices", {
+          method: "GET",
+        });
+        this.activeNotices = response.data;
+      } catch (error) {
+        console.error("Error fetching active notices:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async addNotice(notice) {
+      try {
+        const response = await $api("/notices", {
+          method: "POST",
+          body: notice,
+        });
 
-    async getStudentById(id) {
-      try {
-        const response = await $api(`/students/${id}`, { method: "GET" });
-        this.students = response.data;
-        return response.data;
+        this.notices.push(response.data);
       } catch (error) {
-        console.error("Error fetching student:", error);
+        console.error("Error adding notice:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];
       }
     },
-    async deleteAllStudent(id) {
+    async updateNoticeStatus(noticeId, status) {
       try {
-        await $api(`/students/${id}`, {
+        const response = await $api(`/notices/${noticeId}`, {
+          method: "PUT",
+          body: { status },
+        });
+
+        // Update the local notices array
+        const index = this.notices.findIndex(
+          (notice) => notice.id === noticeId
+        );
+        if (index !== -1) {
+          this.notices[index].status = status;
+        }
+
+        return response;
+      } catch (error) {
+        console.error("Error updating notice status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+        throw error;
+      }
+    },
+    async deleteNotice(id) {
+      try {
+        await $api(`/notices/${id}`, {
           method: "DELETE",
         });
 
-        this.students = this.students.filter((student) => student.id !== id);
+        this.notices = this.notices.filter((notice) => notice.id !== id);
       } catch (error) {
-        console.error("Error deleting student:", error);
+        console.error("Error deleting notice:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+
+    async getDailyTasks(
+      id,
+      page = 1,
+      itemsPerPage = 10,
+      searchQuery = "",
+      sortBy = "",
+      orderBy = "",
+      dateFrom = null,
+      dateTo = null
+    ) {
+      try {
+        console.log(id);
+        const response = await $api("/daily-tasks", {
+          method: "GET",
+          params: {
+            user_id: id,
+            page,
+            perPage: itemsPerPage,
+            searchQuery,
+            sortBy,
+            orderBy,
+            dateFrom,
+            dateTo,
+          },
+        });
+        this.tasks = response.data;
+      } catch (error) {
+        console.error("Error fetching daily tasks:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+
+    async addDailyTask(task) {
+      try {
+        const response = await $api("/daily-tasks", {
+          method: "POST",
+          body: task,
+        });
+        this.tasks.push(response.data);
+      } catch (error) {
+        console.error("Error adding task:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async getLeadStatus() {
+      try {
+        const response = await $api("/lead-statuses", {
+          method: "GET",
+          params: {
+            searchQuery,
+          },
+        });
+        this.leadStatus = response.data;
+      } catch (error) {
+        console.error("Error fetching lead status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async addLeadStatus(leadStatus) {
+      try {
+        console.log(leadStatus);
+        const response = await $api("/lead-statuses", {
+          method: "POST",
+          body: leadStatus,
+        });
+        this.leadStatus.push(response.data);
+      } catch (error) {
+        console.error("Error adding lead status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async updateLeadStatus(id, leadStatus) {
+      try {
+        const response = await $api(`/lead-statuses/${id}`, {
+          method: "PUT",
+          body: leadStatus,
+        });
+        const index = this.leadStatus.findIndex((status) => status.id === id);
+        if (index !== -1) {
+          this.leadStatus[index] = response.data;
+        }
+      } catch (error) {
+        console.error("Error updating lead status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async deleteLeadStatus(id) {
+      try {
+        await $api(`/lead-statuses/${id}`, {
+          method: "DELETE",
+        });
+        this.leadStatus = this.leadStatus.filter((status) => status.id !== id);
+      } catch (error) {
+        console.error("Error deleting lead status:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];

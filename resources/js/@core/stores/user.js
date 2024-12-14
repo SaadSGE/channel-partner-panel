@@ -22,7 +22,6 @@ export const useUserStore = defineStore({
         });
 
         this.allUsers = response.data;
-        console.log(this.allUsers);
       } catch (error) {
         console.error("Error getting user details:", error);
         this.errors = error.response
