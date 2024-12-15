@@ -220,13 +220,14 @@ const openChangeStatusDialog = (leadId, statusId) => {
 };
 
 // Handle status update from dialog
-const handleLeadStatusUpdate = async ({ leadId, statusId }) => {
+const handleLeadStatusUpdate = async ({ leadId, statusId, statusNote }) => {
   console.log(leadId, statusId);
   const updateStatus = {
     status: statusId,
+    status_note: statusNote
   }
   await leadStore.updateLeadStatus(leadId, updateStatus);
-  console.log('Updated status');
+  console.log('Updated status', updateStatus);
   await fetchLeads(); // Refresh leads after updating status
   showDialog.value = false;  // Close the dialog
 };

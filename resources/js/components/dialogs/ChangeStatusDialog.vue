@@ -11,7 +11,7 @@ const props = defineProps({
 
 const emit = defineEmits(['updateStatus', 'closeDialog']);
 const selectedStatus = ref(null); // Store selected status ID
-
+const statusNote = ref('');
 // Watch for dialog open to set current status
 watch(
     () => props.showDialog,
@@ -31,7 +31,8 @@ const closeDialog = () => {
 // Emit updateStatus with leadId and selectedStatus ID
 const updateStatus = () => {
     if (selectedStatus.value !== null) {
-        emit('updateStatus', { leadId: props.leadId, statusId: selectedStatus.value });
+        emit('updateStatus', { leadId: props.leadId, statusId: selectedStatus.value, statusNote: statusNote.value });
+        statusNote.value = '';
         closeDialog();
     }
 };
@@ -47,6 +48,8 @@ const updateStatus = () => {
                 <AppAutocomplete v-model="selectedStatus" :items="leadStatuses" :item-title="(item) => item.name"
                     :item-value="(item) => item.id" label="Status" placeholder="Select Status"
                     :rules="[requiredValidator]" clearable />
+                <AppTextarea v-model="statusNote" class="mt-4" label="Status Note" placeholder="Enter status note"
+                    rows="3" />
             </VCardText>
             <VCardActions>
                 <VSpacer />
