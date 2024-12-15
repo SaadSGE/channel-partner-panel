@@ -7,6 +7,12 @@ definePage({
 })
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { ref } from 'vue';
+
+const requiredValidator = value => {
+    if (!value || !value.trim()) return 'This field is required'
+    return true
+}
+
 const taskForm = ref({
     yesterday_tasks: '',
     today_plans: '',
@@ -47,16 +53,17 @@ const submitTask = async () => {
                 <VRow>
                     <VCol cols="12">
                         <AppTextarea v-model="taskForm.yesterday_tasks" label="What did you do yesterday?" rows="3"
-                            required />
+                            :rules="[requiredValidator]" required />
                     </VCol>
 
                     <VCol cols="12">
                         <AppTextarea v-model="taskForm.today_plans" label="What do you plan to do today?" rows="3"
-                            required />
+                            :rules="[requiredValidator]" required />
                     </VCol>
 
                     <VCol cols="12">
-                        <AppTextarea v-model="taskForm.blockers" label="Any Blockages?" rows="2" />
+                        <AppTextarea v-model="taskForm.blockers" label="Any Blockages?" rows="2"
+                            :rules="[requiredValidator]" />
                     </VCol>
 
                     <VCol cols="12" class="d-flex justify-end">

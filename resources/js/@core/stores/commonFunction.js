@@ -12,10 +12,6 @@ export const commonFunction = defineStore({
     activeNotices: [],
     tasks: [],
     leadStatus: [],
-    notices: [],
-    activeNotices: [],
-    tasks: [],
-    leadStatus: [],
     errors: [],
     universities: [],
     courseDetails: [],
@@ -64,7 +60,6 @@ export const commonFunction = defineStore({
     },
 
     getFilteredCourseDetails:
-      (state) => (countryId, courseId, intakeId, universityId) => {
       (state) => (countryId, courseId, intakeId, universityId) => {
         state.selectedCountryId = countryId;
         state.selectedCourseId = courseId;
@@ -540,7 +535,6 @@ export const commonFunction = defineStore({
         const response = await $api("/active-notices", {
           method: "GET",
         });
-        console.log(response.data);
         this.activeNotices = response.data;
       } catch (error) {
         console.error("Error fetching active notices:", error);
@@ -604,7 +598,7 @@ export const commonFunction = defineStore({
     },
 
     async getDailyTasks(
-      id = null,
+      id,
       page = 1,
       itemsPerPage = 10,
       searchQuery = "",
@@ -614,10 +608,11 @@ export const commonFunction = defineStore({
       dateTo = null
     ) {
       try {
+        console.log(id);
         const response = await $api("/daily-tasks", {
           method: "GET",
           params: {
-            id,
+            user_id: id,
             page,
             perPage: itemsPerPage,
             searchQuery,
@@ -627,10 +622,8 @@ export const commonFunction = defineStore({
             dateTo,
           },
         });
-        console.log(response.data);
         this.tasks = response.data;
       } catch (error) {
-        console.error("Error fetching daily tasks:", error);
         console.error("Error fetching daily tasks:", error);
         this.errors = error.response
           ? error.response.data.errors
@@ -656,26 +649,57 @@ export const commonFunction = defineStore({
       try {
         const response = await $api("/lead-statuses", {
           method: "GET",
+          params: {
+            searchQuery,
+          },
         });
         this.leadStatus = response.data;
       } catch (error) {
-        console.error("Error fetching lead statuses:", error);
+        console.error("Error fetching lead status:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];
       }
     },
-
+    async addLeadStatus(leadStatus) {
+      try {
+        console.log(leadStatus);
+        const response = await $api("/lead-statuses", {
+          method: "POST",
+          body: leadStatus,
+        });
+        this.leadStatus.push(response.data);
+      } catch (error) {
+        console.error("Error adding lead status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async updateLeadStatus(id, leadStatus) {
+      try {
+        const response = await $api(`/lead-statuses/${id}`, {
+          method: "PUT",
+          body: leadStatus,
+        });
+        const index = this.leadStatus.findIndex((status) => status.id === id);
+        if (index !== -1) {
+          this.leadStatus[index] = response.data;
+        }
+      } catch (error) {
+        console.error("Error updating lead status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
     async deleteLeadStatus(id) {
       try {
-        await $api(`/lead-statuses/${id}`, {
         await $api(`/lead-statuses/${id}`, {
           method: "DELETE",
         });
         this.leadStatus = this.leadStatus.filter((status) => status.id !== id);
-        this.leadStatus = this.leadStatus.filter((status) => status.id !== id);
       } catch (error) {
-        console.error("Error deleting lead status:", error);
         console.error("Error deleting lead status:", error);
         this.errors = error.response
           ? error.response.data.errors
