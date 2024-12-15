@@ -12,9 +12,7 @@ definePage({
   },
 })
 
-import Filters from "@/@core/components/Filters.vue";
 import { useLeadStore } from "@/@core/stores/leadStore";
-import { resolveLeadStatusName } from '@/@core/utils/helpers';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { reactive, ref } from "vue";
 // Add these imports at the top
@@ -28,7 +26,7 @@ const commonFunctionStore = commonFunction();
 const selectedCountry = ref(null);
 const selectedBranch = ref(null);
 const isUploading = ref(false);
-
+const leadStatuses = ref([]);
 // Add this to your onMounted hook
 onMounted(async () => {
   await commonFunctionStore.getAllCountries();
@@ -90,9 +88,14 @@ watch([
 
 onMounted(async () => {
   await fetchLeads();
+  await fetchLeadStatuses();
+  console.log('Lead Statuses:', leadStatuses);
 });
 
-
+const fetchLeadStatuses = async () => {
+  await commonFunctionStore.getLeadStatus();
+  leadStatuses.value = commonFunctionStore.leadStatus;
+}
 const toggleUploadCard = () => {
   showUploadCard.value = !showUploadCard.value;
 };
@@ -228,7 +231,15 @@ const handleLeadStatusUpdate = async ({ leadId, statusId }) => {
   showDialog.value = false;  // Close the dialog
 };
 
-
+// Get status name by status ID
+const resolveLeadStatusName = (statusId) => {
+  const status = leadStatuses.value.find((status) => status.id === statusId);
+  return status ? status.name : "Unknown Status";
+};
+const resolveLeadStatusColor = (statusId) => {
+  const status = leadStatuses.value.find((status) => status.id === statusId);
+  return status ? status.color_code : "#000";
+};
 const handleAddNote = async (leadId) => {
   try {
     isNoteLoading.value = true
@@ -418,8 +429,9 @@ const handleAddNote = async (leadId) => {
           </p>
         </template>
         <template #item.status="{ item }">
-          <VChip :color="resolveLeadStatusColor(item.status)" :class="`text-${resolveStatusColor(item.status)}`"
-            size="small" class="font-weight-medium">
+          <VChip :color="resolveLeadStatusColor(item.status)" :class="`text-${resolveLeadStatusColor(item.status)}`"
+            size="small" class="font-weight-medium" style="cursor: pointer;"
+            @click="openChangeStatusDialog(item.id, item.status)">
             {{ resolveLeadStatusName(item.status) }}
           </VChip>
         </template>
@@ -461,7 +473,8 @@ const handleAddNote = async (leadId) => {
     </VCard>
     <!-- Change Status Dialog Component -->
     <ChangeStatusDialog :showDialog="showDialog" :leadId="selectedLeadId" :statusId='selectedStatusId'
-      @updateStatus="handleLeadStatusUpdate" @closeDialog="showDialog = false" />
+      :leadStatuses="leadStatuses" :resolveLeadStatusName="resolveLeadStatusName" @updateStatus="handleLeadStatusUpdate"
+      @closeDialog="showDialog = false" />
   </section>
 </template>
 

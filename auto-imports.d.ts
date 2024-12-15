@@ -442,7 +442,6 @@ declare module 'vue' {
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isToday: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isToday']>
     readonly kFormatter: UnwrapRef<typeof import('./resources/js/@core/utils/formatters.js')['kFormatter']>
-    readonly leadStatuses: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['leadStatuses']>
     readonly lengthValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['lengthValidator']>
     readonly logicAnd: UnwrapRef<typeof import('@vueuse/math')['logicAnd']>
     readonly logicNot: UnwrapRef<typeof import('@vueuse/math')['logicNot']>
@@ -497,8 +496,6 @@ declare module 'vue' {
     readonly registerPlugins: UnwrapRef<typeof import('./resources/js/@core/utils/plugins.js')['registerPlugins']>
     readonly requiredValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['requiredValidator']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
-    readonly resolveLeadStatusColor: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveLeadStatusColor']>
-    readonly resolveLeadStatusName: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveLeadStatusName']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveStatusColor: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusColor']>
     readonly resolveStatusName: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusName']>
@@ -801,7 +798,6 @@ declare module '@vue/runtime-core' {
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isToday: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isToday']>
     readonly kFormatter: UnwrapRef<typeof import('./resources/js/@core/utils/formatters.js')['kFormatter']>
-    readonly leadStatuses: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['leadStatuses']>
     readonly lengthValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['lengthValidator']>
     readonly logicAnd: UnwrapRef<typeof import('@vueuse/math')['logicAnd']>
     readonly logicNot: UnwrapRef<typeof import('@vueuse/math')['logicNot']>
@@ -856,8 +852,6 @@ declare module '@vue/runtime-core' {
     readonly registerPlugins: UnwrapRef<typeof import('./resources/js/@core/utils/plugins.js')['registerPlugins']>
     readonly requiredValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['requiredValidator']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
-    readonly resolveLeadStatusColor: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveLeadStatusColor']>
-    readonly resolveLeadStatusName: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveLeadStatusName']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveStatusColor: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusColor']>
     readonly resolveStatusName: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['resolveStatusName']>

@@ -1,11 +1,12 @@
 <script setup>
-import { leadStatuses, resolveLeadStatusName } from '@/@core/utils/helpers';
 import { ref, watch } from 'vue';
 
 const props = defineProps({
     showDialog: Boolean,
     leadId: Number,
     statusId: Number,
+    leadStatuses: Array,
+    resolveLeadStatusName: Function,
 });
 
 const emit = defineEmits(['updateStatus', 'closeDialog']);
@@ -17,7 +18,7 @@ watch(
     (newVal) => {
         if (newVal) {
             // Set the current status when the dialog is opened
-            selectedStatus.value = resolveLeadStatusName(props.statusId);
+            selectedStatus.value = props.resolveLeadStatusName(props.statusId);
         }
     }
 );
@@ -43,7 +44,7 @@ const updateStatus = () => {
             <VCardTitle>Select New Status</VCardTitle>
             <VCardText>
                 <!-- Use leadStatuses as items in AppAutocomplete -->
-                <AppAutocomplete v-model="selectedStatus" :items="leadStatuses" :item-title="(item) => item.text"
+                <AppAutocomplete v-model="selectedStatus" :items="leadStatuses" :item-title="(item) => item.name"
                     :item-value="(item) => item.id" label="Status" placeholder="Select Status"
                     :rules="[requiredValidator]" clearable />
             </VCardText>

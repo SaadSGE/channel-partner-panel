@@ -2,7 +2,6 @@
 import { defineEmits, onMounted, ref } from 'vue';
 import { commonFunction } from '../stores/commonFunction';
 
-import { leadStatuses } from '@/@core/utils/helpers';
 import { editor } from '../stores/editor';
 import { useRolePermissionStore } from '../stores/rolePermission';
 import { useUserStore } from '../stores/user';
@@ -42,6 +41,7 @@ const selectedUserStatus = ref(null);
 const selectedLeadStatus = ref(null);
 const users = ref([]);
 const userforLead = ref([]);
+const leadStatuses = ref([]);
 const totalUsers = ref(0);
 const roleStore = useRolePermissionStore();
 
@@ -347,6 +347,10 @@ const fetchUsers = async () => {
     }
   }
 };
+const fetchLeadStatus = async () => {
+  await commonFunctionStore.getLeadStatus();
+  leadStatuses.value = commonFunctionStore.leadStatus;
+}
 
 const fetchUserforLead = async () => {
   isLoading.value = true;
@@ -380,6 +384,9 @@ onMounted(async () => {
   if (props.selectedParent !== undefined) {
     await userStore.fetchParentUsers();
   }
+  if (props.selectedLeadStatus !== undefined) {
+    await fetchLeadStatus();
+  }
 });
 onMounted(async () => {
   await loadEditors();
@@ -412,7 +419,7 @@ const assignedStatuses = ref([
       :item-value="(item) => item.id" label="Assigned Status" placeholder="Select Assigned Status" clearable />
   </VCol>
   <VCol cols="12" md="3" v-if="props.selectedLeadStatus !== undefined">
-    <AppAutocomplete v-model="localSelectedLeadStatus" :items="leadStatuses" :item-title="(item) => item.text"
+    <AppAutocomplete v-model="localSelectedLeadStatus" :items="leadStatuses" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Lead Status" placeholder="Select Lead Status" clearable />
   </VCol>
   <!-- Application history -->
