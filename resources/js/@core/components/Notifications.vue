@@ -1,6 +1,6 @@
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 const props = defineProps({
@@ -20,6 +20,7 @@ const props = defineProps({
   },
 })
 
+const taskButton = ref(0); // Add ref for task button animation state
 
 const commonFunctionStore = commonFunction();
 
@@ -93,10 +94,6 @@ onUnmounted(() => {
   // Clear the timer on component unmount
   clearInterval(noticeTimer);
 });
-
-
-
-
 </script>
 
 <template>
@@ -109,6 +106,10 @@ onUnmounted(() => {
       </span>
     </div>
   </div>
+
+  <VBtn :class="{ 'button-neon': taskButton === 0 }" class="me-4">
+    Add Daily Task
+  </VBtn>
 
   <IconBtn id="notification-btn">
     <VBadge :content="totalUnseenNotifications" color="error" offset-x="2" offset-y="3">
@@ -204,13 +205,7 @@ onUnmounted(() => {
   z-index: 1000;
   left: 10px;
   overflow: hidden;
-  width: 90%;
-
-  // padding: 0.5rem 1rem;
-
-  // background-color: #f4f4f4;
-
-  // box-shadow: 0 2px 4px rgba(0, 0, 0, 10%);
+  width: 85%;
   white-space: nowrap;
 }
 
@@ -284,6 +279,21 @@ onUnmounted(() => {
     min-width: 18px;
     padding: 0;
     block-size: 18px;
+  }
+}
+
+.button-neon {
+  animation: neon 1.5s ease-in-out infinite alternate;
+  box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 10px rgb(214, 44, 6);
+}
+
+@keyframes neon {
+  from {
+    box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 10px rgb(214, 44, 6);
+  }
+
+  to {
+    box-shadow: 0 0 10px #fff, 0 0 20px rgb(214, 44, 6), 0 0 20px rgb(214, 44, 6);
   }
 }
 </style>

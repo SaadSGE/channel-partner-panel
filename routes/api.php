@@ -27,6 +27,7 @@ use App\Http\Controllers\LeadController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\DailyTaskController;
 use App\Http\Controllers\LeadStatusController;
+use App\Http\Controllers\ApplicationStatusListController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -116,6 +117,7 @@ Route::get('/leads/count', [LeadController::class, 'getLeadCount']);
 Route::post('/leads/assign', [LeadController::class, 'assignLeads']);
 Route::apiResource('daily-tasks', DailyTaskController::class);
 Route::apiResource('lead-statuses', LeadStatusController::class);
+Route::apiResource('application-statuses', ApplicationStatusListController::class);
 Route::get('/active-notices', [NoticeController::class, 'getActiveNotices']);
 Route::apiResource('notices', NoticeController::class);
 Route::apiResource('students', StudentController::class);

@@ -8,33 +8,28 @@
 /// <reference types="unplugin-vue-router/client" />
 
 import type {
+  NavigationGuard,
+  ParamValue,
+  RouteLocationAsPathTypedList,
+  RouteLocationAsRelativeTypedList,
+  RouteLocationAsString,
+  RouteLocationNormalizedLoadedTypedList,
+  RouteLocationNormalizedTypedList,
+  RouteLocationResolvedTypedList,
   // type safe route locations
   RouteLocationTypedList,
-  RouteLocationResolvedTypedList,
-  RouteLocationNormalizedTypedList,
-  RouteLocationNormalizedLoadedTypedList,
-  RouteLocationAsString,
-  RouteLocationAsRelativeTypedList,
-  RouteLocationAsPathTypedList,
-
   // helper types
   // route definitions
   RouteRecordInfo,
-  ParamValue,
-  ParamValueOneOrMore,
-  ParamValueZeroOrMore,
-  ParamValueZeroOrOne,
-
-  // vue-router extensions
-  _RouterTyped,
-  RouterLinkTyped,
   RouterLinkPropsTyped,
-  NavigationGuard,
+  RouterLinkTyped,
   UseLinkFnTyped,
 
   // data fetching
   _DataLoader,
   _DefineLoaderOptions,
+  // vue-router extensions
+  _RouterTyped
 } from 'unplugin-vue-router/types'
 
 declare module 'vue-router/auto/routes' {
@@ -73,6 +68,8 @@ declare module 'vue-router/auto/routes' {
     'lead': RouteRecordInfo<'lead', '/lead', Record<never, never>, Record<never, never>>,
     'lead-assigned-operation': RouteRecordInfo<'lead-assigned-operation', '/lead/assigned-operation', Record<never, never>, Record<never, never>>,
     'lead-status': RouteRecordInfo<'lead-status', '/lead/status', Record<never, never>, Record<never, never>>,
+    'lead-status-add': RouteRecordInfo<'lead-status-add', '/lead/status/add', Record<never, never>, Record<never, never>>,
+    'lead-status-edit': RouteRecordInfo<'lead-status-edit', '/lead/status/edit', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'nigeria': RouteRecordInfo<'nigeria', '/nigeria', Record<never, never>, Record<never, never>>,
     'not-authorized': RouteRecordInfo<'not-authorized', '/not-authorized', Record<never, never>, Record<never, never>>,
@@ -96,6 +93,8 @@ declare module 'vue-router/auto/routes' {
     'student-record-all-record': RouteRecordInfo<'student-record-all-record', '/student-record/all-record', Record<never, never>, Record<never, never>>,
     'student-record-details-id': RouteRecordInfo<'student-record-details-id', '/student-record/details/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'student-record-info': RouteRecordInfo<'student-record-info', '/student-record/info', Record<never, never>, Record<never, never>>,
+    'task': RouteRecordInfo<'task', '/task', Record<never, never>, Record<never, never>>,
+    'task-add': RouteRecordInfo<'task-add', '/task/add', Record<never, never>, Record<never, never>>,
     'university-list': RouteRecordInfo<'university-list', '/university-list', Record<never, never>, Record<never, never>>,
     'user': RouteRecordInfo<'user', '/user', Record<never, never>, Record<never, never>>,
     'user-add-add-new-user-drawer': RouteRecordInfo<'user-add-add-new-user-drawer', '/user/add/AddNewUserDrawer', Record<never, never>, Record<never, never>>,
@@ -181,10 +180,8 @@ declare module 'vue-router/auto' {
   ): _DataLoader<Awaited<P>, isLazy>
 
   export {
-    _definePage as definePage,
-    _HasDataLoaderMeta as HasDataLoaderMeta,
-    _setupDataFetchingGuard as setupDataFetchingGuard,
-    _stopDataFetchingScope as stopDataFetchingScope,
+    _HasDataLoaderMeta as HasDataLoaderMeta, _definePage as definePage, _setupDataFetchingGuard as setupDataFetchingGuard,
+    _stopDataFetchingScope as stopDataFetchingScope
   } from 'unplugin-vue-router/runtime'
 }
 
