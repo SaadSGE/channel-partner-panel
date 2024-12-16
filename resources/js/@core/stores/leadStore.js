@@ -144,5 +144,25 @@ export const useLeadStore = defineStore({
         throw error;
       }
     },
+
+    async addNoteToLead(leadId, note) {
+      try {
+        const response = await $api(`/leads/${leadId}/add-note`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ note }),
+        });
+
+        return response.data;
+      } catch (error) {
+        console.error("Error adding note to lead:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+        throw error;
+      }
+    },
   },
 });

@@ -80,7 +80,7 @@ class LeadsImport implements ToCollection, WithHeadingRow
                 'current_educational_qualifications' => $row['current_educational_qualifications'] ?? null,
                 'ielts_or_english_test' => $row['ieltsenglish_test'] ?? null,
                 'source' => $row['source'] ?? null,
-                'status' => 0,
+                'status' => 1,
                 'created_by' => auth('api')->user()->id
             ]);
 

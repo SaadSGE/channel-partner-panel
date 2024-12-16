@@ -11,7 +11,7 @@ class LeadNote extends Model
 {
     //
     protected $guarded = [];
-    protected $appends = ['formatted_created_by'];
+
 
 
     public function lead()
@@ -24,12 +24,24 @@ class LeadNote extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d-m-Y h:i A');
+    }
+
 
 
     //write a mutator for following format: (created_by.name) on 2024-11-12 10:10:10
-    public function getFormattedCreatedByAttribute()
-    {
-        return $this->creator->first_name . ' ' . $this->creator->last_name . ' on ' . Carbon::parse($this->created_at)->format('Y-m-d H:i:s');
-    }
 
+
+    public function toArray()
+    {
+        return [
+            'id' => $this->id,
+            'lead_id' => $this->lead_id,
+            'note' => $this->note,
+            'created_by' => $this->creator->full_name,
+            'created_at' => $this->created_at,
+        ];
+    }
 }

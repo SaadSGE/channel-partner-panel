@@ -64,15 +64,21 @@ const toggleShowNotes = (leadId) => {
   showAllNotes[leadId] = !showAllNotes[leadId];
 }
 const headers = [
+  { title: 'Actions', key: 'actions', sortable: false },
   { title: 'Name', key: 'name' },
   { title: 'Phone', key: 'phone' },
   { title: 'Email', key: 'email' },
-  { title: 'Assigned Branch', key: 'branch.branch_name_with_country' },
-  { title: 'Assigned User', key: 'assigned_user' },
-  { title: 'Note', key: 'notes' },
   { title: 'Interested Course & Country', key: 'course_country' },
-  { title: 'Status', key: 'status' },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Current Status', key: 'status' },
+  { title: 'Status History', key: 'statusHistory' },
+
+  { title: 'Assigned User', key: 'assigned_user.name_with_email' },
+  { title: 'Manager\'s Note', key: 'notes' },
+  { title: 'Assigned Branch', key: 'branch.branch_name_with_country' },
+
+
+
+
 ];
 
 // Watchers
@@ -242,25 +248,41 @@ const resolveLeadStatusColor = (statusId) => {
   return status ? status.color_code : "#000";
 };
 const handleAddNote = async (leadId) => {
+  if (!leadId) {
+    console.error("Lead ID is required to add a note.");
+    return;
+  }
+
   try {
-    isNoteLoading.value = true
+    isNoteLoading.value = true;
     const noteData = {
-      notes: newNote.value
-    }
-    await leadStore.addNote(leadId, noteData)
+      note: newNote.value,
+    };
+    await leadStore.addNoteToLead(leadId, noteData.note);
 
     // Clear the note input and close the modal
-    newNote.value = "" // Clear the note input
-    showAddNoteModal.value = false // Close the modal
+    newNote.value = ""; // Clear the note input
+    showAddNoteModal.value = false; // Close the modal
 
     // Refresh the leads data
-    await fetchLeads()
+    await fetchLeads();
   } catch (error) {
-    console.error("Error adding note:", error)
+    console.error("Error adding note:", error);
   } finally {
-    isNoteLoading.value = false
+    isNoteLoading.value = false;
   }
-}
+};
+
+const showAllStatusHistory = reactive({});
+
+const toggleShowStatusHistory = (leadId) => {
+  showAllStatusHistory[leadId] = !showAllStatusHistory[leadId];
+};
+
+const openAddNoteDialog = (leadId) => {
+  selectedLeadId.value = leadId;
+  showAddNoteModal.value = true;
+};
 </script>
 
 <template>
@@ -295,7 +317,8 @@ const handleAddNote = async (leadId) => {
             </VCardText>
             <VCardActions>
               <VSpacer />
-              <VBtn color="primary" :loading="isNoteLoading" :disabled="isNoteLoading" @click="handleAddNote">
+              <VBtn color="primary" :loading="isNoteLoading" :disabled="isNoteLoading"
+                @click="() => handleAddNote(selectedLeadId)">
                 Submit Note
               </VBtn>
               <VBtn :disabled="isNoteLoading" @click="showAddNoteModal = false">
@@ -430,10 +453,9 @@ const handleAddNote = async (leadId) => {
           </p>
         </template>
         <template #item.status="{ item }">
-          <VChip :color="resolveLeadStatusColor(item.status)" :class="`text-${resolveLeadStatusColor(item.status)}`"
-            size="small" class="font-weight-medium" style="cursor: pointer;"
-            @click="openChangeStatusDialog(item.id, item.status)">
-            {{ resolveLeadStatusName(item.status) }}
+          <VChip :color="item.status.color_code || '#D3D3D3'" size="small" class="font-weight-medium"
+            style=" color: #000;cursor: pointer;" @click="openChangeStatusDialog(item.id, item.status.id)">
+            {{ item.status.name || 'Unknown Status' }}
           </VChip>
         </template>
         <template #item.assigned_branch="{ item }">
@@ -445,26 +467,53 @@ const handleAddNote = async (leadId) => {
           <VChip v-else color="error" size="small" variant="flat">Not Assigned</VChip>
         </template>
         <template #item.actions="{ item }">
-          <VBtn icon variant="text" color="medium-emphasis">
+          <VBtn icon variant="text" color="medium-emphasis" class="action-button">
             <VIcon icon="tabler-dots-vertical" />
-            <VMenu activator="parent">
+            <VMenu activator="parent" open-on-hover>
               <VList>
-                <!-- Change Status option opens the dialog -->
-                <VListItem @click="openChangeStatusDialog(item.id, item.status)">
+                <!-- Change Status option with specific color -->
+                <VListItem @click="openChangeStatusDialog(item.id, item.status)" class="change-status-option">
                   <template #prepend>
                     <VIcon icon="tabler-analyze" />
                   </template>
                   <VListItemTitle>Change Status</VListItemTitle>
                 </VListItem>
-                <VListItem @click="showAddNoteModal = true">
+                <!-- Add Note option with specific color -->
+                <VListItem @click="openAddNoteDialog(item.id)" class="add-note-option">
                   <template #prepend>
-                    <VIcon icon=" tabler-clipboard-text" />
+                    <VIcon icon="tabler-clipboard-text" />
                   </template>
                   <VListItemTitle>Add Note</VListItemTitle>
                 </VListItem>
               </VList>
             </VMenu>
           </VBtn>
+        </template>
+        <template #item.statusHistory="{ item }">
+          <ul style="list-style-type: disc; padding-inline-start: 20px;">
+            <!-- Display first two status history entries or all based on showAllStatusHistory toggle -->
+            <template
+              v-for="(history, index) in (showAllStatusHistory[item.id] ? item.status_history : item.status_history.slice(0, 2))"
+              :key="history.id">
+              <li class="status-history" style="font-size: 1.1em; margin-block-end: 8px;">
+                <span :style="{ color: resolveLeadStatusColor(history.status_id) }">
+                  {{ history.status_name }}
+                </span> -
+                <span style="color: #757575;">
+                  {{ history.status_note }}
+                </span>
+                ( <small style="color: #757575;">
+                  <span style="color: #007acc;">{{ history.user_name }}</span>,
+                  <span style="color: orange;">{{ history.created_at }}</span>
+                </small> )
+              </li>
+            </template>
+          </ul>
+          <!-- Show More / Show Less link with custom style -->
+          <p v-if="item.status_history.length > 2" @click="toggleShowStatusHistory(item.id)"
+            style="color: blue; cursor: pointer; font-weight: bold; padding-inline-start: 10px; text-decoration: underline;">
+            {{ showAllStatusHistory[item.id] ? 'Show Less' : 'Show More' }}
+          </p>
         </template>
         <template #bottom>
           <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="total" />
@@ -723,5 +772,32 @@ td {
 
 .text-red {
   color: rgb(237, 46, 46);
+}
+
+.action-button {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+
+  &:hover {
+    background-color: #6366f1 !important; // Change to desired hover color
+    transform: scale(1.1);
+  }
+}
+
+.change-status-option {
+  background-color: #e0f7fa; // Light cyan background
+  color: #00796b; // Teal text color
+
+  &:hover {
+    background-color: #b2ebf2; // Darker cyan on hover
+  }
+}
+
+.add-note-option {
+  background-color: #fff3e0; // Light orange background
+  color: #e65100; // Orange text color
+
+  &:hover {
+    background-color: #ffe0b2; // Darker orange on hover
+  }
 }
 </style>

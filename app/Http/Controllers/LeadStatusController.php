@@ -28,6 +28,8 @@ class LeadStatusController extends Controller
             'description' => 'nullable|string',
             'color_code' => 'nullable|string',
             'health_rating' => 'nullable|integer',
+            'convert_to_student' => 'boolean',
+            'dead_lead' => 'boolean',
         ]);
         $leadStatus = LeadStatus::create($request->all());
         return $this->successJsonResponse('Lead status created successfully', $leadStatus);
@@ -57,8 +59,13 @@ class LeadStatusController extends Controller
             'description' => 'nullable|string',
             'color_code' => 'nullable|string',
             'health_rating' => 'nullable|integer',
+            'convert_to_student' => 'boolean',
+            'dead_lead' => 'boolean',
         ]);
         $leadStatus = LeadStatus::find($id);
+        if (!$leadStatus) {
+            return $this->errorJsonResponse('Lead status not found', 404);
+        }
         $leadStatus->update($request->all());
         return $this->successJsonResponse('Lead status updated successfully', $leadStatus);
     }

@@ -7,6 +7,7 @@ use App\Models\Lead;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\LeadsImport;
 use Illuminate\Validation\ValidationException;
+use App\Models\LeadStatusTrack;
 
 class LeadController extends Controller
 {
@@ -24,7 +25,7 @@ class LeadController extends Controller
         $query = Lead::query();
 
 
-        $query->with(['notes.creator:id,first_name,last_name','branch']);
+        $query->with(['notes', 'branch', 'assignedUser', 'status:id,name,color_code', 'statusHistory']);
 
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
@@ -117,6 +118,17 @@ class LeadController extends Controller
     public function update(Request $request, string $id)
     {
         //
+        $lead = Lead::find($id);
+        $lead->status = $request->status;
+        $lead->save();
+
+        $leadStatusTrack = new LeadStatusTrack();
+        $leadStatusTrack->lead_id = $lead->id;
+        $leadStatusTrack->status_id = $request->status;
+        $leadStatusTrack->user_id = auth('api')->user()->id;
+        $leadStatusTrack->status_note = $request->status_note;
+        $leadStatusTrack->save();
+        return $this->successJsonResponse("Lead status updated successfully!", $lead);
     }
 
     /**
@@ -169,7 +181,6 @@ class LeadController extends Controller
                 'Leads uploaded successfully!',
                 ['count' => $import->getRowCount()]
             );
-
         } catch (ValidationException $e) {
             return $this->handleValidationErrors($e);
         } catch (\Exception $e) {
@@ -201,11 +212,11 @@ class LeadController extends Controller
 
 
         $count = Lead::where('lead_country_id', $request->country)
-                     ->when($branchId, function ($query, $branchId) {
-                         return $query->where('assigned_branch', $branchId);
-                     })
-                     ->whereNull('assigned_user')
-                     ->count();
+            ->when($branchId, function ($query, $branchId) {
+                return $query->where('assigned_branch', $branchId);
+            })
+            ->whereNull('assigned_user')
+            ->count();
         $data = [
             'total' => $count
         ];
@@ -311,7 +322,6 @@ class LeadController extends Controller
                     'total_assigned' => collect($assignmentResults)->sum('assigned_count')
                 ]);
             });
-
         } catch (\Exception $e) {
 
             return $this->errorJsonResponse(
@@ -323,5 +333,24 @@ class LeadController extends Controller
                 500
             );
         }
+    }
+
+    public function addNoteToLead(Request $request, $leadId)
+    {
+        $request->validate([
+            'note' => 'required|string|max:1000',
+        ]);
+
+        $lead = Lead::findOrFail($leadId);
+
+        $leadNote = $lead->notes()->create([
+            'note' => $request->note,
+            'created_by' => auth('api')->id(),
+        ]);
+
+        return response()->json([
+            'message' => 'Note added successfully!',
+            'note' => $leadNote,
+        ], 201);
     }
 }

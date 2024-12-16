@@ -27,6 +27,16 @@ class lead extends Model
     {
         return $this->hasMany(LeadNote::class);
     }
-
-
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_user');
+    }
+    public function status()
+    {
+        return $this->belongsTo(LeadStatus::class, 'status');
+    }
+    public function statusHistory()
+    {
+        return $this->hasMany(LeadStatusTrack::class, 'lead_id');
+    }
 }
