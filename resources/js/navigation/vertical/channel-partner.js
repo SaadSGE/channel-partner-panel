@@ -178,7 +178,26 @@ export default [
       // },
     ],
   },
-
+  {
+    title: "Applications",
+    icon: { icon: "tabler-files" },
+    action: "read",
+    subject: "dashboard",
+    children: [
+      {
+        title: "Application Status",
+        to: "applications-status",
+        action: "read",
+        subject: "dashboard",
+      },
+      {
+        title: "All Applications",
+        to: "applications",
+        action: "read",
+        subject: "dashboard",
+      },
+    ]
+  },
   {
     title: "Daily Task",
     icon: { icon: "tabler-clipboard-copy" },
