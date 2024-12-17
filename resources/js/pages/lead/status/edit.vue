@@ -9,10 +9,12 @@ const description = ref("");
 const colorCode = ref("");
 const healthRating = ref(null);
 const isLoading = ref(false);
+const convertToStudent = ref(false);
+const deadLead = ref(false);
 
 const props = defineProps({
-    isNavDrawerOpen: Boolean,
-    editedItem: Object,
+  isNavDrawerOpen: Boolean,
+  editedItem: Object,
 });
 
 const id = ref(null);
@@ -20,17 +22,20 @@ const refForm = ref(null);
 const emits = defineEmits(["update:isNavDrawerOpen"]);
 
 watch(
-    () => props.editedItem,
-    (newValue) => {
-        if (newValue) {
-            statusName.value = newValue.name;
-            description.value = newValue.description;
-            colorCode.value = newValue.color_code;
-            healthRating.value = newValue.health_rating;
-            id.value = newValue.id;
-        }
-    },
-    { immediate: true }
+  () => props.editedItem,
+  (newValue) => {
+    if (newValue) {
+      console.log('newValue', newValue);
+      statusName.value = newValue.name;
+      description.value = newValue.description;
+      colorCode.value = newValue.color_code;
+      healthRating.value = newValue.health_rating;
+      id.value = newValue.id;
+      convertToStudent.value = newValue.convert_to_student == 1 ? true : false;
+      deadLead.value = newValue.dead_lead == 1 ? true : false;
+    }
+  },
+  { immediate: true }
 );
 
 // Validation rule for required fields
@@ -38,58 +43,60 @@ const requiredValidator = (value) => !!value || "Required field";
 
 // Function to handle form submission
 const updateLeadStatus = async () => {
-    const isValid = await refForm.value.validate();
-    if (!isValid) return;
+  const isValid = await refForm.value.validate();
+  if (!isValid) return;
 
-    const statusData = {
-        name: statusName.value,
-        description: description.value,
-        color_code: colorCode.value,
-        health_rating: healthRating.value,
-    };
+  const statusData = {
+    name: statusName.value,
+    description: description.value,
+    color_code: colorCode.value,
+    health_rating: healthRating.value,
+    convert_to_student: convertToStudent.value,
+    dead_lead: deadLead.value,
+  };
 
-    try {
-        isLoading.value = true;
-        await commonFunctionStore.updateLeadStatus(id.value, statusData);
-        isLoading.value = false;
-        statusName.value = "";
-        description.value = "";
-        colorCode.value = "";
-        healthRating.value = null;
-        emits("update:isNavDrawerOpen", false);
-    } catch (error) {
-        console.error("Failed to update lead status:", error);
-    }
+  try {
+    isLoading.value = true;
+    await commonFunctionStore.updateLeadStatus(id.value, statusData);
+    isLoading.value = false;
+    statusName.value = "";
+    description.value = "";
+    colorCode.value = "";
+    healthRating.value = null;
+    emits("update:isNavDrawerOpen", false);
+  } catch (error) {
+    console.error("Failed to update lead status:", error);
+  }
 };
 </script>
 
 <template>
-    <VNavigationDrawer v-model="props.isNavDrawerOpen" temporary touchless border="none" location="end" width="400"
-        elevation="10" :scrim="false" class="app-customizer">
-        <div class="customizer-heading d-flex align-center justify-space-between">
-            <div>
-                <h6 class="text-h6">Update Lead Status</h6>
-            </div>
-            <div class="d-flex align-center gap-1">
-                <VBtn icon variant="text" color="medium-emphasis" size="small"
-                    @click="emits('update:isNavDrawerOpen', false)">
-                    <VIcon icon="tabler-x" color="high-emphasis" size="24" />
-                </VBtn>
-            </div>
-        </div>
+  <VNavigationDrawer v-model="props.isNavDrawerOpen" temporary touchless border="none" location="end" width="400"
+    elevation="10" :scrim="false" class="app-customizer">
+    <div class="customizer-heading d-flex align-center justify-space-between">
+      <div>
+        <h6 class="text-h6">Update Lead Status</h6>
+      </div>
+      <div class="d-flex align-center gap-1">
+        <VBtn icon variant="text" color="medium-emphasis" size="small" @click="emits('update:isNavDrawerOpen', false)">
+          <VIcon icon="tabler-x" color="high-emphasis" size="24" />
+        </VBtn>
+      </div>
+    </div>
 
-        <VDivider />
-        <VForm ref="refForm" @submit.prevent="updateLeadStatus" class="form-padding mt-4">
-            <AppTextField v-model="statusName" label="Status Name" :rules="[requiredValidator]" class="mb-2" />
-            <AppTextarea v-model="description" label="Description" :rules="[requiredValidator]" class="mb-2" />
-            <AppTextField v-model="colorCode" label="Color Code" :rules="[requiredValidator]" class="mb-2" />
-            <AppTextField v-model="healthRating" label="Health Rating" type="number" :rules="[requiredValidator]"
-                class="mb-2" />
+    <VDivider />
+    <VForm ref="refForm" @submit.prevent="updateLeadStatus" class="form-padding mt-4">
+      <AppTextField v-model="statusName" label="Status Name" :rules="[requiredValidator]" class="mb-2" />
+      <AppTextarea v-model="description" label="Description" :rules="[requiredValidator]" class="mb-2" />
+      <AppTextField v-model="colorCode" label="Color Code" :rules="[requiredValidator]" class="mb-2" />
+      <AppTextField v-model="healthRating" label="Health Rating" type="number" :rules="[requiredValidator]"
+        class="mb-2" />
+      <VCheckbox v-model="convertToStudent" label="Success Lead" class="mb-2" />
+      <VCheckbox v-model="deadLead" label="Dead Lead" class="mb-2" />
 
-            <VBtn :loading="isLoading" :disabled="isLoading" color="primary" @click="updateLeadStatus" class="mt-4"
-                block>
-                Update
-            </VBtn>
-        </VForm>
-    </VNavigationDrawer>
+      <VBtn :loading="isLoading" :disabled="isLoading" color="primary" @click="updateLeadStatus" class="mt-4" block>
+        Update
+      </VBtn>
+    </VForm>
+  </VNavigationDrawer>
 </template>

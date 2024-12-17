@@ -55,7 +55,7 @@ const newNote = ref("") // New comment
 const isNoteLoading = ref(false)
 const showAllNotes = reactive({});
 const fileInput = ref(null);
-
+const convertToStudent = ref(false);
 // Add new ref for assigned status
 const selectedAssignedStatus = ref(null)
 
@@ -63,6 +63,7 @@ const selectedAssignedStatus = ref(null)
 const toggleShowNotes = (leadId) => {
   showAllNotes[leadId] = !showAllNotes[leadId];
 }
+
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
   { title: 'Name', key: 'name' },
@@ -219,21 +220,23 @@ const updateOptions = options => {
 }
 
 // Open dialog and set selected lead ID
-const openChangeStatusDialog = (leadId, statusId) => {
+const openChangeStatusDialog = (leadId, statusId, convertToStudent) => {
+
   selectedLeadId.value = leadId;
   selectedStatusId.value = statusId;
   showDialog.value = true;
+  convertToStudent.value = convertToStudent;
 };
 
 // Handle status update from dialog
 const handleLeadStatusUpdate = async ({ leadId, statusId, statusNote }) => {
-  console.log(leadId, statusId);
+  console.log('convertToStudent', convertToStudent.value);
   const updateStatus = {
     status: statusId,
     status_note: statusNote
   }
   await leadStore.updateLeadStatus(leadId, updateStatus);
-  console.log('Updated status', updateStatus);
+
   await fetchLeads(); // Refresh leads after updating status
   showDialog.value = false;  // Close the dialog
 };
@@ -454,7 +457,8 @@ const openAddNoteDialog = (leadId) => {
         </template>
         <template #item.status="{ item }">
           <VChip :color="item.status.color_code || '#D3D3D3'" size="small" class="font-weight-medium"
-            style=" color: #000;cursor: pointer;" @click="openChangeStatusDialog(item.id, item.status.id)">
+            style=" color: #000;cursor: pointer;"
+            @click="openChangeStatusDialog(item.id, item.status.id, item.status.convert_to_student)">
             {{ item.status.name || 'Unknown Status' }}
           </VChip>
         </template>

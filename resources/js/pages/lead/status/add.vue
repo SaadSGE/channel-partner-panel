@@ -77,7 +77,7 @@ const addStatus = async () => {
       <AppTextField v-model="healthRating" type="number" label="Health Rating" :rules="[requiredValidator]"
         class="mb-2" />
 
-      <VCheckbox v-model="convertToStudent" label="Convert to Student" class="mb-2" />
+      <VCheckbox v-model="convertToStudent" label="Success Lead" class="mb-2" />
       <VCheckbox v-model="deadLead" label="Dead Lead" class="mb-2" />
 
       <VBtn :loading="isLoading" :disabled="isLoading" color="primary" @click="addStatus" class="mt-4" block>
