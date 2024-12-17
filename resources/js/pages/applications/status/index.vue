@@ -29,7 +29,7 @@ const getAllApplicationStatuses = async () => {
 const headers = [
     { title: 'Status Name', key: 'name' },
     { title: 'Description', key: 'description' },
-    { title: 'Color Code', key: 'color_code' },
+    { title: 'Color Code', key: 'color' },
     { title: 'Actions', key: 'actions', sortable: false },
 ];
 
