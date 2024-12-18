@@ -28,6 +28,7 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\DailyTaskController;
 use App\Http\Controllers\LeadStatusController;
 use App\Http\Controllers\ApplicationStatusListController;
+use App\Http\Controllers\DemoDashboardController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -57,7 +58,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('all-permissions', [PermissionController::class, 'allPermission']);
 
     Route::apiResource('application', ApplicationController::class);
-
+    Route::get('demo-dashboard', [DemoDashboardController::class, 'getDemoStats']);
 
     Route::get('get-country-intake-university-course', [CourseDetailsController::class, 'countryIntakeUniversityCourse']);
     Route::post('update-application-file', [ApplicationController::class, 'updateApplicationFile']);
