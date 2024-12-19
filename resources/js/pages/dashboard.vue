@@ -60,16 +60,45 @@
         </VCardText>
       </VCard>
     </VCol>
+    <!-- 👉 Application Status Charts -->
+    <VCol cols="12" lg="12" md="8">
+      <ApplicationStatusCharts />
+    </VCol>
 
-    <!-- Recent Applications Table for Application Control Officer -->
+    <VCol cols="12" lg="8">
+      <ApplicationTable />
+    </VCol>
+
+    <VCol cols="12" md="4">
+      <TopTenUniversities />
+    </VCol>
+
+    <VCol cols="12" md="4">
+      <TopTenCP />
+    </VCol>
+
+    <VCol cols="12" md="4">
+      <TopTenACO />
+    </VCol>
+    <VCol cols="12" md="4">
+      <LeadStats />
+    </VCol>
 
   </VRow>
+
+
 </template>
 
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useDashboardStore } from "@/@core/stores/dashboard";
 import { containsString, formatKey, getUserRole } from '@/@core/utils/helpers';
+import ApplicationStatusCharts from "@/components/Dashboard/ApplicationStatusCharts.vue";
+import ApplicationTable from "@/components/Dashboard/ApplicationTable.vue";
+import LeadStats from "@/components/Dashboard/LeadStats.vue";
+import TopTenACO from "@/components/Dashboard/TopTenACO.vue";
+import TopTenCP from "@/components/Dashboard/TopTenCP.vue";
+import TopTenUniversities from "@/components/Dashboard/TopTenUniversities.vue";
 import { computed, onMounted, ref } from 'vue';
 
 definePage({
