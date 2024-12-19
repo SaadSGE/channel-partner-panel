@@ -107,9 +107,9 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <VBtn :class="{ 'button-neon': taskButton === 0 }" class="me-4">
-    Add Daily Task
-  </VBtn>
+  <div class="text-center">
+    <AddDailyTask />
+  </div>
 
   <IconBtn id="notification-btn">
     <VBadge :content="totalUnseenNotifications" color="error" offset-x="2" offset-y="3">
@@ -218,7 +218,7 @@ onUnmounted(() => {
 }
 
 .notice-text {
-  display: inline-block;
+  display: inline-flex;
   animation: scroll-left 15s linear infinite;
   color: #930404;
   white-space: nowrap;
@@ -241,6 +241,7 @@ onUnmounted(() => {
 
 #notification-btn {
   margin-right: 10px;
+  margin-left: 25px;
 }
 
 .notification-section {
@@ -279,21 +280,6 @@ onUnmounted(() => {
     min-width: 18px;
     padding: 0;
     block-size: 18px;
-  }
-}
-
-.button-neon {
-  animation: neon 1.5s ease-in-out infinite alternate;
-  box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 10px rgb(214, 44, 6);
-}
-
-@keyframes neon {
-  from {
-    box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 10px rgb(214, 44, 6);
-  }
-
-  to {
-    box-shadow: 0 0 10px #fff, 0 0 20px rgb(214, 44, 6), 0 0 20px rgb(214, 44, 6);
   }
 }
 </style>
