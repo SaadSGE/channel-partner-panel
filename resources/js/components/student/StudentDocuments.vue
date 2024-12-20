@@ -127,7 +127,7 @@ import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css
 import FilePondPluginPdfPreview from "filepond-plugin-pdf-preview";
 import "filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.min.css";
 import "filepond/dist/filepond.min.css";
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import VueFilePond from 'vue-filepond';
 import { useRoute } from 'vue-router';
 
@@ -331,7 +331,17 @@ const handleDocumentUpdate = async () => {
 
 // Initialize files from props if they exist
 onMounted(() => {
-  if (props.documents && props.documents.length > 0) {
+  // Remove the initialization of files.value here
+  // We'll only populate files when actually uploading
+});
+
+// Add a watch for isEditing
+watch(isEditing, (newValue) => {
+  if (newValue) {
+    // Clear files when entering edit mode
+    files.value = [];
+  } else {
+    // Reset files when exiting edit mode without saving
     files.value = props.documents.map(doc => ({
       fieldName: doc.document_name,
       path: doc.path,

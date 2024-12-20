@@ -100,17 +100,29 @@ class StudentService
             $newPath = "channelPartnerPanel/studentDocument/{$student->email}/{$student->email}_{$filename}";
 
             Storage::disk('do_spaces')->move($path['path'], $newPath);
-            Log::info($path);
-            StudentDocument::updateOrCreate(
-                ['id' => $path['id'] ?? null],
-                [
+
+            // Check if document with same name exists for this student
+            $existingDocument = StudentDocument::where('student_id', $student->id)
+                ->where('document_name', $path['document_name'])
+                ->first();
+
+            if ($existingDocument) {
+                // Update existing document
+                $existingDocument->update([
+                    'application_id' => $applicationId,
+                    'path' => $newPath,
+                    'updated_at' => now(),
+                ]);
+            } else {
+                // Create new document
+                StudentDocument::create([
                     'student_id' => $student->id,
                     'application_id' => $applicationId,
                     'path' => $newPath,
                     'document_name' => $path['document_name'],
                     'updated_at' => now(),
-                ]
-            );
+                ]);
+            }
         }
 
         GenerateStudentDocumentsZip::dispatch($student);

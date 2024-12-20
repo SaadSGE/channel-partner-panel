@@ -556,5 +556,4 @@ class StudentController extends Controller
             return $this->exceptionJsonResponse('Failed to update documents', $th);
         }
     }
-
 }
