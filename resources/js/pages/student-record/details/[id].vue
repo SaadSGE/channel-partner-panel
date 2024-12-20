@@ -198,6 +198,24 @@ const handleEmploymentHistoryUpdate = async (data) => {
   }
 };
 
+const handleDocumentsUpdate = async (data) => {
+  try {
+    isLoading.value = true;
+    formData.value.documents = data;
+    toast.success('Documents updated successfully', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } catch (error) {
+    console.error('Error updating documents:', error);
+    toast.error('Failed to update documents', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 </script>
 
@@ -261,7 +279,7 @@ const handleEmploymentHistoryUpdate = async (data) => {
         </VWindowItem>
 
         <VWindowItem value="documents">
-          <StudentDocuments :documents="formData.documents" :is-edit="true" />
+          <StudentDocuments :documents="formData.documents" :is-edit="true" @update:documents="handleDocumentsUpdate" />
         </VWindowItem>
       </VWindow>
     </VCardText>

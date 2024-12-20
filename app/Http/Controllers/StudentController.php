@@ -41,8 +41,9 @@ class StudentController extends Controller
             'interestedUniversities.country',
             'interestedUniversities.intake',
             'counsellor:id,first_name,last_name,branch_id',
-            'counsellor.branch'
-
+            'counsellor.branch',
+            'profileStatus',
+            'document'
         ]);
 
         if ($searchQuery) {
@@ -517,19 +518,41 @@ class StudentController extends Controller
     public function updateDocuments(StudentDocumentRequest $request, $id, StudentService $studentService)
     {
         try {
+            DB::beginTransaction();
+
             $student = Student::findOrFail($id);
             $documentPaths = $request->validated()['document_paths'] ?? [];
 
+            // Use the existing handleDocumentUploads method
             if (!empty($documentPaths)) {
                 $studentService->handleDocumentUploads($student, $documentPaths);
             }
 
+            DB::commit();
+
+            // Return updated documents with status
+            $updatedDocuments = $student->document()->get()->map(function ($doc) {
+                return [
+                    'document_name' => $doc->document_name,
+                    'path' => $doc->path,
+                    'file_name' => basename($doc->path['path']),
+                    'file_type' => $doc->path['file_type'] ?? null,
+                    'status' => $doc->status,
+                    'missing' => $doc->status === 'missing'
+                ];
+            });
+
             return $this->successJsonResponse(
                 'Documents updated successfully',
-                $student->load('document')
+                $updatedDocuments
             );
+
         } catch (\Throwable $th) {
-            Log::error('Failed to update documents', ['error' => $th->getMessage()]);
+            DB::rollBack();
+            Log::error('Failed to update documents', [
+                'error' => $th->getMessage(),
+                'student_id' => $id
+            ]);
             return $this->exceptionJsonResponse('Failed to update documents', $th);
         }
     }

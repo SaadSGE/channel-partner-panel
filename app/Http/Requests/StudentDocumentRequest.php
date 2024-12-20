@@ -18,6 +18,7 @@ class StudentDocumentRequest extends FormRequest
             'document_paths.*.id' => 'nullable',
             'document_paths.*.path' => 'required|string',
             'document_paths.*.document_name' => 'nullable|string',
+            'document_paths.*.missing' => 'nullable|boolean',
         ];
     }
     public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)

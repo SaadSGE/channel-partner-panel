@@ -508,5 +508,30 @@ export const useStudentStore = defineStore({
     clearSuccessMessage() {
       this.successMessage = "";
     },
+
+    async updateDocuments(studentId, documentPaths) {
+      try {
+        // Format the document paths into the expected structure
+        const formattedDocumentPaths = documentPaths.map((doc) => ({
+          document_name: doc.document_name,
+          path: doc.path,
+          missing: doc.missing || false,
+        }));
+
+        const response = await $api(`/students/${studentId}/documents`, {
+          method: "PUT",
+          body: JSON.stringify({
+            document_paths: formattedDocumentPaths,
+          }),
+        });
+
+        this.studentInfo.documentPaths = response.data;
+        this.successMessage = "Documents updated successfully";
+        return response.data;
+      } catch (error) {
+        this.handleError(error);
+        throw error;
+      }
+    },
   },
 });

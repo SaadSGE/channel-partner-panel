@@ -3,10 +3,14 @@
     <VCardText>
       <div class="d-flex justify-space-between align-center mb-4">
         <VCardTitle>Documents</VCardTitle>
-        <VBtn v-if="!readonly" :color="isEditing ? 'success' : 'primary'" @click="toggleEdit">
-          {{ isEditing ? 'Save Changes' : 'Edit Documents' }}
+        <VBtn v-if="!readonly" :color="hasUploads ? 'success' : 'primary'" @click="toggleEdit">
+          {{ buttonText }}
         </VBtn>
       </div>
+
+      <VAlert v-if="errorMessage" type="error" class="mb-4" closable @click:close="errorMessage = ''">
+        {{ errorMessage }}
+      </VAlert>
 
       <!-- View Mode -->
       <div v-if="!isEditing">
@@ -24,7 +28,7 @@
                   </div>
                 </div>
                 <VBtn v-if="!readonly" color="warning" variant="outlined" size="small"
-                  @click="toggleUploadFor(doc.name)">
+                  @click="handleUploadClick(doc.name)">
                   {{ isUploading(doc.name) ? 'Cancel Upload' : 'Upload Document' }}
                 </VBtn>
               </div>
@@ -33,7 +37,7 @@
               <VExpandTransition>
                 <div v-if="isUploading(doc.name)" class="mt-4">
                   <file-pond :name="doc.name" :allow-multiple="doc.name === 'supporting_document'" :server="server"
-                    :files="files" allowRemove="true"
+                    :files="null" allowRemove="true"
                     label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" />
                 </div>
               </VExpandTransition>
@@ -106,20 +110,26 @@
           </VCard>
         </template>
       </div>
+
+      <VOverlay v-model="isLoading" class="align-center justify-center">
+        <VProgressCircular indeterminate size="64" />
+      </VOverlay>
     </VCardText>
   </VCard>
 </template>
 
 <script setup>
 import { useFileStore } from '@/@core/stores/fileStore';
+import { useStudentStore } from '@/@core/stores/studentStore';
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css";
 import FilePondPluginPdfPreview from "filepond-plugin-pdf-preview";
 import "filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.min.css";
 import "filepond/dist/filepond.min.css";
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import VueFilePond from 'vue-filepond';
+import { useRoute } from 'vue-router';
 
 const props = defineProps({
   documents: {
@@ -133,8 +143,18 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['update:documents']);
 const fileStore = useFileStore();
 const isEditing = ref(false);
+const hasUploads = ref(false);
+const isLoading = ref(false);
+const errorMessage = ref('');
+const uploadingDocuments = ref(new Set());
+const files = ref([]);
+
+// Get the student ID from the route
+const route = useRoute();
+const studentId = route.params.id;
 
 // Create FilePond component with plugins
 const FilePond = VueFilePond(
@@ -148,23 +168,38 @@ const server = {
     fileStore
       .uploadFile(fieldName, file)
       .then((fileId) => {
-        file.fieldName = fieldName;
-        file.fileId = fileId;
+        // Add the file to our local files array with all necessary information
+        files.value.push({
+          fieldName: fieldName,
+          fileId: fileId,
+          file: file,
+          path: fileStore.getFilePath(fileId)
+        });
+
+        hasUploads.value = true;
         load(fileId);
       })
       .catch((err) => error(err));
   },
   revert: (uniqueFileId, load, error) => {
-    const pondFile = files.value.find(file => file.fileId === uniqueFileId);
-    if (pondFile) {
+    // Remove the file from our local files array
+    const fileIndex = files.value.findIndex(file => file.fileId === uniqueFileId);
+    if (fileIndex !== -1) {
       fileStore.removeFile(uniqueFileId);
-      fileStore.removeDocument(pondFile.fieldName, fileStore.getFilePath(uniqueFileId));
+      fileStore.removeDocument(files.value[fileIndex].fieldName, files.value[fileIndex].path);
+      files.value.splice(fileIndex, 1);
+
+      if (files.value.length === 0) {
+        hasUploads.value = false;
+      }
     }
     load();
   },
+  load: (source, load, error, progress, abort, headers) => {
+    // This handles loading existing files
+    load(source);
+  }
 };
-
-const files = ref([]);
 
 const documentTypes = [
   { name: 'passport', label: 'Passport', required: true },
@@ -189,7 +224,7 @@ const missingDocuments = computed(() => {
 });
 
 // Track which documents are being uploaded
-const uploadingDocuments = ref(new Set());
+
 
 const toggleUploadFor = (documentName) => {
   if (uploadingDocuments.value.has(documentName)) {
@@ -204,7 +239,14 @@ const isUploading = (documentName) => {
 };
 
 const toggleEdit = () => {
-  isEditing.value = !isEditing.value;
+  if (hasUploads.value) {
+    handleDocumentUpdate();
+  } else {
+    isEditing.value = !isEditing.value;
+  }
+  if (!isEditing.value) {
+    hasUploads.value = false;
+  }
 };
 
 const viewDocument = (path) => {
@@ -229,6 +271,74 @@ const getDocumentIcon = (fileType) => {
       return 'tabler-file';
   }
 };
+
+// Add this computed property for dynamic button text
+const buttonText = computed(() => {
+  if (hasUploads.value) {
+    return 'Save Changes';
+  }
+  return 'Edit Documents';
+});
+
+const handleUploadClick = (documentName) => {
+  if (uploadingDocuments.value.has(documentName)) {
+    uploadingDocuments.value.delete(documentName);
+    if (uploadingDocuments.value.size === 0) {
+      hasUploads.value = false;
+    }
+  } else {
+    uploadingDocuments.value.add(documentName);
+    hasUploads.value = true;
+  }
+};
+
+// Add store initialization
+const studentStore = useStudentStore();
+
+// Update handleDocumentUpdate to use store
+const handleDocumentUpdate = async () => {
+  isLoading.value = true;
+  errorMessage.value = '';
+
+  try {
+    console.log('Files before processing:', files.value);
+
+    const documentPaths = files.value.map(file => ({
+      document_name: file.fieldName,
+      path: file.path,
+      missing: missingDocuments.value.some(doc => doc.name === file.fieldName)
+    }));
+
+    console.log('Document paths to be sent:', documentPaths);
+
+    const response = await studentStore.updateDocuments(studentId, documentPaths);
+
+    // Update the local state
+    isEditing.value = false;
+    files.value = [];
+    hasUploads.value = false;
+
+    // Emit the update event with the new data
+    emit('update:documents', response);
+
+  } catch (error) {
+    console.error('Error in handleDocumentUpdate:', error);
+    errorMessage.value = 'Failed to update documents. Please try again.';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Initialize files from props if they exist
+onMounted(() => {
+  if (props.documents && props.documents.length > 0) {
+    files.value = props.documents.map(doc => ({
+      fieldName: doc.document_name,
+      path: doc.path,
+      file: doc.file_name
+    }));
+  }
+});
 </script>
 
 <style lang="scss" scoped>

@@ -71,6 +71,11 @@ class Student extends Model
         return $this->belongsTo(User::class, 'counsellor_id');
     }
 
+    public function profileStatus()
+    {
+        return $this->hasOne(StudentProfileStatus::class, 'student_id');
+    }
+
     protected static function boot()
     {
         parent::boot();

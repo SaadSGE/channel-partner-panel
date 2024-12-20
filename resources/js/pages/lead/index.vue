@@ -456,10 +456,10 @@ const openAddNoteDialog = (leadId) => {
           </p>
         </template>
         <template #item.status="{ item }">
-          <VChip :color="item.status.color_code || '#D3D3D3'" size="small" class="font-weight-medium"
+          <VChip :color="item.status?.color_code || '#D3D3D3'" size="small" class="font-weight-medium"
             style=" color: #000;cursor: pointer;"
-            @click="openChangeStatusDialog(item.id, item.status.id, item.status.convert_to_student)">
-            {{ item.status.name || 'Unknown Status' }}
+            @click="openChangeStatusDialog(item.id, item.status?.id, item.status?.convert_to_student)">
+            {{ item.status?.name || 'Unknown Status' }}
           </VChip>
         </template>
         <template #item.assigned_branch="{ item }">
