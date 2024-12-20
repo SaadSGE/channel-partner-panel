@@ -158,6 +158,7 @@ const onCountryChange = async (index) => {
   entry.university_id = null;
   entry.course_id = null;
   entry.intakes = await commonFunctionStore.getIntakesByCountry(entry.country_id);
+
 };
 
 const onIntakeChange = async (index) => {
