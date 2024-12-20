@@ -10,7 +10,7 @@ const tabsData = [
 
 <template>
     <VCard class="country-order-card">
-        <VCardItem title="Orders by countries" subtitle="62 deliveries in progress" class="pb-4">
+        <VCardItem title="Leads Stats" subtitle="62 leads in progress" class="pb-4">
             <template #append>
                 <MoreBtn size="small" />
             </template>
