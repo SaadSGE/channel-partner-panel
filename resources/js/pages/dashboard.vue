@@ -83,7 +83,9 @@
     <VCol cols="12" md="4">
       <LeadStats />
     </VCol>
-
+    <VCol cols="12" lg="12" md="8">
+      <LeadStatusChart />
+    </VCol>
   </VRow>
 
 
@@ -96,6 +98,7 @@ import { containsString, formatKey, getUserRole } from '@/@core/utils/helpers';
 import ApplicationStatusCharts from "@/components/Dashboard/ApplicationStatusCharts.vue";
 import ApplicationTable from "@/components/Dashboard/ApplicationTable.vue";
 import LeadStats from "@/components/Dashboard/LeadStats.vue";
+import LeadStatusChart from "@/components/Dashboard/LeadStatusChart.vue";
 import TopTenACO from "@/components/Dashboard/TopTenACO.vue";
 import TopTenCP from "@/components/Dashboard/TopTenCP.vue";
 import TopTenUniversities from "@/components/Dashboard/TopTenUniversities.vue";

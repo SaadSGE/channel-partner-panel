@@ -1,19 +1,5 @@
 <script setup>
-const searchQuery = ref('')
-const selectedStatus = ref(null)
-const selectedRows = ref([])
 
-// Data table options
-const itemsPerPage = ref(6)
-const page = ref(1)
-const sortBy = ref()
-const orderBy = ref()
-
-const updateOptions = options => {
-    // page.value = options.page
-    // sortBy.value = options.sortBy[0]?.key
-    // orderBy.value = options.sortBy[0]?.order
-}
 
 const applications = ref([
 
@@ -51,7 +37,15 @@ const applications = ref([
         email: 'james.a@email.com',
         status: 'Offer Issue Unconditional',
         channel_partner: 'Overseas Education'
-    }
+    },
+    {
+        date: '2024-01-16',
+        applicant_name: 'Olivia Martinez',
+        email: 'olivia.m@email.com',
+        status: 'Application Submitted',
+        channel_partner: 'Education Bridge'
+    },
+
 
 ]);
 
@@ -85,52 +79,32 @@ const headers = [
 
 <template>
     <VCard v-if="applications" id="application-list">
-        <VCardText>
-            <div class="d-flex justify-space-between flex-wrap gap-4">
-                <div class="d-flex gap-4 align-center">
-                    <div class="d-flex align-center gap-x-2">
-                        <div>
-                            Show
-                        </div>
-                        <AppSelect :model-value="itemsPerPage" :items="[
-                            { value: 6, title: '6' },
-                            { value: 10, title: '10' },
-                            { value: 25, title: '25' },
-                            { value: 50, title: '50' },
-                            { value: 100, title: '100' },
-                            { value: -1, title: 'All' },
-                        ]" @update:model-value="itemsPerPage = parseInt($event, 10)" />
-                    </div>
-                    <!-- 👉 Create application -->
 
-                </div>
-                <div class="d-flex align-center flex-wrap gap-4">
-                    <!-- 👉 Search  -->
-                    <div class="application-list-filter">
-                        <AppTextField v-model="searchQuery" placeholder="Search Application" />
-                    </div>
-                    <!-- 👉 Select status -->
-                    <div class="application-list-filter">
-                        <AppSelect v-model="selectedStatus" placeholder="Select Status" clearable clear-icon="tabler-x"
-                            single-line
-                            :items="['Downloaded', 'Draft', 'Sent', 'Paid', 'Partial Payment', 'Past Due']" />
-                    </div>
-                </div>
-            </div>
-        </VCardText>
+        <VCardItem title="Application List" subtitle="62 Applications in progress" class="pb-4">
+
+        </VCardItem>
 
         <VDivider />
 
         <!-- SECTION Datatable -->
-        <VDataTableServer v-model="selectedRows" v-model:items-per-page="itemsPerPage" v-model:page="page"
-            :items-length="applications.length" :headers="headers" :items="applications" item-value="id"
-            class="text-no-wrap" @update:options="updateOptions">
-            <!-- pagination -->
-            <template #bottom>
-                <TablePagination v-model:page="page" :items-per-page="itemsPerPage"
-                    :total-items="applications.length" />
-            </template>
-        </VDataTableServer>
+        <VTable>
+            <thead>
+                <tr>
+                    <th v-for="header in headers" :key="header.key">
+                        {{ header.title }}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="application in applications" :key="application.email">
+                    <td>{{ application.date }}</td>
+                    <td>{{ application.applicant_name }}</td>
+                    <td>{{ application.email }}</td>
+                    <td>{{ application.status }}</td>
+                    <td>{{ application.channel_partner }}</td>
+                </tr>
+            </tbody>
+        </VTable>
         <!-- !SECTION -->
     </VCard>
 </template>

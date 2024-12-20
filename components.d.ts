@@ -61,6 +61,7 @@ declare module 'vue' {
     GeneralInformation: typeof import('./resources/js/components/student/GeneralInformation.vue')['default']
     I18n: typeof import('./resources/js/@core/components/I18n.vue')['default']
     LeadStats: typeof import('./resources/js/components/Dashboard/LeadStats.vue')['default']
+    LeadStatusChart: typeof import('./resources/js/components/Dashboard/LeadStatusChart.vue')['default']
     MoreBtn: typeof import('./resources/js/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./resources/js/@core/components/Notifications.vue')['default']
     PaymentProvidersDialog: typeof import('./resources/js/components/dialogs/PaymentProvidersDialog.vue')['default']

@@ -1,5 +1,5 @@
 <script setup>
-
+import universitylogo from '../../../images/university.jpg';
 const topTenUniversities = [
     {
         name: 'University of Oxford',
@@ -52,9 +52,9 @@ const moreList = [
         <VCardText>
             <VList class="card-list">
                 <VListItem v-for="university in topTenUniversities" :key="university.name">
-                    <!-- <template #prepend>
-                        <VAvatar size="34" color="secondary" variant="tonal" class="me-1" :image="country.avatarImg" />
-                    </template> -->
+                    <template #prepend>
+                        <VAvatar size="34" color="secondary" variant="tonal" class="me-1" :image="universitylogo" />
+                    </template>
 
                     <VListItemTitle class="font-weight-medium">
                         {{ university.name }}
