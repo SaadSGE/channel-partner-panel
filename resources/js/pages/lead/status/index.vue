@@ -29,7 +29,7 @@ const headers = [
   { title: 'Status Name', key: 'name' },
   { title: 'Description', key: 'description' },
   { title: 'Color Code', key: 'color_code' },
-  { title: 'Health Rating', key: 'health_rating' },
+  { title: 'Health Type', key: 'health_type' },
   { title: 'Actions', key: 'actions', sortable: false },
 ];
 
@@ -38,7 +38,7 @@ const defaultItem = ref({
   name: '',
   description: '',
   color_code: '',
-  health_rating: '',
+  health_type: '',
 })
 const isLoading = ref(false)
 const editedItem = ref(defaultItem.value)

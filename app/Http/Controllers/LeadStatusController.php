@@ -28,6 +28,7 @@ class LeadStatusController extends Controller
             'description' => 'nullable|string',
             'color_code' => 'nullable|string',
             'health_rating' => 'nullable|integer',
+            'health_type' => 'required|string|in:hot,warm,dead',
             'convert_to_student' => 'boolean',
             'dead_lead' => 'boolean',
         ]);
@@ -59,6 +60,7 @@ class LeadStatusController extends Controller
             'description' => 'nullable|string',
             'color_code' => 'nullable|string',
             'health_rating' => 'nullable|integer',
+            'health_type' => 'required|string|in:hot,warm,dead',
             'convert_to_student' => 'boolean',
             'dead_lead' => 'boolean',
         ]);
