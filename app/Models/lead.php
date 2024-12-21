@@ -35,8 +35,19 @@ class lead extends Model
     {
         return $this->belongsTo(LeadStatus::class, 'status');
     }
+
+    public function statusDetails()
+    {
+        return $this->belongsTo(LeadStatus::class, 'status');
+    }
+
     public function statusHistory()
     {
         return $this->hasMany(LeadStatusTrack::class, 'lead_id');
+    }
+
+    public function student()
+    {
+        return $this->hasOne(Student::class, 'lead_id');
     }
 }

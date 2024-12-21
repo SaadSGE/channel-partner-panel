@@ -9,7 +9,7 @@ class Student extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    protected $appends = ['full_name', 'student_name_with_email','university_intake_course_country'];
+    protected $appends = ['full_name', 'student_name_with_email', 'university_intake_course_country'];
 
     public function creator()
     {
@@ -50,15 +50,15 @@ class Student extends Model
     {
         return $this->interestedUniversities->map(function ($choice) {
             return $choice->course->name . ' | ' .
-                   $choice->intake->name . ' | ' .
-                   $choice->university->name . ' | ' .
-                   $choice->country->name;
+                $choice->intake->name . ' | ' .
+                $choice->university->name . ' | ' .
+                $choice->country->name;
         })->toArray();
     }
 
     public function getDocumentZipLinkAttribute($value)
     {
-        return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/".$value;
+        return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/" . $value;
     }
 
     public function getStudentNameWithEmailAttribute(): string
@@ -83,11 +83,14 @@ class Student extends Model
         static::creating(function ($model) {
             if (auth('api')->check()) {
                 $model->created_by = auth('api')->id();
-
             } else {
                 $model->created_by = 2;
-
             }
         });
+    }
+
+    public function lead()
+    {
+        return $this->belongsTo(Lead::class, 'lead_id');
     }
 }

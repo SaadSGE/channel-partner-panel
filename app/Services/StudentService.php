@@ -18,28 +18,32 @@ class StudentService
 {
     public function storeGeneralInfo(array $data): Student
     {
-        Log::info(json_encode($data));
-        return Student::updateOrCreate(
-            ['id' => $data['id'] ?? null],
-            [
-                'student_id' => Str::random(10),
-                'first_name' => $data['student_first_name'],
-                'last_name' => $data['student_last_name'],
-                'passport_no' => $data['student_passport_no'],
-                'whatsapp_number' => $data['student_whatsapp_number'] ?? null,
-                'email' => $data['student_email'],
-                'address' => $data['student_address'] ?? null,
-                'city' => $data['student_city'] ?? null,
-                'country' => $data['student_country'] ?? null,
-                'region' => null,
-                'state' => $data['student_region_state'] ?? null,
-                'date_of_birth' => $data['date_of_birth'],
-                'gender' => $data['gender'],
-                'visa_refusal' => $data['visa_refusal'],
-            ]
-        );
+        try {
+            return Student::updateOrCreate(
+                ['id' => $data['id'] ?? null],
+                [
+                    'student_id' => Str::random(10),
+                    'first_name' => $data['student_first_name'],
+                    'last_name' => $data['student_last_name'] ?? null,
+                    'passport_no' => $data['student_passport_no'] ?? null,
+                    'whatsapp_number' => $data['student_whatsapp_number'] ?? null,
+                    'email' => $data['student_email'],
+                    'address' => $data['student_address'] ?? null,
+                    'city' => $data['student_city'] ?? null,
+                    'country' => $data['student_country'] ?? null,
+                    'region' => null,
+                    'state' => $data['student_region_state'] ?? null,
+                    'date_of_birth' => $data['date_of_birth'] ?? null,
+                    'gender' => $data['gender'] ?? null,
+                    'visa_refusal' => $data['visa_refusal'] ?? null,
+                    'lead_id' => $data['lead_id'] ?? null,
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error('Failed to store general info for student', ['error' => $e->getMessage()]);
+            throw $e; // or handle the exception as needed
+        }
     }
-
     public function storeInterestedUniversities(Student $student, array $universitiesData): void
     {
         if (empty($universitiesData)) {

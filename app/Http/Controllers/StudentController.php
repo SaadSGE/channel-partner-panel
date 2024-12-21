@@ -180,7 +180,6 @@ class StudentController extends Controller
             DB::commit();
 
             return $this->successJsonResponse('Student created successfully', $student, '', 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             return $this->handleValidationErrors($e);
@@ -206,7 +205,8 @@ class StudentController extends Controller
                 'interestedUniversities.course',
                 'interestedUniversities.country',
                 'interestedUniversities.intake',
-                'creator'
+                'creator',
+                'lead'
             ])->findOrFail($id); // Using findOrFail instead of separate exists check
 
             // Map interested universities with dependent data
@@ -241,13 +241,13 @@ class StudentController extends Controller
                 'englishProficiency' => $this->transformEnglishProficiency($student->englishProficiency),
                 'interestedUniversity' => $interestedUniversities,
                 'documentPaths' => $student->document->pluck('path'),
+                'lead' => $student->lead
             ];
 
             // Log activity
             $this->logStudentView($student);
 
             return $this->successJsonResponse('Student details retrieved successfully', $transformedData);
-
         } catch (\Exception $e) {
             Log::error('Failed to retrieve student details', [
                 'error' => $e->getMessage(),
@@ -278,7 +278,7 @@ class StudentController extends Controller
 
     private function transformEducationalHistory($histories): array
     {
-        return $histories->map(fn ($edu) => [
+        return $histories->map(fn($edu) => [
             'id' => $edu->id,
             'degree' => $edu->degree_name,
             'institution' => $edu->institution_name,
@@ -289,7 +289,7 @@ class StudentController extends Controller
 
     private function transformEmploymentHistory($histories): array
     {
-        return $histories->map(fn ($emp) => [
+        return $histories->map(fn($emp) => [
             'id' => $emp->id,
             'company_name' => $emp->company_name,
             'designation' => $emp->designation,
@@ -546,7 +546,6 @@ class StudentController extends Controller
                 'Documents updated successfully',
                 $updatedDocuments
             );
-
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error('Failed to update documents', [

@@ -111,6 +111,7 @@ watch([search, selectedStatus, selectedDateFrom, selectedDateTo], () => {
 // Table headers
 const headers = ref([
   { title: 'Action', key: 'action', sortable: false },
+  { title: 'Student Source', key: 'lead_id' },
   { title: 'Document Complete?', key: 'profile_status.document_status' },
   { title: 'Profile Complete?', key: 'profile_status.interested_university_status' },
   { title: 'Student ID', key: 'student_id' },
@@ -176,6 +177,11 @@ const showDocumentStatus = (item) => {
       <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="studentLists"
         :items-length="totalStudents" :headers="headers" class="text-no-wrap color-black student-table"
         :height="tableHeight" @update:options="updateOptions">
+        <template #item.lead_id="{ item }">
+          <VChip :color="item.lead_id ? 'primary' : 'warning'" size="small" class="font-weight-medium">
+            {{ item.lead_id ? 'Lead' : 'Regular' }}
+          </VChip>
+        </template>
         <template #item.profile_status.document_status="{ item }">
           <VChip :color="item.profile_status.document_status ? 'success' : 'error'" size="small"
             class="font-weight-medium" style="cursor: pointer;" @click="showDocumentStatus(item)">

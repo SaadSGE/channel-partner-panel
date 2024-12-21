@@ -8,6 +8,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\LeadsImport;
 use Illuminate\Validation\ValidationException;
 use App\Models\LeadStatusTrack;
+use App\Models\Student;
+use App\Services\StudentService;
 
 class LeadController extends Controller
 {
@@ -26,6 +28,11 @@ class LeadController extends Controller
 
 
         $query->with(['notes', 'branch', 'assignedUser', 'status:id,name,color_code', 'statusHistory']);
+
+        $query->whereHas('status', function ($q) {
+            $q->where('convert_to_student', 0)
+                ->where('dead_lead', 0);
+        });
 
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
@@ -117,17 +124,32 @@ class LeadController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
-        $lead = Lead::find($id);
+        $lead = Lead::with('statusDetails:id,convert_to_student')->find($id);
         $lead->status = $request->status;
         $lead->save();
-
         $leadStatusTrack = new LeadStatusTrack();
         $leadStatusTrack->lead_id = $lead->id;
         $leadStatusTrack->status_id = $request->status;
         $leadStatusTrack->user_id = auth('api')->user()->id;
         $leadStatusTrack->status_note = $request->status_note;
         $leadStatusTrack->save();
+        $lead->refresh();
+
+        if ($lead->statusDetails->convert_to_student == 1) {
+
+            $studentService = new StudentService();
+
+            $studentData = [
+                'lead_id' => (int)$id,
+                'student_first_name' => $lead->name,
+                'student_email' => $lead->email,
+                'student_whatsapp_number' => $lead->phone,
+                'visa_refusal' => 'No'
+            ];
+
+
+            $studentService->storeGeneralInfo($studentData);
+        }
         return $this->successJsonResponse("Lead status updated successfully!", $lead);
     }
 
