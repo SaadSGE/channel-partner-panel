@@ -81,5 +81,6 @@ declare module 'vue' {
     UserActivityLog: typeof import('./resources/js/components/ActivityLog/UserActivityLog.vue')['default']
     UserInfoEditDialog: typeof import('./resources/js/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./resources/js/components/dialogs/UserUpgradePlanDialog.vue')['default']
+    VueApexCharts: typeof import('vue3-apexcharts')['default']
   }
 }
