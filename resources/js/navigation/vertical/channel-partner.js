@@ -154,6 +154,12 @@ export default [
         action: "read",
         subject: "dashboard",
       },
+      {
+        title: "Lead Assigned Operation",
+        to: "lead-assigned-operation",
+        action: "read",
+        subject: "dashboard",
+      },
 
       // {
       //   title: 'Unassigned Lead',

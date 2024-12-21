@@ -120,8 +120,7 @@ const headers = ref([
   { title: 'Phone', key: 'whatsapp_number' },
   { title: 'Counsellor', key: 'counsellor.full_name' },
   { title: 'University', key: 'university_intake_course_country' },
-  { title: 'Branch', key: 'counsellor.branch.branch_name_with_country' },
-  { title: 'Status', key: 'status' },
+
 
 ]);
 
@@ -213,12 +212,16 @@ const showDocumentStatus = (item) => {
             </template>
           </ul>
         </template>
-        <template #item.status="{ item }">
-          <VChip :color="resolveStatusColor(item.status)" :class="`text-${resolveStatusColor(item.status)}`"
-            size="small" class="font-weight-medium">
-            {{ resolveStatusName(item.status) }}
-          </VChip>
+        <template #item.counsellor.full_name="{ item }">
+          <p>
+            <span style="color: #696cff;">{{ item.counsellor.full_name }}</span>
+            <span style="color: #8a8d93;"> - </span>
+            <span style="color: #28c76f;">{{ item.counsellor.branch.branch_name_with_country }}</span>
+          </p>
         </template>
+
+
+
         <template #item.action="{ item }">
           <div class="d-flex flex-column ms-3">
             <IconBtn @click="viewStudentDetail(item.id)">

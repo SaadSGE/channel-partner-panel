@@ -83,6 +83,7 @@ class Student extends Model
         static::creating(function ($model) {
             if (auth('api')->check()) {
                 $model->created_by = auth('api')->id();
+                $model->counsellor_id = auth('api')->user()->id;
             } else {
                 $model->created_by = 2;
             }

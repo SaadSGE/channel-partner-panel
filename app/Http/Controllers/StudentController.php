@@ -43,7 +43,8 @@ class StudentController extends Controller
             'counsellor:id,first_name,last_name,branch_id',
             'counsellor.branch',
             'profileStatus',
-            'document'
+            'document',
+
         ]);
 
         if ($searchQuery) {
