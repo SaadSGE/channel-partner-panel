@@ -650,15 +650,22 @@ export const commonFunction = defineStore({
           : ["An unexpected error occurred"];
       }
     },
-    async getLeadStatus(searchQuery = "") {
+    async getLeadStatus(searchQuery = "", page = 1, itemsPerPage = 10, sortBy = "", orderBy = "", healthType = null) {
       try {
         const response = await $api("/lead-statuses", {
           method: "GET",
           params: {
             searchQuery,
+            page,
+            perPage: itemsPerPage,
+            sortBy,
+            orderBy,
+            health_type: healthType,
           },
         });
         this.leadStatus = response.data;
+        return response
+
       } catch (error) {
         console.error("Error fetching lead status:", error);
         this.errors = error.response

@@ -52,6 +52,12 @@ const editorStore = editor();
 
 const isAdmin = ref(getUserRole() === 'admin');
 
+const healthTypes = ref([
+  { id: 'hot', name: 'Hot' },
+  { id: 'warm', name: 'Warm' },
+  { id: 'cold', name: 'Cold' },
+]);
+
 const props = defineProps({
   isAdmin: {
     type: Boolean,
@@ -154,10 +160,14 @@ const props = defineProps({
     type: Number,
     Required: false,
   },
+  leadHealthType: {
+    type: String,
+    Required: false,
+  },
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch', 'update-user']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch', 'update-user', 'update-lead-health-type']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedLeadStatus = ref(props.selectedLeadStatus);
@@ -181,6 +191,7 @@ const localSelectedAssignedStatus = ref(props.selectedAssignedStatus);
 const localSelectedBranch = ref(props.selectedBranch);
 const localSelectedAssignedBranch = ref(props.selectedAssignedBranch);
 const localSelectedUser = ref(props.selectedUser);
+const localSelectedLeadHealthType = ref(props.leadHealthType);
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
 });
@@ -246,6 +257,9 @@ watch(localSelectedAssignedBranch, (newValue) => {
 watch(localSelectedUser, (newValue) => {
   emit('update-user', newValue);
 });
+watch(localSelectedLeadHealthType, (newValue) => {
+  emit('update-lead-health-type', newValue);
+});
 
 const fetchFilterOptions = async () => {
   try {
@@ -305,8 +319,11 @@ onMounted(async () => {
 
 const loadFilterOptions = async () => {
   try {
+    console.log('loading countries2');
+
     // Conditionally load countries if selectedCountry is provided
-    if (props.selectedCountry !== undefined && commonFunctionStore.countries.length === 0) {
+    if (props.selectedCountry !== undefined) {
+      console.log('loading countries');
       await commonFunctionStore.getCountries();
       countries.value = commonFunctionStore.countries;
     }
@@ -407,7 +424,7 @@ const loadEditors = async () => {
 // Add new assignedStatuses array
 const assignedStatuses = ref([
   { id: 1, name: 'Assigned' },
-  { id: 0, name: 'Not Assigned' },
+  { id: 0, name: 'Unassigned' },
 ]);
 
 </script>
@@ -517,6 +534,11 @@ const assignedStatuses = ref([
     <AppAutocomplete v-model="localSelectedAssignedBranch" :items="commonFunctionStore.branches"
       :item-title="(item) => item.name" :item-value="(item) => item.id" :label="assignedBranchLabel"
       placeholder="Select Branch" clearable />
+  </VCol>
+
+  <VCol cols="12" md="3" v-if="props.leadHealthType !== undefined">
+    <AppAutocomplete v-model="localSelectedLeadHealthType" :items="healthTypes" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Lead Health Type" placeholder="Select Health Type" clearable />
   </VCol>
 
 </template>

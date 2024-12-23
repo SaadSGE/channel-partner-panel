@@ -13,7 +13,7 @@ const healthType = ref(null); // Add this new ref for health type
 const healthTypeOptions = [
   { title: 'Hot', value: 'hot' },
   { title: 'Warm', value: 'warm' },
-  { title: 'Dead', value: 'dead' },
+  { title: 'Cold', value: 'cold' },
 ];
 const showColorPicker = ref(false); // Add this new ref for controlling color picker dialog
 const props = defineProps({

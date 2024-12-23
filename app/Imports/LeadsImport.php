@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Carbon\Carbon;
 
 class LeadsImport implements ToCollection, WithHeadingRow
 {
@@ -19,7 +20,8 @@ class LeadsImport implements ToCollection, WithHeadingRow
         'name' => 'Name',
         'email' => 'Email',
         'phone' => 'Phone',
-        'course_interested_for' => 'Course Interested For'
+        'course_interested_for' => 'Course Interested For',
+        'date' => 'Date'
     ];
 
     public function __construct($assignedBranch, $leadCountryId)
@@ -69,22 +71,35 @@ class LeadsImport implements ToCollection, WithHeadingRow
                 }
             }
 
-            // If all validations pass, create the lead
-            Lead::create([
-                'name' => $row['name'],
-                'email' => $row['email'],
-                'phone' => $row['phone'],
-                'interested_course' => $row['course_interested_for'],
-                'assigned_branch' => $this->assignedBranch,
-                'interested_country' => $row['country_interested_for'] ?? null,
-                'current_educational_qualifications' => $row['current_educational_qualifications'] ?? null,
-                'ielts_or_english_test' => $row['ieltsenglish_test'] ?? null,
-                'source' => $row['source'] ?? null,
-                'status' => 1,
-                'created_by' => auth('api')->user()->id
-            ]);
+            try {
+                // Debug the incoming date value
+                \Log::info('Incoming date value:', ['date' => $row['date']]);
+                // If all validations pass, create the lead
+                Lead::create([
+                    'name' => $row['name'],
+                    'email' => $row['email'],
+                    'phone' => $row['phone'],
+                    'interested_course' => $row['course_interested_for'],
+                    'assigned_branch' => $this->assignedBranch,
+                    'interested_country' => $row['country_interested_for'] ?? null,
+                    'current_educational_qualifications' => $row['current_educational_qualifications'] ?? null,
+                    'ielts_or_english_test' => $row['ieltsenglish_test'] ?? null,
+                    'source' => $row['source'] ?? null,
+                    'lead_incoming_date' => Carbon::parse($row['date'])->format('Y-m-d'),
+                    'status' => 1,
+                    'created_by' => auth('api')->user()->id
+                ]);
 
-            $this->rowCount++;
+                $this->rowCount++;
+            } catch (\Exception $e) {
+                $this->errors[] = "Row " . ($rowIndex + 2) . ": Date parsing error - " . $e->getMessage();
+                \Log::error('Date parsing error:', [
+                    'row' => $rowIndex + 2,
+                    'date_value' => $row['date'],
+                    'error' => $e->getMessage()
+                ]);
+                continue;
+            }
         }
 
         // If there are any errors, throw an exception

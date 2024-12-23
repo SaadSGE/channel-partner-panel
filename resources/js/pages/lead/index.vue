@@ -72,7 +72,7 @@ const headers = [
   { title: 'Interested Course & Country', key: 'course_country' },
   { title: 'Current Status', key: 'status' },
   { title: 'Status History', key: 'statusHistory' },
-
+  { title: 'Assigned Status', key: 'assigned_user' },
   { title: 'Assigned User', key: 'assigned_user.name_with_email' },
   { title: 'Manager\'s Note', key: 'notes' },
   { title: 'Assigned Branch', key: 'branch.branch_name_with_country' },
@@ -423,7 +423,12 @@ const openAddNoteDialog = (leadId) => {
         @update:options="updateOptions" :items-length="total" :headers="headers" :items="leads" item-value="total"
         class="text-no-wrap text-sm rounded-0">
 
-        <!-- Slot for 'course_country' column with combined Interested Course and Country -->
+        <template #item.assigned_user="{ item }">
+          <VChip :color="item.assigned_user ? 'success' : 'error'" size="small" class="font-weight-medium"
+            style="color: #000; cursor: pointer;">
+            {{ item.assigned_user ? 'Assigned' : 'Unassigned' }}
+          </VChip>
+        </template>
         <template #item.course_country="{ item }">
           <div class="d-flex flex-column ms-3">
             <span class="d-block font-weight-medium text-truncate text-high-emphasis">
@@ -466,10 +471,7 @@ const openAddNoteDialog = (leadId) => {
           <span v-if="item.assigned_branch">{{ item.assigned_branch }}</span>
           <VChip v-else color="error" size="small" variant="flat">Not Assigned</VChip>
         </template>
-        <template #item.assigned_user="{ item }">
-          <span v-if="item.assigned_user">{{ item.assigned_user }}</span>
-          <VChip v-else color="error" size="small" variant="flat">Not Assigned</VChip>
-        </template>
+
         <template #item.actions="{ item }">
           <VBtn icon variant="text" color="medium-emphasis" class="action-button">
             <VIcon icon="tabler-dots-vertical" />

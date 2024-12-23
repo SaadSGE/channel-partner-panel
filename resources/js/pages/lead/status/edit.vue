@@ -14,7 +14,7 @@ const deadLead = ref(false);
 const healthTypeOptions = [
   { title: 'Hot', value: 'hot' },
   { title: 'Warm', value: 'warm' },
-  { title: 'Dead', value: 'dead' },
+  { title: 'Cold', value: 'cold' },
 ];
 const showColorPicker = ref(false);
 

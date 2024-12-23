@@ -23,6 +23,8 @@ class LeadController extends Controller
         $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
         $sortBy = $request->query('sortBy', 'created_at');
         $orderBy = $request->query('orderBy', 'desc');
+        $assignedUser = $request->query('assigned_status', null);
+
 
         $query = Lead::query();
 
@@ -49,8 +51,13 @@ class LeadController extends Controller
             return $q->where('branch', $request->query('branch'));
         })->when($request->filled('source'), function ($q) use ($request) {
             return $q->where('source', $request->query('source'));
-        })->when($request->filled('assignedUser'), function ($q) use ($request) {
-            return $q->where('assigned_user', $request->query('assignedUser'));
+        })->when($assignedUser !== null, function ($q) use ($assignedUser) {
+            if ($assignedUser == 1) {
+                return $q->whereNotNull('assigned_user');
+            } elseif ($assignedUser == 0) {
+                return $q->whereNull('assigned_user');
+            }
+
         })->when($request->filled('dateFrom'), function ($q) use ($request) {
             return $q->whereDate('lead_date', '>=', $request->query('dateFrom'));
         })->when($request->filled('dateTo'), function ($q) use ($request) {
@@ -168,6 +175,7 @@ class LeadController extends Controller
                 'file' => 'required|mimes:xlsx,csv',
                 'assigned_branch' => 'required|exists:branches,id',
                 'lead_country_id' => 'required|exists:countries,id',
+
             ], [
                 'file.required' => 'Please select a file to upload.',
                 'file.mimes' => 'Please upload only Excel or CSV files.',
@@ -175,6 +183,7 @@ class LeadController extends Controller
                 'assigned_branch.exists' => 'Selected branch is invalid.',
                 'lead_country_id.required' => 'Please select a country.',
                 'lead_country_id.exists' => 'Selected country is invalid.',
+
             ]);
 
             // Check if file is empty
