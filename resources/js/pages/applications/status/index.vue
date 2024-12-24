@@ -15,6 +15,7 @@ const applicationStatuses = ref([]);
 const isNavDrawerOpen = ref(false)
 const isNavDrawerOpenEdit = ref(false)
 const search = ref('')
+const allStatuses = ref([])
 onMounted(async () => {
     await getAllApplicationStatuses();
 });
@@ -23,6 +24,7 @@ const getAllApplicationStatuses = async () => {
     isLoading.value = true
     await commonFunctionStore.getApplicationStatus();
     applicationStatuses.value = commonFunctionStore.applicationStatus;
+
     isLoading.value = false
 }
 
@@ -79,11 +81,19 @@ const deleteItem = async (item) => {
         }
     }
 };
+const refreshStatuses = async () => {
+    try {
+        await getAllApplicationStatuses(); // Fetch updated statuses
+        allStatuses.value = applicationStatuses.value; // Update the status filter dynamically
+    } catch (error) {
+        console.error("Error refreshing statuses:", error);
+    }
+};
 </script>
 
 <template>
     <StatusAdd :isNavDrawerOpen="isNavDrawerOpen" @update:isNavDrawerOpen="isNavDrawerOpen = $event"
-        @updateApplicationStatuses="getAllApplicationStatuses" />
+        @updateApplicationStatuses="getAllApplicationStatuses" @status-added="refreshStatuses" />
     <StatusEdit :isNavDrawerOpen="isNavDrawerOpenEdit" @update:isNavDrawerOpen="isNavDrawerOpenEdit = $event"
         :editedItem="editedItem" />
     <VCard :loading="isLoading">

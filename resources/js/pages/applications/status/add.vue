@@ -32,6 +32,7 @@ const addStatus = async () => {
     try {
         isLoading.value = true;
         await commonFunctionStore.addApplicationStatus(statusData);
+        emit("status-added");
         isLoading.value = false;
         // Reset form fields
         statusName.value = "";
