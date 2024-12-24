@@ -28,6 +28,7 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\DailyTaskController;
 use App\Http\Controllers\LeadStatusController;
 use App\Http\Controllers\ApplicationStatusListController;
+use App\Http\Controllers\EventController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -111,9 +112,8 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/students/{id}/english-proficiency', [StudentController::class, 'updateEnglishProficiency']);
     Route::put('/students/{id}/employment-history', [StudentController::class, 'updateEmploymentHistory']);
     Route::put('/students/{id}/documents', [StudentController::class, 'updateDocuments']);
-
 });
-
+Route::apiResource('events', EventController::class);
 Route::get('/leads/count', [LeadController::class, 'getLeadCount']);
 Route::post('/leads/assign', [LeadController::class, 'assignLeads']);
 Route::apiResource('daily-tasks', DailyTaskController::class);

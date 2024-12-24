@@ -15,6 +15,8 @@ class LeadsImport implements ToCollection, WithHeadingRow
     private $rowCount = 0;
     private $assignedBranch;
     private $leadCountryId;
+    private $leadType;
+    private $leadEventId;
     private $errors = [];
     private $requiredColumns = [
         'name' => 'Name',
@@ -24,10 +26,12 @@ class LeadsImport implements ToCollection, WithHeadingRow
         'date' => 'Date'
     ];
 
-    public function __construct($assignedBranch, $leadCountryId)
+    public function __construct($assignedBranch, $leadCountryId, $leadType, $leadEventId)
     {
         $this->assignedBranch = $assignedBranch;
         $this->leadCountryId = $leadCountryId;
+        $this->leadType = $leadType;
+        $this->leadEventId = $leadEventId;
     }
 
     public function collection(Collection $rows)
@@ -87,6 +91,8 @@ class LeadsImport implements ToCollection, WithHeadingRow
                     'source' => $row['source'] ?? null,
                     'lead_incoming_date' => Carbon::parse($row['date'])->format('Y-m-d'),
                     'status' => 1,
+                    'lead_type' => $this->leadType,
+                    'lead_event_id' => $this->leadEventId,
                     'created_by' => auth('api')->user()->id
                 ]);
 

@@ -59,6 +59,11 @@ const convertToStudent = ref(false);
 // Add new ref for assigned status
 const selectedAssignedStatus = ref(null)
 
+// Define reactive states for the filters
+const selectedLeadType = ref(null);
+const selectedEvent = ref(null);
+
+
 // Function to toggle between showing all notes and only the first two for each lead
 const toggleShowNotes = (leadId) => {
   showAllNotes[leadId] = !showAllNotes[leadId];
@@ -137,8 +142,8 @@ const uploadFile = async () => {
     return;
   }
 
-  // Validate country and branch selection
-  if (!selectedCountry.value) {
+  // Validate country selection only if lead type is not 'event'
+  if (selectedLeadType.value !== 'event' && !selectedCountry.value) {
     toast.error("Please select a Country", {
       position: "top-right",
       theme: "colored",
@@ -146,6 +151,7 @@ const uploadFile = async () => {
     return;
   }
 
+  // Validate branch selection
   if (!selectedBranch.value) {
     toast.error("Please select a Branch", {
       position: "top-right",
@@ -159,7 +165,9 @@ const uploadFile = async () => {
     const formData = new FormData();
     formData.append('file', fileInput.value);
     formData.append('assigned_branch', selectedBranch.value);
-    formData.append('lead_country_id', selectedCountry.value);
+    formData.append('lead_country_id', selectedCountry.value || '');
+    formData.append('lead_type', selectedLeadType.value || '');
+    formData.append('lead_event_id', selectedEvent.value || '');
 
     const response = await leadStore.uploadLeads(formData);
 
@@ -370,19 +378,40 @@ const openAddNoteDialog = (leadId) => {
             <div class="form-padding mt-6 upload-form">
               <!-- Add Country and Branch Dropdowns -->
               <VRow class="mb-4 fade-in">
-                <VCol cols="12" md="6">
-                  <AppAutocomplete v-model="selectedCountry" :items="commonFunctionStore.allCountries"
-                    :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Country"
-                    placeholder="Select Country" clearable class="slide-in" />
-                </VCol>
-                <VCol cols="12" md="6">
-                  <AppAutocomplete v-model="selectedBranch" :items="commonFunctionStore.branches"
-                    :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Branch"
-                    placeholder="Select Branch" clearable class="slide-in" />
-                </VCol>
+                <!-- Lead Type Filter -->
+
+                <Filters :selected-lead-type="selectedLeadType" @update-lead-type="selectedLeadType = $event"
+                  country-label="Lead Country" branch-label="Lead Branch (Optional)" />
+
+
+                <!-- Conditionally show Lead Country and Lead Branch filters if 'Social' is selected -->
+                <template v-if="selectedLeadType === 'social'">
+                  <VCol cols="12" md="4">
+                    <AppAutocomplete v-model="selectedCountry" :items="commonFunctionStore.allCountries"
+                      :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Country"
+                      placeholder="Select Country" clearable class="slide-in" />
+                  </VCol>
+                  <VCol cols="12" md="4">
+                    <AppAutocomplete v-model="selectedBranch" :items="commonFunctionStore.branches"
+                      :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Branch"
+                      placeholder="Select Branch" clearable class="slide-in" />
+                  </VCol>
+                </template>
+
+                <!-- Conditionally show Event and Lead Branch filters if 'Event' is selected -->
+                <template v-if="selectedLeadType === 'event'">
+
+                  <Filters :selected-event="selectedEvent" @update-event="selectedEvent = $event" />
+
+                  <VCol cols="12" md="4">
+                    <AppAutocomplete v-model="selectedBranch" :items="commonFunctionStore.branches"
+                      :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Branch"
+                      placeholder="Select Branch" clearable class="slide-in" />
+                  </VCol>
+                </template>
               </VRow>
 
-              <VRow justify="center" align="center" class="gap-4 fade-in">
+              <VRow justify="center" align="center" class="gap-4 fade-in" v-if="selectedLeadType">
 
                 <VCol cols="12" md="6">
                   <VFileInput accept=".xlsx, .csv" label="Upload Excel/CSV file" @change="handleFileUpload"
@@ -398,12 +427,12 @@ const openAddNoteDialog = (leadId) => {
               </VRow>
 
               <!-- File Format Notice with Margin Top -->
-              <VRow justify="center" class="mt-2 fade-in">
+              <VRow justify="center" class="mt-2 fade-in" v-if="selectedLeadType">
                 <p class="text-caption text-primary">Only Excel/CSV file support</p>
               </VRow>
 
               <!-- Download Sample Section -->
-              <VRow justify="center" align="center" class="mt-6 gap-2 sample-section fade-in">
+              <VRow justify="center" align="center" class="mt-6 gap-2 sample-section fade-in" v-if="selectedLeadType">
                 <span class="font-weight-bold">Download Sample Excel/CSV File</span>
                 <VBtn prepend-icon="tabler-cloud-download" @click="downloadSampleFile" class="download-btn btn-small "
                   variant="outlined">

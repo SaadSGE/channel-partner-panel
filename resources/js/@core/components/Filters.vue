@@ -58,6 +58,13 @@ const healthTypes = ref([
   { id: 'cold', name: 'Cold' },
 ]);
 
+const leadTypes = ref([
+  { id: 'social', name: 'Social' },
+  { id: 'event', name: 'Event' },
+]);
+
+const events = ref([]);
+
 const props = defineProps({
   isAdmin: {
     type: Boolean,
@@ -164,10 +171,18 @@ const props = defineProps({
     type: String,
     Required: false,
   },
+  selectedLeadType: {
+    type: String,
+    required: false,
+  },
+  selectedEvent: {
+    type: Number,
+    required: false,
+  },
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch', 'update-user', 'update-lead-health-type']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch', 'update-user', 'update-lead-health-type', 'update-lead-type', 'update-event']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedLeadStatus = ref(props.selectedLeadStatus);
@@ -192,6 +207,9 @@ const localSelectedBranch = ref(props.selectedBranch);
 const localSelectedAssignedBranch = ref(props.selectedAssignedBranch);
 const localSelectedUser = ref(props.selectedUser);
 const localSelectedLeadHealthType = ref(props.leadHealthType);
+const localSelectedLeadType = ref(props.selectedLeadType);
+const localSelectedEvent = ref(props.selectedEvent);
+
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
 });
@@ -259,6 +277,12 @@ watch(localSelectedUser, (newValue) => {
 });
 watch(localSelectedLeadHealthType, (newValue) => {
   emit('update-lead-health-type', newValue);
+});
+watch(localSelectedLeadType, (newValue) => {
+  emit('update-lead-type', newValue);
+});
+watch(localSelectedEvent, (newValue) => {
+  emit('update-event', newValue);
 });
 
 const fetchFilterOptions = async () => {
@@ -427,10 +451,35 @@ const assignedStatuses = ref([
   { id: 0, name: 'Unassigned' },
 ]);
 
+// Fetch events from the API
+const fetchEvents = async () => {
+  try {
+    const response = await $api('/events', { method: 'GET' });
+    events.value = response.data.map(event => ({
+      id: event.id,
+      name: event.name,
+    }));
+  } catch (error) {
+    console.error('Error fetching events:', error);
+  }
+};
+
+onMounted(async () => {
+  await fetchEvents(); // Fetch events on component mount
+});
+
 </script>
 
 
 <template>
+  <VCol cols="12" md="3" v-if="props.selectedLeadType !== undefined">
+    <AppAutocomplete v-model="localSelectedLeadType" :items="leadTypes" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Lead Type" placeholder="Select Lead Type" clearable />
+  </VCol>
+  <VCol cols="12" md="3" v-if="props.selectedEvent !== undefined">
+    <AppAutocomplete v-model="localSelectedEvent" :items="events" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Event" placeholder="Select Event" clearable />
+  </VCol>
   <VCol cols="12" md="3" v-if="props.selectedAssignedStatus !== undefined">
     <AppAutocomplete v-model="localSelectedAssignedStatus" :items="assignedStatuses" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Assigned Status" placeholder="Select Assigned Status" clearable />
@@ -540,5 +589,10 @@ const assignedStatuses = ref([
     <AppAutocomplete v-model="localSelectedLeadHealthType" :items="healthTypes" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Lead Health Type" placeholder="Select Health Type" clearable />
   </VCol>
+
+  <!-- Lead Type Filter -->
+
+  <!-- Event Filter -->
+
 
 </template>

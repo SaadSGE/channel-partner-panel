@@ -57,7 +57,6 @@ class LeadController extends Controller
             } elseif ($assignedUser == 0) {
                 return $q->whereNull('assigned_user');
             }
-
         })->when($request->filled('dateFrom'), function ($q) use ($request) {
             return $q->whereDate('lead_date', '>=', $request->query('dateFrom'));
         })->when($request->filled('dateTo'), function ($q) use ($request) {
@@ -174,8 +173,9 @@ class LeadController extends Controller
             $request->validate([
                 'file' => 'required|mimes:xlsx,csv',
                 'assigned_branch' => 'required|exists:branches,id',
-                'lead_country_id' => 'required|exists:countries,id',
-
+                'lead_country_id' => 'nullable|exists:countries,id',
+                'lead_type' => 'required|string',
+                'lead_event_id' => 'nullable|exists:events,id',
             ], [
                 'file.required' => 'Please select a file to upload.',
                 'file.mimes' => 'Please upload only Excel or CSV files.',
@@ -196,7 +196,7 @@ class LeadController extends Controller
             }
 
             // Import the leads
-            $import = new LeadsImport($request->assigned_branch, $request->lead_country_id);
+            $import = new LeadsImport($request->assigned_branch, $request->lead_country_id, $request->lead_type, $request->lead_event_id);
             Excel::import($import, $request->file('file'));
 
             // Check if any records were imported

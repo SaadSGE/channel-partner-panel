@@ -55,6 +55,8 @@ const currentStep = ref(1);
 const leads = ref([]);
 const leadStore = useLeadStore();
 const totalLeadCount = ref(0);
+const selectedLeadType = ref(null);
+const selectedEvent = ref(null);
 
 // Add computed property for total assigned leads
 const totalAssignedLeads = computed(() => {
@@ -120,6 +122,8 @@ const fetchUsers = async () => {
       null,
       null,
       selectedAssignedBranch.value,
+      selectedLeadType.value,
+      selectedEvent.value
     );
     users.value = response.data;
     totalUsers.value = response.total;
@@ -349,6 +353,11 @@ const getAllBranches = async () => {
     isLoading.value = false;
   }
 }
+
+// Watch for changes in the new filters
+watch([selectedLeadType, selectedEvent, selectedCountry, selectedBranch], () => {
+  fetchUsers();
+});
 </script>
 
 <template>
@@ -364,10 +373,25 @@ const getAllBranches = async () => {
 
         <VCardText>
           <VRow>
-            <Filters :selected-country="selectedCountry" @update-country="selectedCountry = $event"
-              :selected-branch="selectedBranch" @update-branch="selectedBranch = $event" country-label="Lead Country"
-              branch-label="Lead Branch (Optional)" />
+            <Filters :selected-lead-type="selectedLeadType" @update-lead-type="selectedLeadType = $event"
+              country-label="Lead Country" branch-label="Lead Branch (Optional)" />
           </VRow>
+
+          <template v-if="selectedLeadType === 'social'">
+            <VRow>
+              <Filters :selected-country="selectedCountry" :selected-branch="selectedBranch"
+                @update-country="selectedCountry = $event" @update-branch="selectedBranch = $event"
+                country-label="Lead Country" branch-label="Lead Branch" />
+            </VRow>
+          </template>
+
+          <template v-if="selectedLeadType === 'event'">
+            <VRow>
+              <Filters :selected-event="selectedEvent" :selected-branch="selectedBranch"
+                @update-event="selectedEvent = $event" @update-branch="selectedBranch = $event"
+                branch-label="Lead Branch" />
+            </VRow>
+          </template>
 
           <VRow class="mt-4">
             <VCol cols="12" class="text-center">
