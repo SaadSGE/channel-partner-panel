@@ -121,6 +121,7 @@ watch(selectedLeadHealthType, () => {
 
 
     <VCardText class="d-flex flex-wrap gap-4">
+
       <div class="me-3 d-flex gap-3">
         <AppSelect :model-value="itemsPerPage" :items="[
           { value: 10, title: '10' },
@@ -139,6 +140,11 @@ watch(selectedLeadHealthType, () => {
             hide-details dense outlined />
         </div>
       </div>
+      <VBtn @click="isNavDrawerOpen = true">
+        <VIcon icon="tabler-plus" />
+        Add New Status
+      </VBtn>
+
     </VCardText>
 
 
