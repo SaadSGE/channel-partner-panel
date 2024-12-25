@@ -476,9 +476,28 @@ onMounted(async () => {
     <AppAutocomplete v-model="localSelectedLeadType" :items="leadTypes" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Lead Type" placeholder="Select Lead Type" clearable />
   </VCol>
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedCountry !== undefined">
+    <AppAutocomplete v-model="localSelectedCountry" :items="countries" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" :label="countryLabel" placeholder="Select Country" clearable />
+  </VCol>
   <VCol cols="12" md="3" v-if="props.selectedEvent !== undefined">
     <AppAutocomplete v-model="localSelectedEvent" :items="events" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Event" placeholder="Select Event" clearable />
+  </VCol>
+  <VCol cols="12" md="3" v-if="props.selectedAssignedBranch !== undefined">
+    <AppAutocomplete v-model="localSelectedAssignedBranch" :items="commonFunctionStore.branches"
+      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="assignedBranchLabel"
+      placeholder="Select Branch" clearable />
+  </VCol>
+  <VCol cols="12" md="3" v-if="props.selectedBranch !== undefined">
+    <AppAutocomplete v-model="localSelectedBranch" :items="commonFunctionStore.branches"
+      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="branchLabel" placeholder="Select Branch"
+      clearable />
+  </VCol>
+
+  <VCol cols="12" md="3" v-if="props.leadHealthType !== undefined">
+    <AppAutocomplete v-model="localSelectedLeadHealthType" :items="healthTypes" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Lead Health Type" placeholder="Select Health Type" clearable />
   </VCol>
   <VCol cols="12" md="3" v-if="props.selectedAssignedStatus !== undefined">
     <AppAutocomplete v-model="localSelectedAssignedStatus" :items="assignedStatuses" :item-title="(item) => item.name"
@@ -510,10 +529,7 @@ onMounted(async () => {
 
   <!-- course -->
 
-  <VCol cols="12" sm="6" md="3" v-if="props.selectedCountry !== undefined">
-    <AppAutocomplete v-model="localSelectedCountry" :items="countries" :item-title="(item) => item.name"
-      :item-value="(item) => item.id" :label="countryLabel" placeholder="Select Country" clearable />
-  </VCol>
+
   <VCol cols="12" sm="6" md="3" v-if="props.selectedIntake !== undefined">
     <AppAutocomplete v-model="localSelectedIntake" :items="intakes" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Filter by Intake" placeholder="Select Intake" clearable />
@@ -573,22 +589,7 @@ onMounted(async () => {
     <AppDateTimePicker v-model="localSelectedDateTo" label="To Date" placeholder="Select To Date" />
   </VCol>
 
-  <VCol cols="12" md="3" v-if="props.selectedBranch !== undefined">
-    <AppAutocomplete v-model="localSelectedBranch" :items="commonFunctionStore.branches"
-      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="branchLabel" placeholder="Select Branch"
-      clearable />
-  </VCol>
 
-  <VCol cols="12" md="3" v-if="props.selectedAssignedBranch !== undefined">
-    <AppAutocomplete v-model="localSelectedAssignedBranch" :items="commonFunctionStore.branches"
-      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="assignedBranchLabel"
-      placeholder="Select Branch" clearable />
-  </VCol>
-
-  <VCol cols="12" md="3" v-if="props.leadHealthType !== undefined">
-    <AppAutocomplete v-model="localSelectedLeadHealthType" :items="healthTypes" :item-title="(item) => item.name"
-      :item-value="(item) => item.id" label="Lead Health Type" placeholder="Select Health Type" clearable />
-  </VCol>
 
   <!-- Lead Type Filter -->
 

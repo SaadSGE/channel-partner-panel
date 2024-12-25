@@ -24,10 +24,12 @@ class LeadController extends Controller
         $sortBy = $request->query('sortBy', 'created_at');
         $orderBy = $request->query('orderBy', 'desc');
         $assignedUser = $request->query('assigned_status', null);
-
+        $leadType = $request->query('lead_type', null);
+        $event = $request->query('event', null);
+        $branch = $request->query('branch', null);
+        $country = $request->query('lead_country', null);
 
         $query = Lead::query();
-
 
         $query->with(['notes', 'branch', 'assignedUser', 'status:id,name,color_code', 'statusHistory', 'leadCountry:id,name', 'leadEvent:id,name']);
 
@@ -48,7 +50,7 @@ class LeadController extends Controller
         })->when($request->filled('status'), function ($q) use ($request) {
             return $q->where('status', $request->query('status'));
         })->when($request->filled('branch'), function ($q) use ($request) {
-            return $q->where('branch', $request->query('branch'));
+            return $q->where('assigned_branch', $request->query('branch'));
         })->when($request->filled('source'), function ($q) use ($request) {
             return $q->where('source', $request->query('source'));
         })->when($assignedUser !== null, function ($q) use ($assignedUser) {
@@ -61,8 +63,15 @@ class LeadController extends Controller
             return $q->whereDate('lead_date', '>=', $request->query('dateFrom'));
         })->when($request->filled('dateTo'), function ($q) use ($request) {
             return $q->whereDate('lead_date', '<=', $request->query('dateTo'));
-        })->when($request->filled('country'), function ($q) use ($request) {
-            return $q->where('interested_country', $request->query('country'));
+        })->when($country, function ($q) use ($country) {
+            return $q->where('lead_country_id', $country);
+        })
+        ->when($leadType, function ($q) use ($leadType) {
+            return $q->where('lead_type', $leadType);
+        })->when($event, function ($q) use ($event) {
+            return $q->where('lead_event_id', $event);
+        })->when($branch, function ($q) use ($branch) {
+            return $q->where('assigned_branch', $branch);
         });
 
         // Sorting

@@ -68,7 +68,7 @@ const selectedBranch = ref(null);
 const toggleShowNotes = (leadId) => {
   showAllNotes[leadId] = !showAllNotes[leadId];
 }
-
+const selectedLeadCountry = ref(null);
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
   { title: 'Lead Country', key: 'lead_type' },
@@ -98,6 +98,8 @@ watch([
   selectedLeadType,
   selectedEvent,
   selectedBranch,
+  selectedLeadCountry
+
 ], () => {
   fetchLeads()
 })
@@ -105,7 +107,7 @@ watch([
 onMounted(async () => {
   await fetchLeads();
   await fetchLeadStatuses();
-  console.log('Lead Statuses:', leadStatuses);
+
 });
 
 const fetchLeadStatuses = async () => {
@@ -131,6 +133,7 @@ const fetchLeads = async () => {
       selectedLeadType.value,
       selectedEvent.value,
       selectedBranch.value,
+      selectedLeadCountry.value
     )
     leads.value = response.data;
     total.value = response.total;
@@ -176,7 +179,7 @@ const resolveLeadStatusColor = (statusId) => {
   const status = leadStatuses.value.find((status) => status.id === statusId);
   return status ? status.color_code : "#000";
 };
-const selectedLeadCountry = ref(null);
+
 const handleAddNote = async (leadId) => {
   if (!leadId) {
     console.error("Lead ID is required to add a note.");
