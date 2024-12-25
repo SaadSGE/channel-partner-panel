@@ -13,8 +13,8 @@ import 'vue3-toastify/dist/index.css';
 // Define page meta
 definePage({
   meta: {
-    action: "read",
-    subject: "dashboard",
+    action: "create",
+    subject: "lead",
   },
 });
 
@@ -122,8 +122,6 @@ const fetchUsers = async () => {
       null,
       null,
       selectedAssignedBranch.value,
-      selectedLeadType.value,
-      selectedEvent.value
     );
     users.value = response.data;
     totalUsers.value = response.total;
@@ -134,38 +132,9 @@ const fetchUsers = async () => {
   }
 };
 
-const addUser = async (userData) => {
-  try {
-    await fetchUsers();
-    Swal.fire("Success!", "User added successfully!", "success");
-  } catch (error) {
-    console.error("Error adding user:", error);
-    Swal.fire("Error!", "Failed to add user.", "error");
-  }
-};
 
-const deleteUser = async (id) => {
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "Do you want to delete this user?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel",
-  });
 
-  if (result.isConfirmed) {
-    const response = await userStore.deleteUser(id);
 
-    if (response.success) {
-      Swal.fire("Deleted!", response.message, "success");
-    } else {
-      Swal.fire("Error!", response.message, "error");
-    }
-  }
-};
 
 const updateOptions = (options) => {
   sortBy.value = options.sortBy[0]?.key;
@@ -190,24 +159,7 @@ const headers = [
   },
 ];
 
-const updateUserStatus = async (user) => {
-  user.statusLoading = true;
-  try {
-    const response = await userStore.updateUserStatus(user.id, user.status);
-    if (response.status) {
-      Swal.fire("Success!", "User status updated successfully!", "success");
-    } else {
-      Swal.fire("Error!", "Failed to update user status.", "error");
-      user.status = user.status === 1 ? 0 : 1; // Revert the switch if the update failed
-    }
-  } catch (error) {
-    console.error("Error updating user status:", error);
-    Swal.fire("Error!", "Failed to update user status.", "error");
-    user.status = user.status === 1 ? 0 : 1; // Revert the switch if the update failed
-  } finally {
-    user.statusLoading = false;
-  }
-};
+
 
 const updateAssignedLeads = async (user, value) => {
   try {
@@ -322,10 +274,7 @@ const saveAssignedLeads = async () => {
 };
 
 onMounted(async () => {
-  await roleStore.getAllRoles();
-  roles.value = roleStore.roles;
-  await userStore.fetchParentUsers(); // Fetch parent users on mount from the Pinia store
-  fetchUsers(); // Fetch the main user list
+  // Fetch parent users on mount from the Pinia store
   getAllBranches();
 });
 
@@ -334,12 +283,6 @@ watch([searchQuery, selectedAssignedBranch], () => {
 });
 
 // Separate watches for country and branch to avoid unnecessary fetches during reset
-watch([selectedCountry, selectedBranch], () => {
-  if (currentStep.value === 1) {
-    // Only fetch if we're on step 1
-    fetchUsers();
-  }
-});
 
 // Fetch branches from API
 const getAllBranches = async () => {
@@ -356,7 +299,13 @@ const getAllBranches = async () => {
 
 // Watch for changes in the new filters
 watch([selectedLeadType, selectedEvent, selectedCountry, selectedBranch], () => {
-  fetchUsers();
+  // Reset the relevant state variables
+  selectedAssignedBranch.value = null;
+  users.value.forEach(user => {
+    user.assigned_number_of_leads = 0;
+  });
+  currentStep.value = 1; // Reset the step to hide the section
+
 });
 </script>
 

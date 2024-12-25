@@ -25,10 +25,10 @@ class UserController extends Controller
         $fetchAll = filter_var(request()->query('fetchAll'), FILTER_VALIDATE_BOOLEAN);
         $statusFilter = request()->query('status', null); // New status filter
         $branchId = request()->query('branch_id', null);
-        $assignedBranchId = request()->query('assigned_branch_id', null);
+
 
         if (auth('api')->user()->role != 'admin') {
-            $parentId = auth('api')->user()->id;
+            //$parentId = auth('api')->user()->id;
         }
 
         // Query the users
@@ -46,9 +46,7 @@ class UserController extends Controller
             ->when($branchId, function ($query, $branchId) {
                 return $query->where('branch_id', $branchId);
             })
-            ->when($assignedBranchId, function ($query, $assignedBranchId) {
-                return $query->where('branch_id', $assignedBranchId);
-            })
+
             ->when($roleFilter, function ($query, $roleFilter) {
                 return $query->where('role', 'LIKE', "%$roleFilter%");
             })

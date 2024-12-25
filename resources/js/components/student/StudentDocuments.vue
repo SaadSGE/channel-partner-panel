@@ -3,12 +3,14 @@
     <VCardText>
       <div class="d-flex justify-space-between align-center mb-4">
         <VCardTitle>Documents</VCardTitle>
-        <VBtn v-if="!readonly" :color="hasUploads ? 'success' : 'primary'" @click="toggleEdit">
+        <VBtn v-if="!readonly && $can('edit', 'student')" :color="hasUploads ? 'success' : 'primary'"
+          @click="toggleEdit">
           {{ buttonText }}
         </VBtn>
       </div>
 
-      <VAlert v-if="errorMessage" type="error" class="mb-4" closable @click:close="errorMessage = ''">
+      <VAlert v-if="errorMessage && $can('edit', 'student')" type="error" class="mb-4" closable
+        @click:close="errorMessage = ''">
         {{ errorMessage }}
       </VAlert>
 

@@ -34,7 +34,9 @@ class StudentController extends Controller
         $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
         $sortBy = $request->query('sortBy', 'created_at');
         $orderBy = $request->query('orderBy', 'desc');
+        $id = $request->query('id');
 
+        $user = auth('api')->user();
         $query = Student::with([
             'interestedUniversities.university',
             'interestedUniversities.course',
@@ -45,7 +47,7 @@ class StudentController extends Controller
             'profileStatus',
             'document',
 
-        ]);
+        ])->visibleToUser($user, $id);
 
         if ($searchQuery) {
             $query->where(function ($q) use ($searchQuery) {

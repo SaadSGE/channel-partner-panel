@@ -28,8 +28,10 @@ class LeadController extends Controller
         $event = $request->query('event', null);
         $branch = $request->query('branch', null);
         $country = $request->query('lead_country', null);
-
-        $query = Lead::query();
+        $id = $request->query('id', null);
+        $user = auth('api')->user();
+        \Log::info('User ID:', ['id' => $user->id]);
+        $query = Lead::query()->visibleToUser($user, $id);
 
         $query->with(['notes', 'branch', 'assignedUser', 'status:id,name,color_code', 'statusHistory', 'leadCountry:id,name', 'leadEvent:id,name']);
 

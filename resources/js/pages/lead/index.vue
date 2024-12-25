@@ -225,11 +225,11 @@ const toggleUploadCard = () => {
 <template>
   <section>
     <VCard class="mb-6">
-      <VCardItem class="pb-4" v-if="$can('filter', 'user')">
+      <VCardItem class="pb-4" v-if="$can('create', 'lead')">
         <VCardTitle>Filter</VCardTitle>
       </VCardItem>
 
-      <VCardText v-if="$can('filter', 'user')">
+      <VCardText v-if="$can('create', 'lead')">
         <VRow>
           <Filters :selected-assigned-status="selectedAssignedStatus" :selected-lead-status="selectedLeadStatus"
             :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
@@ -288,7 +288,7 @@ const toggleUploadCard = () => {
 
 
           <!-- 👉 Upload lead button-->
-          <VBtn prepend-icon="tabler-plus" @click="toggleUploadCard">
+          <VBtn prepend-icon="tabler-plus" @click="toggleUploadCard" v-if="$can('create', 'lead')">
             Upload Lead
           </VBtn>
 

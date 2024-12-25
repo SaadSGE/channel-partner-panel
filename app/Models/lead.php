@@ -58,4 +58,11 @@ class lead extends Model
     {
         return $this->belongsTo(Event::class, 'lead_event_id');
     }
+    public function scopeVisibleToUser($query, User $user, $id = null): void
+    {
+        if ($user->hasRole('Counsellor')) {
+            $query->where('assigned_user', $user->id);
+        }
+
+    }
 }

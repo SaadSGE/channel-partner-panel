@@ -140,6 +140,11 @@ const showDocumentStatus = (item) => {
 
   showDocumentDialog.value = true;
 };
+
+const addStudent = () => {
+  // Logic to add a student, e.g., navigate to a new student form page
+  router.push({ name: 'student-record' });
+};
 </script>
 <template>
   <div class="student-list-container">
@@ -170,7 +175,12 @@ const showDocumentStatus = (item) => {
           <div style="inline-size: 15.625rem;">
             <AppTextField v-model="search" placeholder="Search Student" />
           </div>
+          <VBtn @click="addStudent" v-if="$can('create', 'student')">
+            <VIcon icon="tabler-plus" />
+            Add Student
+          </VBtn>
         </div>
+
       </VCardText>
 
       <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="studentLists"
@@ -227,7 +237,7 @@ const showDocumentStatus = (item) => {
             <IconBtn @click="viewStudentDetail(item.id)">
               <VIcon color="primary" icon="tabler-eye" />
             </IconBtn>
-            <IconBtn @click="deleteItem(item.id)">
+            <IconBtn @click="deleteItem(item.id)" v-if="$can('delete', 'student')">
               <VIcon color="error" icon="tabler-trash" />
             </IconBtn>
           </div>

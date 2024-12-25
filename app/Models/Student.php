@@ -94,4 +94,33 @@ class Student extends Model
     {
         return $this->belongsTo(Lead::class, 'lead_id');
     }
+
+    public function scopeVisibleToUser($query, User $user, $id = null): void
+    {
+        if ($user->hasRole('admin')) {
+            if ($id) {
+                $selectedUser = User::find($id);
+                $childIds = $selectedUser ? $selectedUser->fetch_children : [];
+                $userIds = array_merge([$id], $childIds);
+                $query->whereIn('created_by', $userIds);
+            }
+            // For admins, don't add any further restrictions if no $id is provided
+        } else {
+            if ($id) {
+                $selectedUser = User::find($id);
+            } else {
+                $selectedUser = $user;
+            }
+
+            $childIds = $selectedUser ? $selectedUser->fetch_children : [];
+            $userIds = array_merge([$selectedUser->id], $childIds);
+
+            $query->where(function ($q) use ($userIds, $user) {
+                if (!empty($userIds)) {
+                    $q->whereIn('created_by', $userIds);
+                }
+
+            });
+        }
+    }
 }
