@@ -29,7 +29,7 @@ class LeadController extends Controller
         $query = Lead::query();
 
 
-        $query->with(['notes', 'branch', 'assignedUser', 'status:id,name,color_code', 'statusHistory']);
+        $query->with(['notes', 'branch', 'assignedUser', 'status:id,name,color_code', 'statusHistory', 'leadCountry:id,name', 'leadEvent:id,name']);
 
         $query->whereHas('status', function ($q) {
             $q->where('convert_to_student', 0)

@@ -18,19 +18,19 @@ import { reactive, ref } from "vue";
 // Add these imports at the top
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { onMounted } from "vue";
-import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+import UploadLead from './upload-lead.vue';
 
 // Add these refs
 const commonFunctionStore = commonFunction();
-const selectedCountry = ref(null);
-const selectedBranch = ref(null);
-const isUploading = ref(false);
 const leadStatuses = ref([]);
 // Add this to your onMounted hook
 onMounted(async () => {
   await commonFunctionStore.getAllCountries();
   await commonFunctionStore.getBranches();
+  await fetchLeads();
+  await fetchLeadStatuses();
+
 });
 
 const leadStore = useLeadStore();
@@ -54,7 +54,6 @@ const showAddNoteModal = ref(false) // Modal visibility state for comments
 const newNote = ref("") // New comment
 const isNoteLoading = ref(false)
 const showAllNotes = reactive({});
-const fileInput = ref(null);
 const convertToStudent = ref(false);
 // Add new ref for assigned status
 const selectedAssignedStatus = ref(null)
@@ -62,6 +61,7 @@ const selectedAssignedStatus = ref(null)
 // Define reactive states for the filters
 const selectedLeadType = ref(null);
 const selectedEvent = ref(null);
+const selectedBranch = ref(null);
 
 
 // Function to toggle between showing all notes and only the first two for each lead
@@ -71,6 +71,7 @@ const toggleShowNotes = (leadId) => {
 
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Lead Country', key: 'lead_type' },
   { title: 'Name', key: 'name' },
   { title: 'Phone', key: 'phone' },
   { title: 'Email', key: 'email' },
@@ -94,6 +95,9 @@ watch([
   selectedDateFrom,
   selectedDateTo,
   selectedAssignedStatus,
+  selectedLeadType,
+  selectedEvent,
+  selectedBranch,
 ], () => {
   fetchLeads()
 })
@@ -108,95 +112,6 @@ const fetchLeadStatuses = async () => {
   await commonFunctionStore.getLeadStatus();
   leadStatuses.value = commonFunctionStore.leadStatus;
 }
-const toggleUploadCard = () => {
-  showUploadCard.value = !showUploadCard.value;
-};
-
-// Sample File Download Function
-const downloadSampleFile = () => {
-  // Logic to download sample file
-};
-
-// File Upload Logic
-const handleFileUpload = (event) => {
-  fileInput.value = event.target.files[0];
-};
-
-const uploadFile = async () => {
-  // Validate file selection
-  if (!fileInput.value) {
-    toast.error("Please select a file to upload", {
-      position: "top-right",
-      theme: "colored",
-    });
-    return;
-  }
-
-  // Validate file type
-  const allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel', 'text/csv'];
-  if (!allowedTypes.includes(fileInput.value.type)) {
-    toast.error("Please upload only Excel or CSV files", {
-      position: "top-right",
-      theme: "colored",
-    });
-    return;
-  }
-
-  // Validate country selection only if lead type is not 'event'
-  if (selectedLeadType.value !== 'event' && !selectedCountry.value) {
-    toast.error("Please select a Country", {
-      position: "top-right",
-      theme: "colored",
-    });
-    return;
-  }
-
-  // Validate branch selection
-  if (!selectedBranch.value) {
-    toast.error("Please select a Branch", {
-      position: "top-right",
-      theme: "colored",
-    });
-    return;
-  }
-
-  isUploading.value = true;
-  try {
-    const formData = new FormData();
-    formData.append('file', fileInput.value);
-    formData.append('assigned_branch', selectedBranch.value);
-    formData.append('lead_country_id', selectedCountry.value || '');
-    formData.append('lead_type', selectedLeadType.value || '');
-    formData.append('lead_event_id', selectedEvent.value || '');
-
-    const response = await leadStore.uploadLeads(formData);
-
-    // Reset all form fields after successful upload
-    selectedBranch.value = null;
-    selectedCountry.value = null;
-    if (document.querySelector('input[type="file"]')) {
-      document.querySelector('input[type="file"]').value = '';
-    }
-    fileInput.value = null;
-    showUploadCard.value = false;
-
-    toast.success("File uploaded successfully!", {
-      position: "top-right",
-      theme: "colored",
-    });
-    await fetchLeads();
-  } catch (error) {
-    console.log("error", error);
-    // Show the actual error message from the API
-    const errorMessage = error?.message || "Some records contain empty values.";
-    toast.error(errorMessage, {
-      position: "top-right",
-      theme: "colored",
-    });
-  } finally {
-    isUploading.value = false;
-  }
-};
 
 // Methods
 const fetchLeads = async () => {
@@ -213,6 +128,9 @@ const fetchLeads = async () => {
       selectedDateFrom.value,
       selectedDateTo.value,
       selectedAssignedStatus.value,
+      selectedLeadType.value,
+      selectedEvent.value,
+      selectedBranch.value,
     )
     leads.value = response.data;
     total.value = response.total;
@@ -258,6 +176,7 @@ const resolveLeadStatusColor = (statusId) => {
   const status = leadStatuses.value.find((status) => status.id === statusId);
   return status ? status.color_code : "#000";
 };
+const selectedLeadCountry = ref(null);
 const handleAddNote = async (leadId) => {
   if (!leadId) {
     console.error("Lead ID is required to add a note.");
@@ -294,6 +213,10 @@ const openAddNoteDialog = (leadId) => {
   selectedLeadId.value = leadId;
   showAddNoteModal.value = true;
 };
+
+const toggleUploadCard = () => {
+  showUploadCard.value = !showUploadCard.value
+}
 </script>
 
 <template>
@@ -305,11 +228,15 @@ const openAddNoteDialog = (leadId) => {
 
       <VCardText v-if="$can('filter', 'user')">
         <VRow>
-          <!-- 👉 Select status -->
           <Filters :selected-assigned-status="selectedAssignedStatus" :selected-lead-status="selectedLeadStatus"
             :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
+            :selected-lead-type="selectedLeadType" :selected-event="selectedEvent"
+            :selected-country="selectedLeadCountry" :selected-branch="selectedBranch"
             @update-assignedStatus="selectedAssignedStatus = $event" @update-lead-status="selectedLeadStatus = $event"
-            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
+            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event"
+            @update-lead-type="selectedLeadType = $event" @update-event="selectedEvent = $event"
+            @update-country="selectedLeadCountry = $event" @update-branch="selectedBranch = $event"
+            country-label="Lead Country">
           </Filters>
         </VRow>
 
@@ -364,84 +291,7 @@ const openAddNoteDialog = (leadId) => {
 
         </div>
         <!-- Upload Lead VCard (Initially Hidden) -->
-        <VCard v-if="showUploadCard" class="mt-4 w-100 full-width-card upload-card">
-          <VCardText>
-            <!-- Card Header with Title and Close Button -->
-            <VRow justify="space-between" class="align-center">
-              <span class="text-h6 upload-title">Upload Lead Excel/csv File</span>
-              <VBtn color="error" icon @click="toggleUploadCard" class="close-btn">
-                <VIcon icon="tabler-x" />
-              </VBtn>
-            </VRow>
-
-            <!-- Main Form Area -->
-            <div class="form-padding mt-6 upload-form">
-              <!-- Add Country and Branch Dropdowns -->
-              <VRow class="mb-4 fade-in">
-                <!-- Lead Type Filter -->
-
-                <Filters :selected-lead-type="selectedLeadType" @update-lead-type="selectedLeadType = $event"
-                  country-label="Lead Country" branch-label="Lead Branch (Optional)" />
-
-
-                <!-- Conditionally show Lead Country and Lead Branch filters if 'Social' is selected -->
-                <template v-if="selectedLeadType === 'social'">
-                  <VCol cols="12" md="4">
-                    <AppAutocomplete v-model="selectedCountry" :items="commonFunctionStore.allCountries"
-                      :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Country"
-                      placeholder="Select Country" clearable class="slide-in" />
-                  </VCol>
-                  <VCol cols="12" md="4">
-                    <AppAutocomplete v-model="selectedBranch" :items="commonFunctionStore.branches"
-                      :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Branch"
-                      placeholder="Select Branch" clearable class="slide-in" />
-                  </VCol>
-                </template>
-
-                <!-- Conditionally show Event and Lead Branch filters if 'Event' is selected -->
-                <template v-if="selectedLeadType === 'event'">
-
-                  <Filters :selected-event="selectedEvent" @update-event="selectedEvent = $event" />
-
-                  <VCol cols="12" md="4">
-                    <AppAutocomplete v-model="selectedBranch" :items="commonFunctionStore.branches"
-                      :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Branch"
-                      placeholder="Select Branch" clearable class="slide-in" />
-                  </VCol>
-                </template>
-              </VRow>
-
-              <VRow justify="center" align="center" class="gap-4 fade-in" v-if="selectedLeadType">
-
-                <VCol cols="12" md="6">
-                  <VFileInput accept=".xlsx, .csv" label="Upload Excel/CSV file" @change="handleFileUpload"
-                    variant="outlined" color="purple-lighten-4" class="file-input-animate"
-                    :class="{ 'has-file': fileInput }" />
-                </VCol>
-
-
-                <VBtn prepend-icon="tabler-cloud-upload" @click="uploadFile" color="purple-lighten-4" class="upload-btn"
-                  :loading="isUploading" :disabled="isUploading">
-                  {{ isUploading ? 'Uploading...' : 'Upload' }}
-                </VBtn>
-              </VRow>
-
-              <!-- File Format Notice with Margin Top -->
-              <VRow justify="center" class="mt-2 fade-in" v-if="selectedLeadType">
-                <p class="text-caption text-primary">Only Excel/CSV file support</p>
-              </VRow>
-
-              <!-- Download Sample Section -->
-              <VRow justify="center" align="center" class="mt-6 gap-2 sample-section fade-in" v-if="selectedLeadType">
-                <span class="font-weight-bold">Download Sample Excel/CSV File</span>
-                <VBtn prepend-icon="tabler-cloud-download" @click="downloadSampleFile" class="download-btn btn-small "
-                  variant="outlined">
-                  Download Sample
-                </VBtn>
-              </VRow>
-            </div>
-          </VCardText>
-        </VCard>
+        <UploadLead v-model:showUploadCard="showUploadCard" @leadsUploaded="fetchLeads" />
 
 
 
@@ -451,7 +301,10 @@ const openAddNoteDialog = (leadId) => {
       <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :loading="isLoading"
         @update:options="updateOptions" :items-length="total" :headers="headers" :items="leads" item-value="total"
         class="text-no-wrap text-sm rounded-0">
+        <template #item.lead_type="{ item }">
 
+          <span>{{ item.lead_type === 'social' ? item.lead_country?.name : item.lead_event?.name }}</span>
+        </template>
         <template #item.assigned_user="{ item }">
           <VChip :color="item.assigned_user ? 'success' : 'error'" size="small" class="font-weight-medium"
             style="color: #000; cursor: pointer;">
@@ -491,7 +344,7 @@ const openAddNoteDialog = (leadId) => {
         </template>
         <template #item.status="{ item }">
           <VChip :color="item.status?.color_code || '#D3D3D3'" size="small" class="font-weight-medium"
-            style=" color: #000;cursor: pointer;"
+            style="cursor: pointer;"
             @click="openChangeStatusDialog(item.id, item.status?.id, item.status?.convert_to_student)">
             {{ item.status?.name || 'Unknown Status' }}
           </VChip>

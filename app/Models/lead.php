@@ -50,4 +50,12 @@ class lead extends Model
     {
         return $this->hasOne(Student::class, 'lead_id');
     }
+    public function leadCountry()
+    {
+        return $this->belongsTo(Country::class, 'lead_country_id');
+    }
+    public function leadEvent()
+    {
+        return $this->belongsTo(Event::class, 'lead_event_id');
+    }
 }

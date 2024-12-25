@@ -75,6 +75,7 @@ declare module 'vue-router/auto/routes' {
     'lead-status': RouteRecordInfo<'lead-status', '/lead/status', Record<never, never>, Record<never, never>>,
     'lead-status-add': RouteRecordInfo<'lead-status-add', '/lead/status/add', Record<never, never>, Record<never, never>>,
     'lead-status-edit': RouteRecordInfo<'lead-status-edit', '/lead/status/edit', Record<never, never>, Record<never, never>>,
+    'lead-upload-lead': RouteRecordInfo<'lead-upload-lead', '/lead/upload-lead', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'nigeria': RouteRecordInfo<'nigeria', '/nigeria', Record<never, never>, Record<never, never>>,
     'not-authorized': RouteRecordInfo<'not-authorized', '/not-authorized', Record<never, never>, Record<never, never>>,
