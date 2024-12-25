@@ -12,6 +12,14 @@
         {{ errorMessage }}
       </VAlert>
 
+      <!-- Add the Download All button inside a div aligned to the right -->
+      <div class="d-flex justify-end mt-2 mb-2">
+        <VBtn :href="zipLink" color="warning" target="_blank" @click="downloadAllFiles">
+          <VIcon size="24" icon="tabler-download" />
+          Download All
+        </VBtn>
+      </div>
+
       <!-- View Mode -->
       <div v-if="!isEditing">
         <!-- Missing Documents Section - At Top -->
@@ -140,6 +148,10 @@ const props = defineProps({
   readonly: {
     type: Boolean,
     default: false
+  },
+  zipLink: {
+    type: String,
+    default: ''
   }
 });
 
@@ -349,6 +361,28 @@ watch(isEditing, (newValue) => {
     }));
   }
 });
+
+const downloadAllFiles = async () => {
+  if (props.zipLink) {
+    try {
+      const response = await fetch(props.zipLink, { mode: 'cors' });
+      const blob = await response.blob();
+
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.target = '_blank';
+      link.download = 'documents.zip';  // Optional: Set the file name for the downloaded ZIP
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+
+
+    }
+  } else {
+    errorMessage.value = 'No ZIP file available for download.';
+  }
+};
 </script>
 
 <style lang="scss" scoped>

@@ -274,12 +274,13 @@ class StudentController extends Controller
             'student_country' => $student->country,
             'visa_refusal' => $student->visa_refusal,
             'student_id' => $student->student_id,
+            'zip_link' => $student->document_zip_link
         ];
     }
 
     private function transformEducationalHistory($histories): array
     {
-        return $histories->map(fn($edu) => [
+        return $histories->map(fn ($edu) => [
             'id' => $edu->id,
             'degree' => $edu->degree_name,
             'institution' => $edu->institution_name,
@@ -290,7 +291,7 @@ class StudentController extends Controller
 
     private function transformEmploymentHistory($histories): array
     {
-        return $histories->map(fn($emp) => [
+        return $histories->map(fn ($emp) => [
             'id' => $emp->id,
             'company_name' => $emp->company_name,
             'designation' => $emp->designation,

@@ -7,23 +7,16 @@
     </div>
 
     <VCardText>
-      <file-pond
-        ref="pond"
-        name="student_document"
-        :allow-multiple="true"
-        allowRemove="true"
-        :files="files"
-        :server="server"
-        label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>"
-      />
+      <file-pond ref="pond" name="student_document" :allow-multiple="true" allowRemove="true" :files="files"
+        :server="server" label-idle="Drop files here or <span class='filepond--label-action'>Browse</span>" />
 
       <!-- Wrap the Download All button inside a div aligned to the right -->
       <div class="d-flex justify-end mt-2 mb-2">
-  <VBtn :href="props.zipLink" color="primary" target="_blank">
-    <VIcon size="24" icon="tabler-download" />
-    Download All
-  </VBtn>
-</div>
+        <VBtn :href="props.zipLink" color="primary" target="_blank">
+          <VIcon size="24" icon="tabler-download" />
+          Download All
+        </VBtn>
+      </div>
 
 
       <VCard v-for="(document, index) in currentDocuments" :key="index" class="mb-2">
@@ -98,14 +91,14 @@ const downloadAllFiles = async () => {
 
 const downloadFile = (fileUrl: string) => {
   const link = document.createElement('a');
-      link.href = fileUrl;
-      link.target = '_blank';
-      link.download = 'test';
+  link.href = fileUrl;
+  link.target = '_blank';
+  link.download = 'test';
 
-      // Simulate a click on the element <a>
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  // Simulate a click on the element <a>
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 
@@ -132,16 +125,16 @@ const tempFileCount = ref(0);
 
 const update = () => {
 
- applicationStore.updateApplicationsFile(applicationId, fileStore.filePaths);
- Swal.fire({
-      icon: 'success',
-      title: 'Success',
-      text: 'New Document Added Successfully',
-      confirmButtonText: 'OK'
-    });
-    tempFileCount.value =0
+  applicationStore.updateApplicationsFile(applicationId, fileStore.filePaths);
+  Swal.fire({
+    icon: 'success',
+    title: 'Success',
+    text: 'New Document Added Successfully',
+    confirmButtonText: 'OK'
+  });
+  tempFileCount.value = 0
 };
- fileStore.resetFiles()
+fileStore.resetFiles()
 
 const next = () => {
   if (files.value.length === 0) {
@@ -179,29 +172,30 @@ const removeFile = (fileId) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #ccc;
+  border-block-end: 1px solid #ccc;
+  padding-block: 0.5rem;
+  padding-inline: 0;
 }
 
 .file-item i {
-  margin-right: 0.5rem;
+  margin-inline-end: 0.5rem;
 }
 
 .delete-btn {
-  margin-left: 1rem;
+  margin-inline-start: 1rem;
 }
 
 .progress {
-  width: 100%;
+  inline-size: 100%;
 }
 
 .v-btn--icon {
-  min-width: unset;
   padding: 0;
+  min-inline-size: unset;
 }
 
 .error-message {
   color: red;
-  margin-top: 1rem;
+  margin-block-start: 1rem;
 }
 </style>

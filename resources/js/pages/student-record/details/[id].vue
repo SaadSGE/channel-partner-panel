@@ -108,7 +108,8 @@ const getStudentDetails = async (id) => {
         address: studentStore.studentInfo.generalInfo.student_address,
         city: studentStore.studentInfo.generalInfo.student_city,
         country: studentStore.studentInfo.generalInfo.student_country,
-        visa_refusal: studentStore.studentInfo.generalInfo.visa_refusal
+        visa_refusal: studentStore.studentInfo.generalInfo.visa_refusal,
+        zip_link: studentStore.studentInfo.generalInfo.zip_link
       },
       universityEntry: studentStore.studentInfo.interestedUniversity,
       educationalHistory: studentStore.studentInfo.educationalHistory,
@@ -304,7 +305,8 @@ const handleDocumentsUpdate = async (data) => {
         </VWindowItem>
 
         <VWindowItem value="documents">
-          <StudentDocuments :documents="formData.documents" :is-edit="true" @update:documents="handleDocumentsUpdate" />
+          <StudentDocuments :documents="formData.documents" :is-edit="true" @update:documents="handleDocumentsUpdate"
+            :zip-link="formData.generalInfo.zip_link" />
         </VWindowItem>
 
         <VWindowItem v-if="hasLeadInfo" value="lead-info">
