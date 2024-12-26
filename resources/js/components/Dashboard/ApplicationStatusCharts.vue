@@ -172,7 +172,7 @@ const monthlyData = ref([]);
 async function fetchChartData() {
     if (!selectedStatus.value) return [];
 
-    await demoDashboardStore.fetchDashboardData(selectedStatus.value);
+    await demoDashboardStore.fetchApplicationStatusData(selectedStatus.value);
     applicationStatuses.value = demoDashboardStore.applicationStatuses;
 
     monthlyData.value = applicationStatuses.value[selectedStatus.value - 1]?.monthly_counts || [];

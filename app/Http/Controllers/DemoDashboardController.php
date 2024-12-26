@@ -20,35 +20,34 @@ class DemoDashboardController extends Controller
             ['name' => 'ETH Zurich', 'country' => 'Switzerland', 'applications' => 300],
             ['name' => 'National University of Singapore', 'country' => 'Singapore', 'applications' => 280],
             ['name' => 'University of Toronto', 'country' => 'Canada', 'applications' => 260],
-            ['name' => 'University of Melbourne', 'country' => 'Australia', 'applications' => 240]
         ];
 
         // Demo data for top channel partners
         $topChannelPartners = [
-            ['name' => 'Global Education Connect', 'applications' => 150, 'success_rate' => '92%'],
-            ['name' => 'Study Abroad Experts', 'applications' => 140, 'success_rate' => '89%'],
-            ['name' => 'Future Connect', 'applications' => 130, 'success_rate' => '88%'],
-            ['name' => 'Education Bridge', 'applications' => 120, 'success_rate' => '87%'],
-            ['name' => 'Overseas Education', 'applications' => 110, 'success_rate' => '86%'],
-            ['name' => 'Study Link', 'applications' => 100, 'success_rate' => '85%'],
-            ['name' => 'Global Reach', 'applications' => 95, 'success_rate' => '84%'],
-            ['name' => 'Education Hub', 'applications' => 90, 'success_rate' => '83%'],
-            ['name' => 'Study World', 'applications' => 85, 'success_rate' => '82%'],
-            ['name' => 'Career Connect', 'applications' => 80, 'success_rate' => '81%']
+            ['name' => 'Global Education Connect', 'applications' => 150, 'success_rate' => '92%', 'progressColor' => 'primary'],
+            ['name' => 'Study Abroad Experts', 'applications' => 140, 'success_rate' => '89%', 'progressColor' => 'success'],
+            ['name' => 'Future Connect', 'applications' => 130, 'success_rate' => '88%', 'progressColor' => 'info'],
+            ['name' => 'Education Bridge', 'applications' => 120, 'success_rate' => '87%', 'progressColor' => 'warning'],
+            ['name' => 'Overseas Education', 'applications' => 110, 'success_rate' => '86%', 'progressColor' => 'primary'],
+            ['name' => 'Study Link', 'applications' => 100, 'success_rate' => '85%', 'progressColor' => 'success'],
+            ['name' => 'Global Reach', 'applications' => 95, 'success_rate' => '84%', 'progressColor' => 'info'],
+            ['name' => 'Education Hub', 'applications' => 90, 'success_rate' => '83%', 'progressColor' => 'warning'],
+            ['name' => 'Study World', 'applications' => 85, 'success_rate' => '82%', 'progressColor' => 'primary'],
+            ['name' => 'Career Connect', 'applications' => 80, 'success_rate' => '81%', 'progressColor' => 'success']
         ];
 
         // Demo data for top Application Control Officers
         $topACOs = [
-            ['name' => 'John Smith', 'processed_applications' => 200, 'efficiency_rate' => '95%'],
-            ['name' => 'Emma Wilson', 'processed_applications' => 190, 'efficiency_rate' => '94%'],
-            ['name' => 'Michael Brown', 'processed_applications' => 180, 'efficiency_rate' => '93%'],
-            ['name' => 'Sarah Davis', 'processed_applications' => 170, 'efficiency_rate' => '92%'],
-            ['name' => 'James Johnson', 'processed_applications' => 160, 'efficiency_rate' => '91%'],
-            ['name' => 'Lisa Anderson', 'processed_applications' => 150, 'efficiency_rate' => '90%'],
-            ['name' => 'Robert Taylor', 'processed_applications' => 140, 'efficiency_rate' => '89%'],
-            ['name' => 'Emily Thomas', 'processed_applications' => 130, 'efficiency_rate' => '88%'],
-            ['name' => 'David Wilson', 'processed_applications' => 120, 'efficiency_rate' => '87%'],
-            ['name' => 'Jessica Brown', 'processed_applications' => 110, 'efficiency_rate' => '86%']
+            ['name' => 'Sarah Davis', 'processed_applications' => '170', 'efficiency_rate' => '92%', 'efficiency_rate_color' => 'primary', 'country' => 'Australia'],
+            ['name' => 'Emma Wilson', 'processed_applications' => '190', 'efficiency_rate' => '94%', 'efficiency_rate_color' => 'error', 'country' => 'USA'],
+            ['name' => 'Michael Brown', 'processed_applications' => '180', 'efficiency_rate' => '93%', 'efficiency_rate_color' => 'info', 'country' => 'Canada'],
+            ['name' => 'John Smith', 'processed_applications' => '200', 'efficiency_rate' => '95%', 'efficiency_rate_color' => 'success', 'country' => 'UK'],
+            ['name' => 'James Johnson', 'processed_applications' => '160', 'efficiency_rate' => '91%', 'efficiency_rate_color' => 'success', 'country' => 'UK'],
+            ['name' => 'Lisa Anderson', 'processed_applications' => '150', 'efficiency_rate' => '90%', 'efficiency_rate_color' => 'warning', 'country' => 'USA'],
+            ['name' => 'Robert Taylor', 'processed_applications' => '140', 'efficiency_rate' => '89%', 'efficiency_rate_color' => 'info', 'country' => 'Canada'],
+            ['name' => 'Emily Thomas', 'processed_applications' => '130', 'efficiency_rate' => '88%', 'efficiency_rate_color' => 'success', 'country' => 'Australia'],
+            ['name' => 'David Wilson', 'processed_applications' => '120', 'efficiency_rate' => '87%', 'efficiency_rate_color' => 'warning', 'country' => 'UK'],
+            ['name' => 'Jessica Brown', 'processed_applications' => '110', 'efficiency_rate' => '86%', 'efficiency_rate_color' => 'info', 'country' => 'USA']
         ];
 
         // Demo data for recent applications

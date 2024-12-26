@@ -1,37 +1,51 @@
-<script setup>
+<script lang="js" setup>
+import { useDemoDashboardStore } from '@/@core/stores/demodashboard';
 import universitylogo from '../../../images/university.jpg';
-const topTenUniversities = [
-    {
-        name: 'University of Oxford',
-        country: 'UK',
-        applications: 450,
-    },
-    {
-        name: 'University of Cambridge',
-        country: 'UK',
-        applications: 425,
-    },
-    {
-        name: 'Harvard University',
-        country: 'USA',
-        applications: 400,
-    },
-    {
-        name: 'MIT',
-        country: 'USA',
-        applications: 380,
-    },
-    {
-        name: 'Stanford University',
-        country: 'USA',
-        applications: 350,
-    },
-    {
-        name: 'Imperial College London',
-        country: 'UK',
-        applications: 320,
-    },
-]
+
+const demoDashboardStore = useDemoDashboardStore();
+const topTenUniversities = ref([]);
+
+const fetchTopTenUniversities = async () => {
+    await demoDashboardStore.fetchDashboardData();
+    topTenUniversities.value = demoDashboardStore.dashboardData.top_universities;
+}
+
+onMounted(async () => {
+    await fetchTopTenUniversities();
+});
+
+// const topTenUniversities = [
+//     {
+//         name: 'University of Oxford',
+//         country: 'UK',
+//         applications: 450,
+//     },
+//     {
+//         name: 'University of Cambridge',
+//         country: 'UK',
+//         applications: 425,
+//     },
+//     {
+//         name: 'Harvard University',
+//         country: 'USA',
+//         applications: 400,
+//     },
+//     {
+//         name: 'MIT',
+//         country: 'USA',
+//         applications: 380,
+//     },
+//     {
+//         name: 'Stanford University',
+//         country: 'USA',
+//         applications: 350,
+//     },
+//     {
+//         name: 'Imperial College London',
+//         country: 'UK',
+//         applications: 320,
+//     },
+// ]
 
 const moreList = [
     {

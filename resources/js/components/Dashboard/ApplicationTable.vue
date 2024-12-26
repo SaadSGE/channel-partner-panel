@@ -1,53 +1,19 @@
-<script setup>
+<script lang="js" setup>
+import { useDemoDashboardStore } from '@/@core/stores/demodashboard';
 
+const demoDashboardStore = useDemoDashboardStore();
 
-const applications = ref([
+const applications = ref([]);
 
-    {
-        date: '2024-01-21',
-        applicant_name: 'John Smith',
-        email: 'john.smith@email.com',
-        status: 'Application Processing',
-        channel_partner: 'Global Education Connect'
-    },
-    {
-        date: '2024-01-20',
-        applicant_name: 'Sarah Wilson',
-        email: 'sarah.w@email.com',
-        status: 'Offer Issue Conditional',
-        channel_partner: 'Study Abroad Experts'
-    },
-    {
-        date: '2024-01-19',
-        applicant_name: 'Michael Chang',
-        email: 'michael.c@email.com',
-        status: 'Pending Docs',
-        channel_partner: 'Future Connect'
-    },
-    {
-        date: '2024-01-18',
-        applicant_name: 'Emma Davis',
-        email: 'emma.d@email.com',
-        status: 'Application Submitted',
-        channel_partner: 'Education Bridge'
-    },
-    {
-        date: '2024-01-17',
-        applicant_name: 'James Anderson',
-        email: 'james.a@email.com',
-        status: 'Offer Issue Unconditional',
-        channel_partner: 'Overseas Education'
-    },
-    {
-        date: '2024-01-16',
-        applicant_name: 'Olivia Martinez',
-        email: 'olivia.m@email.com',
-        status: 'Application Submitted',
-        channel_partner: 'Education Bridge'
-    },
+const fetchApplications = async () => {
+    await demoDashboardStore.fetchDashboardData();
+    applications.value = demoDashboardStore.dashboardData.recent_applications;
+}
 
+onMounted(async () => {
+    await fetchApplications();
+});
 
-]);
 
 // 👉 headers
 const headers = [

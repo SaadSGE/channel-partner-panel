@@ -1,49 +1,19 @@
-<script setup>
+<script lang="js" setup>
+import { useDemoDashboardStore } from '@/@core/stores/demodashboard';
 
-const topTenCP = [
-    {
-        name: 'Global Education Connect',
-        applications: 150,
-        success_rate: '92%',
-        progressColor: 'error'
-    },
-    {
-        name: 'Study Abroad Experts',
-        applications: 140,
-        success_rate: '89%',
-        progressColor: 'success'
-    },
-    {
-        name: 'Future Connect',
-        applications: 130,
-        success_rate: '88%',
-        progressColor: 'primary'
-    },
-    {
-        name: 'Education Bridge',
-        applications: 120,
-        success_rate: '87%',
-        progressColor: 'info'
-    },
-    {
-        name: 'Overseas Education',
-        applications: 110,
-        success_rate: '86%',
-        progressColor: 'warning'
-    },
-    {
-        name: 'Global Study Connect',
-        applications: 110,
-        success_rate: '86%',
-        progressColor: 'primary'
-    },
-    {
-        name: 'Global Education Connect',
-        applications: 110,
-        success_rate: '86%',
-        progressColor: 'warning'
-    },
-]
+const demoDashboardStore = useDemoDashboardStore();
+
+const topTenCP = ref([]);
+
+const fetchTopTenCP = async () => {
+    await demoDashboardStore.fetchDashboardData();
+    topTenCP.value = demoDashboardStore.dashboardData.top_channel_partners;
+}
+
+onMounted(async () => {
+    await fetchTopTenCP();
+});
+
 
 const moreList = [
     {

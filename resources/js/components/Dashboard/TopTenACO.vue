@@ -1,56 +1,18 @@
-<script setup>
-const topTenACO = [
-    {
-        name: 'John Smith',
-        processed_applications: '200',
-        efficiency_rate: '95%',
-        efficiency_rate_color: 'success',
-        country: 'UK'
-    },
-    {
-        name: 'Emma Wilson',
-        processed_applications: '190',
-        efficiency_rate: '94%',
-        efficiency_rate_color: 'error',
-        country: 'USA'
-    },
-    {
-        name: 'Michael Brown',
-        processed_applications: '180',
-        efficiency_rate: '93%',
-        efficiency_rate_color: 'info',
-        country: 'Canada'
-    },
-    {
-        name: 'Sarah Davis',
-        processed_applications: '170',
-        efficiency_rate: '92%',
-        efficiency_rate_color: 'primary',
-        country: 'Australia'
-    },
-    {
-        name: 'James Johnson',
-        processed_applications: '160',
-        efficiency_rate: '91%',
-        efficiency_rate_color: 'success',
-        country: 'UK'
-    },
-    {
-        name: 'Emily Thomas',
-        processed_applications: '130',
-        efficiency_rate: '88%',
-        efficiency_rate_color: 'info',
-        country: 'Australia'
-    },
-    {
-        name: 'Emily Thomas',
-        processed_applications: '130',
-        efficiency_rate: '88%',
-        efficiency_rate_color: 'success',
-        country: 'Australia'
-    },
+<script lang="js" setup>
+import { useDemoDashboardStore } from '@/@core/stores/demodashboard';
 
-]
+const demoDashboardStore = useDemoDashboardStore();
+
+const topTenACO = ref([]);
+
+const fetchTopTenACO = async () => {
+    await demoDashboardStore.fetchDashboardData();
+    topTenACO.value = demoDashboardStore.dashboardData.top_application_officers;
+}
+
+onMounted(async () => {
+    await fetchTopTenACO();
+});
 
 const moreList = [
     {
