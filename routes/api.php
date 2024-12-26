@@ -56,9 +56,14 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/roles/{roleName}/permissions', [RoleController::class, 'store']);
     Route::apiResource('permissions', PermissionController::class);
     Route::get('all-permissions', [PermissionController::class, 'allPermission']);
-
     Route::apiResource('application', ApplicationController::class);
+
+
+    // Demo Dashboard
     Route::get('demo-dashboard', [DemoDashboardController::class, 'getDemoStats']);
+    Route::get('demo-application-statuses/{id}', [DemoDashboardController::class, 'getApplicationStatuses']);
+
+
 
     Route::get('get-country-intake-university-course', [CourseDetailsController::class, 'countryIntakeUniversityCourse']);
     Route::post('update-application-file', [ApplicationController::class, 'updateApplicationFile']);

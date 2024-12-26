@@ -125,6 +125,16 @@ class DemoDashboardController extends Controller
             ]
         ];
 
+        return [
+            'top_universities' => $topUniversities,
+            'top_channel_partners' => $topChannelPartners,
+            'top_application_officers' => $topACOs,
+            'recent_applications' => $recentApplications
+        ];
+    }
+
+    public function getApplicationStatuses($application_status_id): array
+    {
         $applicationStatuses = [
             [
                 'application_status_id' => 1,
@@ -148,12 +158,8 @@ class DemoDashboardController extends Controller
             ]
         ];
 
-        return [
-            'top_universities' => $topUniversities,
-            'top_channel_partners' => $topChannelPartners,
-            'top_application_officers' => $topACOs,
-            'recent_applications' => $recentApplications,
-            'application_statuses' => $applicationStatuses
-        ];
+        return array_filter($applicationStatuses, function ($status) use ($application_status_id) {
+            return $status['application_status_id'] == $application_status_id;
+        });
     }
 }

@@ -1,13 +1,14 @@
 <script lang="js" setup>
 import { useDemoDashboardStore } from '@/@core/stores/demodashboard';
 import { hexToRgb } from '@layouts/utils';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useTheme } from 'vuetify';
 
 const vuetifyTheme = useTheme();
-const currentTab = ref(0);
 const refVueApexChart = ref();
 const demoDashboardStore = useDemoDashboardStore();
+const selectedStatus = ref(1);
+const applicationStatuses = ref([]);
 const statusItems = ref([
     {
         application_status_id: 1,
@@ -27,8 +28,7 @@ const statusItems = ref([
     }
 ]);
 
-// Set default selected status to "Application Processing"
-const selectedStatus = ref(statusItems.value[0].application_status_id);
+console.log(selectedStatus.value);
 
 const chartConfigs = computed(() => {
     const currentTheme = vuetifyTheme.current.value.colors;
@@ -63,24 +63,28 @@ const chartConfigs = computed(() => {
                     right: -10,
                 },
             },
-            colors: [
-                labelPrimaryColor,
-                labelPrimaryColor,
-                `rgba(${hexToRgb(currentTheme.primary)}, 1)`,
-                labelPrimaryColor,
-                labelPrimaryColor,
-                labelPrimaryColor,
-                labelPrimaryColor,
-                labelPrimaryColor,
-                labelPrimaryColor,
-                labelPrimaryColor,
-                labelPrimaryColor,
-                labelPrimaryColor,
-            ],
+            colors: (() => {
+                const colors = new Array(12);
+                colors.fill(labelPrimaryColor);
+
+                // Find index of maximum value
+                let maxVal = -Infinity;
+                let maxIdx = 0;
+                monthlyData.value.forEach((val, idx) => {
+                    if (val > maxVal) {
+                        maxVal = val;
+                        maxIdx = idx;
+                    }
+                });
+
+                // Highlight max value bar
+                colors[maxIdx] = `rgba(${hexToRgb(currentTheme.primary)}, 1)`;
+                return colors;
+            })(),
             dataLabels: {
                 enabled: true,
                 formatter(val) {
-                    return `${val}k`;
+                    return `${val}`;
                 },
                 offsetY: -25,
                 style: {
@@ -124,7 +128,7 @@ const chartConfigs = computed(() => {
                 labels: {
                     offsetX: -15,
                     formatter(val) {
-                        return `${val / 1}k`;
+                        return `${val / 1}`;
                     },
                     style: {
                         fontSize: '13px',
@@ -164,18 +168,31 @@ const chartConfigs = computed(() => {
         },
     };
 });
+const monthlyData = ref([]);
+async function fetchChartData() {
+    if (!selectedStatus.value) return [];
 
-const chartData = computed(() => {
-    if (!selectedStatus.value || !demoDashboardStore.applicationStatuses.length)
-        return [];
+    await demoDashboardStore.fetchDashboardData(selectedStatus.value);
+    applicationStatuses.value = demoDashboardStore.applicationStatuses;
 
-    const status = demoDashboardStore.applicationStatuses.find(
-        s => s.application_status_id === selectedStatus.value
-    );
+    monthlyData.value = applicationStatuses.value[selectedStatus.value - 1]?.monthly_counts || [];
 
-    return status ? [{
-        data: status.monthly_counts
-    }] : [];
+    return [{
+        name: 'Applications',
+        data: monthlyData
+    }];
+}
+
+const chartData = ref([]);
+
+// Watch for changes in selectedStatus 
+watch(selectedStatus, async () => {
+    chartData.value = await fetchChartData();
+});
+
+onMounted(async () => {
+    chartData.value = await fetchChartData();
+    console.log(chartData.value);
 });
 
 </script>
@@ -183,17 +200,17 @@ const chartData = computed(() => {
 <template>
     <VCard title="Application Status">
         <template #append>
-            <div class="mt-n4 me-n2">
+            <div class="mt-n4 me-n2" style="inline-size: 250px;">
                 <AppAutocomplete v-model="selectedStatus" :items="statusItems" item-title="application_status_name"
-                    item-value="application_status_id" label="Select Status" style="min-inline-size: 200px;" />
+                    item-value="application_status_id" />
             </div>
         </template>
 
         <VCardText>
             <div v-if="selectedStatus" class="mb-4">
-                <VChip color="primary" label class="text-capitalize">
-                    {{ statusItems.value?.find(item => item.application_status_id ===
-                        selectedStatus)?.application_status_name }}
+                <VChip color="primary" label class="text-capitalize" style="font-size: 16px;">
+                    {{ statusItems.find(item => item.application_status_id === selectedStatus)?.application_status_name
+                    }}
                 </VChip>
             </div>
 

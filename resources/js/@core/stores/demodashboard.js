@@ -5,14 +5,16 @@ export const useDemoDashboardStore = defineStore({
   state: () => ({
     dateValue: "",
     applicationStatuses: [],
-    selectedStatus: null,
   }),
 
   actions: {
-    async fetchDashboardData() {
+    async fetchDashboardData(application_status_id = 1) {
       try {
-        const response = await $api("/demo-dashboard");
-        this.applicationStatuses = response.data.application_statuses;
+        const response = await $api(
+          `/demo-application-statuses/${application_status_id}`
+        );
+        this.applicationStatuses = response;
+        console.log(this.applicationStatuses);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       }
