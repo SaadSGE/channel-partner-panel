@@ -85,8 +85,7 @@ function goToNextPage() {
 function continueWithoutDocument() {
   fileStore.continueWithoutDocuments();
   showDocumentUpload.value = false;
-  console.log('Final Documents:', fileStore.documents);
-  console.log('Student Info:', fileStore.studentInfo);
+
 }
 </script>
 <template>

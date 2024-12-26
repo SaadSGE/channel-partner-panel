@@ -14,10 +14,11 @@ class StudentDocumentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'document_paths' => 'nullable|array',
+            'document_paths' => 'nullable',
             'document_paths.*.id' => 'nullable',
-            'document_paths.*.path' => 'required|string',
-            'document_paths.*.document_name' => 'nullable|string',
+            'document_paths.*.path' => 'required',
+            'document_paths.*.document_name' => 'nullable',
+            'document_paths.*.missing' => 'nullable',
         ];
     }
     public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)

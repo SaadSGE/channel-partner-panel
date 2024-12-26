@@ -117,32 +117,32 @@ export const getApplicationStatusInfo = (statusCode) => {
 };
 
 // Define lead statuses as an array of objects
-export const leadStatuses = [
-  { id: 0, text: "New Lead", color: "status-color-1" },
-  { id: 1, text: "Contacted", color: "status-color-2" },
-  { id: 2, text: "Interested", color: "status-color-3" },
-  { id: 3, text: "Qualified", color: "status-color-4" },
-  { id: 4, text: "Proposal Sent", color: "status-color-5" },
-  { id: 5, text: "Negotiation", color: "status-color-6" },
-  { id: 6, text: "Closed Won", color: "status-color-7" },
-  { id: 7, text: "Closed Lost", color: "status-color-8" },
-  { id: 8, text: "Follow-Up", color: "status-color-9" },
-  { id: 9, text: "Reassigned", color: "status-color-10" },
-  { id: 10, text: "Pending", color: "status-color-11" },
-  { id: 11, text: "In Progress", color: "status-color-12" },
-  { id: 12, text: "On Hold", color: "status-color-13" },
-  { id: 13, text: "Completed", color: "status-color-14" },
-  { id: 14, text: "Archived", color: "status-color-15" },
-];
+// export const leadStatuses = [
+//   { id: 0, text: "New Lead", color: "status-color-1" },
+//   { id: 1, text: "Contacted", color: "status-color-2" },
+//   { id: 2, text: "Interested", color: "status-color-3" },
+//   { id: 3, text: "Qualified", color: "status-color-4" },
+//   { id: 4, text: "Proposal Sent", color: "status-color-5" },
+//   { id: 5, text: "Negotiation", color: "status-color-6" },
+//   { id: 6, text: "Closed Won", color: "status-color-7" },
+//   { id: 7, text: "Closed Lost", color: "status-color-8" },
+//   { id: 8, text: "Follow-Up", color: "status-color-9" },
+//   { id: 9, text: "Reassigned", color: "status-color-10" },
+//   { id: 10, text: "Pending", color: "status-color-11" },
+//   { id: 11, text: "In Progress", color: "status-color-12" },
+//   { id: 12, text: "On Hold", color: "status-color-13" },
+//   { id: 13, text: "Completed", color: "status-color-14" },
+//   { id: 14, text: "Archived", color: "status-color-15" },
+// ];
 
-// Get status color by status ID
-export const resolveLeadStatusColor = (statusId) => {
-  const status = leadStatuses.find((status) => status.id === statusId);
-  return status ? status.color : "#000";
-};
+// // Get status color by status ID
+// export const resolveLeadStatusColor = (statusId) => {
+//   const status = leadStatuses.find((status) => status.id === statusId);
+//   return status ? status.color : "#000";
+// };
 
-// Get status name by status ID
-export const resolveLeadStatusName = (statusId) => {
-  const status = leadStatuses.find((status) => status.id === statusId);
-  return status ? status.text : "Unknown Status";
-};
+// // Get status name by status ID
+// export const resolveLeadStatusName = (statusId) => {
+//   const status = leadStatuses.find((status) => status.id === statusId);
+//   return status ? status.text : "Unknown Status";
+// };

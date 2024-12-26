@@ -18,7 +18,11 @@ export const useLeadStore = defineStore({
       status = null,
       dateFrom = null,
       dateTo = null,
-      assignedStatus = null
+      assignedStatus = null,
+      leadType = null,
+      event = null,
+      branch = null,
+      leadCountry = null
     ) {
       try {
         return await $api("/leads", {
@@ -37,6 +41,10 @@ export const useLeadStore = defineStore({
             dateFrom,
             dateTo,
             assigned_status: assignedStatus,
+            lead_type: leadType,
+            event,
+            branch,
+            lead_country: leadCountry
           },
         });
       } catch (error) {
@@ -141,6 +149,26 @@ export const useLeadStore = defineStore({
         return response;
       } catch (error) {
         console.error("Error saving assigned leads:", error);
+        throw error;
+      }
+    },
+
+    async addNoteToLead(leadId, note) {
+      try {
+        const response = await $api(`/leads/${leadId}/add-note`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ note }),
+        });
+
+        return response.data;
+      } catch (error) {
+        console.error("Error adding note to lead:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
         throw error;
       }
     },

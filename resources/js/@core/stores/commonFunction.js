@@ -110,6 +110,7 @@ export const commonFunction = defineStore({
       try {
         const response = await $api("/getUniqueCountry", { method: "GET" });
         this.countries = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching countries:", error);
         this.errors = error.response
@@ -123,6 +124,7 @@ export const commonFunction = defineStore({
           method: "GET",
         });
         this.intakes = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching intakes:", error);
         this.errors = error.response
@@ -136,6 +138,7 @@ export const commonFunction = defineStore({
           method: "GET",
         });
         this.courseTypes = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching course types:", error);
         this.errors = error.response
@@ -154,6 +157,7 @@ export const commonFunction = defineStore({
           { method: "GET" }
         );
         this.universities = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching universities:", error);
         this.errors = error.response
@@ -172,6 +176,7 @@ export const commonFunction = defineStore({
         this.courseDetails = response.data;
         this.selectedIntakeId = intakeId;
         this.selectedUniversityId = universityId;
+        return response.data;
       } catch (error) {
         console.error("Error fetching course details:", error);
         this.errors = error.response
@@ -646,15 +651,22 @@ export const commonFunction = defineStore({
           : ["An unexpected error occurred"];
       }
     },
-    async getLeadStatus() {
+    async getLeadStatus(searchQuery = "", page = 1, itemsPerPage = 10, sortBy = "", orderBy = "", healthType = null) {
       try {
         const response = await $api("/lead-statuses", {
           method: "GET",
           params: {
             searchQuery,
+            page,
+            perPage: itemsPerPage,
+            sortBy,
+            orderBy,
+            health_type: healthType,
           },
         });
         this.leadStatus = response.data;
+        return response
+
       } catch (error) {
         console.error("Error fetching lead status:", error);
         this.errors = error.response

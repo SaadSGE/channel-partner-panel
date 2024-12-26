@@ -2,7 +2,6 @@
 import { defineEmits, onMounted, ref } from 'vue';
 import { commonFunction } from '../stores/commonFunction';
 
-import { leadStatuses } from '@/@core/utils/helpers';
 import { editor } from '../stores/editor';
 import { useRolePermissionStore } from '../stores/rolePermission';
 import { useUserStore } from '../stores/user';
@@ -42,6 +41,7 @@ const selectedUserStatus = ref(null);
 const selectedLeadStatus = ref(null);
 const users = ref([]);
 const userforLead = ref([]);
+const leadStatuses = ref([]);
 const totalUsers = ref(0);
 const roleStore = useRolePermissionStore();
 
@@ -51,6 +51,19 @@ const editorStore = editor();
 
 
 const isAdmin = ref(getUserRole() === 'admin');
+
+const healthTypes = ref([
+  { id: 'hot', name: 'Hot' },
+  { id: 'warm', name: 'Warm' },
+  { id: 'cold', name: 'Cold' },
+]);
+
+const leadTypes = ref([
+  { id: 'social', name: 'Social' },
+  { id: 'event', name: 'Event' },
+]);
+
+const events = ref([]);
 
 const props = defineProps({
   isAdmin: {
@@ -154,10 +167,22 @@ const props = defineProps({
     type: Number,
     Required: false,
   },
+  leadHealthType: {
+    type: String,
+    Required: false,
+  },
+  selectedLeadType: {
+    type: String,
+    required: false,
+  },
+  selectedEvent: {
+    type: Number,
+    required: false,
+  },
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch', 'update-user']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch', 'update-user', 'update-lead-health-type', 'update-lead-type', 'update-event']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedLeadStatus = ref(props.selectedLeadStatus);
@@ -181,6 +206,10 @@ const localSelectedAssignedStatus = ref(props.selectedAssignedStatus);
 const localSelectedBranch = ref(props.selectedBranch);
 const localSelectedAssignedBranch = ref(props.selectedAssignedBranch);
 const localSelectedUser = ref(props.selectedUser);
+const localSelectedLeadHealthType = ref(props.leadHealthType);
+const localSelectedLeadType = ref(props.selectedLeadType);
+const localSelectedEvent = ref(props.selectedEvent);
+
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
 });
@@ -246,6 +275,15 @@ watch(localSelectedAssignedBranch, (newValue) => {
 watch(localSelectedUser, (newValue) => {
   emit('update-user', newValue);
 });
+watch(localSelectedLeadHealthType, (newValue) => {
+  emit('update-lead-health-type', newValue);
+});
+watch(localSelectedLeadType, (newValue) => {
+  emit('update-lead-type', newValue);
+});
+watch(localSelectedEvent, (newValue) => {
+  emit('update-event', newValue);
+});
 
 const fetchFilterOptions = async () => {
   try {
@@ -305,8 +343,11 @@ onMounted(async () => {
 
 const loadFilterOptions = async () => {
   try {
+    console.log('loading countries2');
+
     // Conditionally load countries if selectedCountry is provided
-    if (props.selectedCountry !== undefined && commonFunctionStore.countries.length === 0) {
+    if (props.selectedCountry !== undefined) {
+      console.log('loading countries');
       await commonFunctionStore.getCountries();
       countries.value = commonFunctionStore.countries;
     }
@@ -347,6 +388,10 @@ const fetchUsers = async () => {
     }
   }
 };
+const fetchLeadStatus = async () => {
+  await commonFunctionStore.getLeadStatus();
+  leadStatuses.value = commonFunctionStore.leadStatus;
+}
 
 const fetchUserforLead = async () => {
   isLoading.value = true;
@@ -380,6 +425,9 @@ onMounted(async () => {
   if (props.selectedParent !== undefined) {
     await userStore.fetchParentUsers();
   }
+  if (props.selectedLeadStatus !== undefined) {
+    await fetchLeadStatus();
+  }
 });
 onMounted(async () => {
   await loadEditors();
@@ -400,19 +448,63 @@ const loadEditors = async () => {
 // Add new assignedStatuses array
 const assignedStatuses = ref([
   { id: 1, name: 'Assigned' },
-  { id: 0, name: 'Not Assigned' },
+  { id: 0, name: 'Unassigned' },
 ]);
+
+// Fetch events from the API
+const fetchEvents = async () => {
+  try {
+    const response = await $api('/events', { method: 'GET' });
+    events.value = response.data.map(event => ({
+      id: event.id,
+      name: event.name,
+    }));
+  } catch (error) {
+    console.error('Error fetching events:', error);
+  }
+};
+
+onMounted(async () => {
+  await fetchEvents(); // Fetch events on component mount
+});
 
 </script>
 
 
 <template>
+  <VCol cols="12" md="3" v-if="props.selectedLeadType !== undefined">
+    <AppAutocomplete v-model="localSelectedLeadType" :items="leadTypes" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Lead Type" placeholder="Select Lead Type" clearable />
+  </VCol>
+  <VCol cols="12" sm="6" md="3" v-if="props.selectedCountry !== undefined">
+    <AppAutocomplete v-model="localSelectedCountry" :items="countries" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" :label="countryLabel" placeholder="Select Country" clearable />
+  </VCol>
+  <VCol cols="12" md="3" v-if="props.selectedEvent !== undefined">
+    <AppAutocomplete v-model="localSelectedEvent" :items="events" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Event" placeholder="Select Event" clearable />
+  </VCol>
+  <VCol cols="12" md="3" v-if="props.selectedAssignedBranch !== undefined">
+    <AppAutocomplete v-model="localSelectedAssignedBranch" :items="commonFunctionStore.branches"
+      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="assignedBranchLabel"
+      placeholder="Select Branch" clearable />
+  </VCol>
+  <VCol cols="12" md="3" v-if="props.selectedBranch !== undefined">
+    <AppAutocomplete v-model="localSelectedBranch" :items="commonFunctionStore.branches"
+      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="branchLabel" placeholder="Select Branch"
+      clearable />
+  </VCol>
+
+  <VCol cols="12" md="3" v-if="props.leadHealthType !== undefined">
+    <AppAutocomplete v-model="localSelectedLeadHealthType" :items="healthTypes" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Lead Health Type" placeholder="Select Health Type" clearable />
+  </VCol>
   <VCol cols="12" md="3" v-if="props.selectedAssignedStatus !== undefined">
     <AppAutocomplete v-model="localSelectedAssignedStatus" :items="assignedStatuses" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Assigned Status" placeholder="Select Assigned Status" clearable />
   </VCol>
   <VCol cols="12" md="3" v-if="props.selectedLeadStatus !== undefined">
-    <AppAutocomplete v-model="localSelectedLeadStatus" :items="leadStatuses" :item-title="(item) => item.text"
+    <AppAutocomplete v-model="localSelectedLeadStatus" :items="leadStatuses" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Lead Status" placeholder="Select Lead Status" clearable />
   </VCol>
   <!-- Application history -->
@@ -437,10 +529,7 @@ const assignedStatuses = ref([
 
   <!-- course -->
 
-  <VCol cols="12" sm="6" md="3" v-if="props.selectedCountry !== undefined">
-    <AppAutocomplete v-model="localSelectedCountry" :items="countries" :item-title="(item) => item.name"
-      :item-value="(item) => item.id" :label="countryLabel" placeholder="Select Country" clearable />
-  </VCol>
+
   <VCol cols="12" sm="6" md="3" v-if="props.selectedIntake !== undefined">
     <AppAutocomplete v-model="localSelectedIntake" :items="intakes" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Filter by Intake" placeholder="Select Intake" clearable />
@@ -500,16 +589,11 @@ const assignedStatuses = ref([
     <AppDateTimePicker v-model="localSelectedDateTo" label="To Date" placeholder="Select To Date" />
   </VCol>
 
-  <VCol cols="12" md="3" v-if="props.selectedBranch !== undefined">
-    <AppAutocomplete v-model="localSelectedBranch" :items="commonFunctionStore.branches"
-      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="branchLabel" placeholder="Select Branch"
-      clearable />
-  </VCol>
 
-  <VCol cols="12" md="3" v-if="props.selectedAssignedBranch !== undefined">
-    <AppAutocomplete v-model="localSelectedAssignedBranch" :items="commonFunctionStore.branches"
-      :item-title="(item) => item.name" :item-value="(item) => item.id" :label="assignedBranchLabel"
-      placeholder="Select Branch" clearable />
-  </VCol>
+
+  <!-- Lead Type Filter -->
+
+  <!-- Event Filter -->
+
 
 </template>

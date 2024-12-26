@@ -13,8 +13,8 @@ import 'vue3-toastify/dist/index.css';
 // Define page meta
 definePage({
   meta: {
-    action: "read",
-    subject: "dashboard",
+    action: "create",
+    subject: "lead",
   },
 });
 
@@ -55,6 +55,8 @@ const currentStep = ref(1);
 const leads = ref([]);
 const leadStore = useLeadStore();
 const totalLeadCount = ref(0);
+const selectedLeadType = ref(null);
+const selectedEvent = ref(null);
 
 // Add computed property for total assigned leads
 const totalAssignedLeads = computed(() => {
@@ -130,38 +132,9 @@ const fetchUsers = async () => {
   }
 };
 
-const addUser = async (userData) => {
-  try {
-    await fetchUsers();
-    Swal.fire("Success!", "User added successfully!", "success");
-  } catch (error) {
-    console.error("Error adding user:", error);
-    Swal.fire("Error!", "Failed to add user.", "error");
-  }
-};
 
-const deleteUser = async (id) => {
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "Do you want to delete this user?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel",
-  });
 
-  if (result.isConfirmed) {
-    const response = await userStore.deleteUser(id);
 
-    if (response.success) {
-      Swal.fire("Deleted!", response.message, "success");
-    } else {
-      Swal.fire("Error!", response.message, "error");
-    }
-  }
-};
 
 const updateOptions = (options) => {
   sortBy.value = options.sortBy[0]?.key;
@@ -186,24 +159,7 @@ const headers = [
   },
 ];
 
-const updateUserStatus = async (user) => {
-  user.statusLoading = true;
-  try {
-    const response = await userStore.updateUserStatus(user.id, user.status);
-    if (response.status) {
-      Swal.fire("Success!", "User status updated successfully!", "success");
-    } else {
-      Swal.fire("Error!", "Failed to update user status.", "error");
-      user.status = user.status === 1 ? 0 : 1; // Revert the switch if the update failed
-    }
-  } catch (error) {
-    console.error("Error updating user status:", error);
-    Swal.fire("Error!", "Failed to update user status.", "error");
-    user.status = user.status === 1 ? 0 : 1; // Revert the switch if the update failed
-  } finally {
-    user.statusLoading = false;
-  }
-};
+
 
 const updateAssignedLeads = async (user, value) => {
   try {
@@ -318,10 +274,7 @@ const saveAssignedLeads = async () => {
 };
 
 onMounted(async () => {
-  await roleStore.getAllRoles();
-  roles.value = roleStore.roles;
-  await userStore.fetchParentUsers(); // Fetch parent users on mount from the Pinia store
-  fetchUsers(); // Fetch the main user list
+  // Fetch parent users on mount from the Pinia store
   getAllBranches();
 });
 
@@ -330,12 +283,6 @@ watch([searchQuery, selectedAssignedBranch], () => {
 });
 
 // Separate watches for country and branch to avoid unnecessary fetches during reset
-watch([selectedCountry, selectedBranch], () => {
-  if (currentStep.value === 1) {
-    // Only fetch if we're on step 1
-    fetchUsers();
-  }
-});
 
 // Fetch branches from API
 const getAllBranches = async () => {
@@ -349,6 +296,17 @@ const getAllBranches = async () => {
     isLoading.value = false;
   }
 }
+
+// Watch for changes in the new filters
+watch([selectedLeadType, selectedEvent, selectedCountry, selectedBranch], () => {
+  // Reset the relevant state variables
+  selectedAssignedBranch.value = null;
+  users.value.forEach(user => {
+    user.assigned_number_of_leads = 0;
+  });
+  currentStep.value = 1; // Reset the step to hide the section
+
+});
 </script>
 
 <template>
@@ -364,10 +322,25 @@ const getAllBranches = async () => {
 
         <VCardText>
           <VRow>
-            <Filters :selected-country="selectedCountry" @update-country="selectedCountry = $event"
-              :selected-branch="selectedBranch" @update-branch="selectedBranch = $event" country-label="Lead Country"
-              branch-label="Lead Branch (Optional)" />
+            <Filters :selected-lead-type="selectedLeadType" @update-lead-type="selectedLeadType = $event"
+              country-label="Lead Country" branch-label="Lead Branch (Optional)" />
           </VRow>
+
+          <template v-if="selectedLeadType === 'social'">
+            <VRow>
+              <Filters :selected-country="selectedCountry" :selected-branch="selectedBranch"
+                @update-country="selectedCountry = $event" @update-branch="selectedBranch = $event"
+                country-label="Lead Country" branch-label="Lead Branch" />
+            </VRow>
+          </template>
+
+          <template v-if="selectedLeadType === 'event'">
+            <VRow>
+              <Filters :selected-event="selectedEvent" :selected-branch="selectedBranch"
+                @update-event="selectedEvent = $event" @update-branch="selectedBranch = $event"
+                branch-label="Lead Branch" />
+            </VRow>
+          </template>
 
           <VRow class="mt-4">
             <VCol cols="12" class="text-center">

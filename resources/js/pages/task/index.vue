@@ -1,45 +1,43 @@
 <script lang="js" setup>
+import { commonFunction } from '@/@core/stores/commonFunction';
+import { format } from 'date-fns'; // Import date formatting function
+import { onMounted, ref, watch } from 'vue';
+
 definePage({
     meta: {
         action: 'read',
         subject: 'dashboard',
     },
-})
-import { commonFunction } from '@/@core/stores/commonFunction';
-import { ref } from 'vue';
+});
 
 const tasks = ref([]);
 const commonFunctionStore = commonFunction();
-const isLoading = ref(false)
-const totalTasks = ref(0)
-const itemsPerPage = ref(10)
-const page = ref(1)
-const sortBy = ref()
-const orderBy = ref()
-const search = ref('')
-const selectedDateFrom = ref(null)
-const selectedDateTo = ref(null)
-const selectedUser = ref(null)
+const isLoading = ref(false);
+const totalTasks = ref(0);
+const itemsPerPage = ref(10);
+const page = ref(1);
+const sortBy = ref();
+const orderBy = ref();
+const search = ref('');
+const selectedDateFrom = ref(null);
+const selectedDateTo = ref(null);
+const selectedUser = ref(null);
 
 const headers = ref([
-    { title: 'Date', key: 'created_at' },
+    { title: 'Date', key: 'created_at', formatFn: (value) => format(new Date(value), 'dd-MM-yyyy HH:mm') },
     { title: 'User', key: 'user.name_with_email' },
     { title: 'Yesterday', key: 'yesterday_tasks' },
     { title: 'Today', key: 'today_plans' },
     { title: 'Blockages', key: 'blockers' },
+]);
 
-
-])
 onMounted(() => {
-    fetchTasks()
-    console.log(selectedUser.value)
-})
-
+    fetchTasks();
+});
 
 const fetchTasks = async () => {
     try {
-        isLoading.value = true
-        console.log(selectedUser.value)
+        isLoading.value = true;
         await commonFunctionStore.getDailyTasks(
             selectedUser.value,
             page.value,
@@ -48,43 +46,37 @@ const fetchTasks = async () => {
             sortBy.value,
             orderBy.value,
             selectedDateFrom.value,
-            selectedDateTo.value,
-        )
-        tasks.value = commonFunctionStore.tasks
-        totalTasks.value = commonFunctionStore.tasks.total
+            selectedDateTo.value
+        );
+        tasks.value = commonFunctionStore.tasks.map((task) => ({
+            ...task,
+            created_at: format(new Date(task.created_at), 'dd-MM-yyyy HH:mm'), // Format the date
+        }));
+        totalTasks.value = commonFunctionStore.tasks.total;
     } catch (error) {
-        console.error('Failed to fetch tasks:', error)
+        console.error('Failed to fetch tasks:', error);
     } finally {
-        isLoading.value = false
+        isLoading.value = false;
     }
-}
+};
 
 // Watchers
-watch([
-    search,
-    selectedDateFrom,
-    selectedDateTo,
-    selectedUser,
-], () => {
-    fetchTasks()
-})
+watch([search, selectedDateFrom, selectedDateTo, selectedUser], () => {
+    fetchTasks();
+});
 </script>
 
 <template>
-
     <section>
         <VCard class="mb-6">
             <AppCardActions title="Tasks" :loading="isLoading" no-actions>
-
                 <VCardText v-if="$can('filter', 'user')">
                     <VRow>
                         <!-- 👉 Select status -->
                         <Filters :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
                             :selected-user="selectedUser" @update-dateFrom="selectedDateFrom = $event"
-                            @update-dateTo="selectedDateTo = $event" @update-user="selectedUser = $event">
-                        </Filters>
+                            @update-dateTo="selectedDateTo = $event" @update-user="selectedUser = $event" />
                     </VRow>
-
                 </VCardText>
 
                 <VCardText class="d-flex flex-wrap gap-4">
@@ -106,11 +98,9 @@ watch([
                     </div>
                 </VCardText>
 
-
                 <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :loading="isLoading"
                     @update:options="updateOptions" :items-length="tasks.length" :headers="headers" :items="tasks"
-                    item-value="total" class="text-no-wrap text-sm rounded-0">
-                </VDataTableServer>
+                    item-value="total" class="text-no-wrap text-sm rounded-0" />
             </AppCardActions>
         </VCard>
     </section>

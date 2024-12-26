@@ -57,6 +57,7 @@ declare module 'vue' {
     Filters: typeof import('./resources/js/@core/components/Filters.vue')['default']
     GeneralInformation: typeof import('./resources/js/components/student/GeneralInformation.vue')['default']
     I18n: typeof import('./resources/js/@core/components/I18n.vue')['default']
+    LeadInfo: typeof import('./resources/js/components/student/LeadInfo.vue')['default']
     MoreBtn: typeof import('./resources/js/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./resources/js/@core/components/Notifications.vue')['default']
     PaymentProvidersDialog: typeof import('./resources/js/components/dialogs/PaymentProvidersDialog.vue')['default']
@@ -80,5 +81,6 @@ declare module 'vue' {
     UserActivityLog: typeof import('./resources/js/components/ActivityLog/UserActivityLog.vue')['default']
     UserInfoEditDialog: typeof import('./resources/js/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./resources/js/components/dialogs/UserUpgradePlanDialog.vue')['default']
+    VueApexCharts: typeof import('vue3-apexcharts')['default']
   }
 }

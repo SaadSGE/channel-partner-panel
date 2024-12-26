@@ -92,7 +92,8 @@ watch(() => props.englishProficiency, (newValue) => {
     <VCardText>
       <div class="d-flex justify-space-between align-center">
         <VCardTitle class="padding-bottom">English Proficiency</VCardTitle>
-        <VBtn v-if="props.isEdit" :color="isEditing ? 'success' : 'primary'" @click="toggleEdit">
+        <VBtn v-if="props.isEdit && $can('edit', 'student')" :color="isEditing ? 'success' : 'primary'"
+          @click="toggleEdit">
           {{ isEditing ? 'Save Changes' : 'Edit' }}
         </VBtn>
       </div>
