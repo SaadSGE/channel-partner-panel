@@ -1,6 +1,12 @@
 <script setup>
 import { useAuthStore } from "@/@core/stores/auth";
 import { useGenerateImageVariant } from "@core/composable/useGenerateImageVariant";
+import swiper10 from '@images/banner/banner-10.jpg';
+import swiper11 from '@images/banner/banner-11.jpg';
+import swiper20 from '@images/banner/banner-20.jpg';
+import swiper7 from '@images/banner/banner-7.jpg';
+import swiper8 from '@images/banner/banner-8.jpg';
+import swiper9 from '@images/banner/banner-9.jpg';
 import authV2LoginIllustrationBorderedDark from "@images/pages/auth-v2-login-illustration-bordered-dark.png";
 import authV2LoginIllustrationBorderedLight from "@images/pages/auth-v2-login-illustration-bordered-light.png";
 import authV2LoginIllustrationDark from "@images/pages/auth-v2-login-illustration-dark.png";
@@ -12,8 +18,14 @@ import authV2MaskLight from "@images/pages/misc-mask-light.png";
 import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
 import { themeConfig } from "@themeConfig";
 import Swal from "sweetalert2";
-// import { useRoute, useRouter } from "vue-router"
+import { register } from 'swiper/element/bundle';
+
+
+
 import { VForm } from "vuetify/components/VForm";
+// import { useRoute, useRouter } from "vue-router"
+
+register();
 const authThemeImg = useGenerateImageVariant(
   authV2LoginIllustrationLight,
   authV2LoginIllustrationDark,
@@ -114,7 +126,25 @@ const onSubmit = () => {
     <VCol md="8" class="d-none d-md-flex">
       <div class="position-relative bg-background w-100 me-0">
         <div class="d-flex align-center justify-center w-100 h-100" style="padding-inline: 6.25rem;">
-          <VImg :src="loginImage2" class="auth-illustration mt-16 mb-2" />
+          <!-- <VImg :src="loginImage" class="auth-illustration mt-16 mb-2" /> -->
+
+
+
+          <swiper-container navigation="true" autoplay="true" centered-slides="true" events-prefix="swiper-">
+            <swiper-slide v-for="swiperImg in
+              [
+                swiper7,
+                swiper8,
+                swiper9,
+                swiper10,
+                swiper11,
+                swiper20,
+              ]" :key="swiperImg">
+              <VImg :src="swiperImg" cover style="width: 100%; height: 100%;" />
+            </swiper-slide>
+          </swiper-container>
+
+
         </div>
       </div>
     </VCol>
