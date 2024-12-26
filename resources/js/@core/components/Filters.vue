@@ -65,6 +65,11 @@ const leadTypes = ref([
 
 const events = ref([]);
 
+const studentSources = ref([
+  { id: 'lead', name: 'Lead' },
+  { id: 'regular', name: 'Regular' }
+]);
+
 const props = defineProps({
   isAdmin: {
     type: Boolean,
@@ -179,10 +184,14 @@ const props = defineProps({
     type: Number,
     required: false,
   },
+  selectedStudentSource: {
+    type: String,
+    Required: false,
+  },
 });
 
 
-const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch', 'update-user', 'update-lead-health-type', 'update-lead-type', 'update-event']);
+const emit = defineEmits(['update-status', 'update-channel-partner', 'update-university', 'update-application-officer', 'update-dateFrom', 'update-dateTo', 'update-country', 'update-intake', 'update-university2', 'update-courseName', 'update-role', 'update-parent', 'update-editor', 'update-userStatus', 'update-courseType', 'update-mou', 'update-assignedStatus', 'update-branch', 'update-assigned-branch', 'update-user', 'update-lead-health-type', 'update-lead-type', 'update-event', 'update-student-source']);
 
 const localSelectedStatus = ref(props.selectedStatus);
 const localSelectedLeadStatus = ref(props.selectedLeadStatus);
@@ -209,6 +218,7 @@ const localSelectedUser = ref(props.selectedUser);
 const localSelectedLeadHealthType = ref(props.leadHealthType);
 const localSelectedLeadType = ref(props.selectedLeadType);
 const localSelectedEvent = ref(props.selectedEvent);
+const localSelectedStudentSource = ref(props.selectedStudentSource);
 
 watch(localSelectedStatus, (newValue) => {
   emit('update-status', newValue);
@@ -283,6 +293,9 @@ watch(localSelectedLeadType, (newValue) => {
 });
 watch(localSelectedEvent, (newValue) => {
   emit('update-event', newValue);
+});
+watch(localSelectedStudentSource, (newValue) => {
+  emit('update-student-source', newValue);
 });
 
 const fetchFilterOptions = async () => {
@@ -472,6 +485,10 @@ onMounted(async () => {
 
 
 <template>
+  <VCol cols="12" md="3" v-if="props.selectedStudentSource !== undefined">
+    <AppAutocomplete v-model="localSelectedStudentSource" :items="studentSources" :item-title="(item) => item.name"
+      :item-value="(item) => item.id" label="Student Source" placeholder="Select Student Source" clearable />
+  </VCol>
   <VCol cols="12" md="3" v-if="props.selectedLeadType !== undefined">
     <AppAutocomplete v-model="localSelectedLeadType" :items="leadTypes" :item-title="(item) => item.name"
       :item-value="(item) => item.id" label="Lead Type" placeholder="Select Lead Type" clearable />
@@ -594,6 +611,7 @@ onMounted(async () => {
   <!-- Lead Type Filter -->
 
   <!-- Event Filter -->
+
 
 
 </template>

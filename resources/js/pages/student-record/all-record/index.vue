@@ -34,6 +34,7 @@ const studentLists = ref([]);
 const selectedStatus = ref(null);
 const showDocumentDialog = ref(false);
 const selectedStudentDocs = ref(null);
+const selectedStudentSource = ref(null);
 
 // Stores
 const commonFunctionStore = commonFunction();
@@ -90,6 +91,7 @@ const fetchStudents = async () => {
       selectedStatus.value,
       selectedDateFrom.value,
       selectedDateTo.value,
+      selectedStudentSource.value,
     );
     studentLists.value = response.data;
     totalStudents.value = response.total;
@@ -101,7 +103,7 @@ const fetchStudents = async () => {
 };
 
 // Watchers
-watch([search, selectedStatus, selectedDateFrom, selectedDateTo], () => {
+watch([search, selectedStatus, selectedDateFrom, selectedDateTo, selectedStudentSource], () => {
   fetchStudents();
 });
 
@@ -152,9 +154,10 @@ const addStudent = () => {
 
       <VCardText>
         <VRow>
-          <Filters :selected-status="selectedStatus" @update-status="selectedStatus = $event"
-            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
-            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event"></Filters>
+          <Filters :selected-status="selectedStatus" :selected-dateFrom="selectedDateFrom"
+            :selected-dateTo="selectedDateTo" :selected-student-source="selectedStudentSource"
+            @update-status="selectedStatus = $event" @update-dateFrom="selectedDateFrom = $event"
+            @update-dateTo="selectedDateTo = $event" @update-student-source="selectedStudentSource = $event"></Filters>
         </VRow>
       </VCardText>
 

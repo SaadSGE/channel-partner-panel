@@ -79,21 +79,21 @@ export default [
     title: "Student Record",
     icon: { icon: "tabler-id" },
     action: "read",
-    subject: "student",
+    subject: "dashboard",
     children: [
       {
         title: "Add Record",
         icon: { icon: "tabler-file-plus" },
         to: "student-record",
         action: "create",
-        subject: "student",
+        subject: "dashboard",
       },
       {
         title: "All Record",
         icon: { icon: "tabler-archive" },
         to: "student-record-all-record",
         action: "read",
-        subject: "student",
+        subject: "dashboard",
       },
     ],
   },
@@ -180,26 +180,7 @@ export default [
       // },
     ],
   },
-  {
-    title: "Applications",
-    icon: { icon: "tabler-files" },
-    action: "read",
-    subject: "dashboard",
-    children: [
-      {
-        title: "Application Status",
-        to: "applications-status",
-        action: "read",
-        subject: "dashboard",
-      },
-      {
-        title: "All Applications",
-        to: "applications",
-        action: "read",
-        subject: "dashboard",
-      },
-    ]
-  },
+ 
   {
     title: "Daily Task",
     icon: { icon: "tabler-clipboard-copy" },
@@ -283,12 +264,19 @@ export default [
         subject: "dashboard",
       },
 
-
       {
         title: "Country List",
         icon: { icon: "tabler-globe" },
         to: "country-list",
         action: "create",
+        subject: "dashboard",
+      },
+
+      {
+        title: "Application Status",
+        icon: { icon: "tabler-file-plus" },
+        to: "applications-status",
+        action: "read",
         subject: "dashboard",
       },
     ],
