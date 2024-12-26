@@ -125,11 +125,35 @@ class DemoDashboardController extends Controller
             ]
         ];
 
+        $applicationStatuses = [
+            [
+                'application_status_id' => 1,
+                'application_status_name' => 'Application Processing',
+                'monthly_counts' => [28, 100, 45, 38, 15, 30, 35, 32, 8, 10, 15, 4]
+            ],
+            [
+                'application_status_id' => 2,
+                'application_status_name' => 'Pending Documents',
+                'monthly_counts' => [35, 25, 15, 40, 42, 25, 48, 8, 30, 10, 15, 20]
+            ],
+            [
+                'application_status_id' => 3,
+                'application_status_name' => 'Offer Issued',
+                'monthly_counts' => [10, 22, 27, 33, 42, 32, 27, 22, 8, 10, 15, 20]
+            ],
+            [
+                'application_status_id' => 4,
+                'application_status_name' => 'Visa Applied',
+                'monthly_counts' => [5, 9, 12, 18, 20, 25, 30, 36, 48, 10, 15, 20]
+            ]
+        ];
+
         return [
             'top_universities' => $topUniversities,
             'top_channel_partners' => $topChannelPartners,
             'top_application_officers' => $topACOs,
-            'recent_applications' => $recentApplications
+            'recent_applications' => $recentApplications,
+            'application_statuses' => $applicationStatuses
         ];
     }
 }
