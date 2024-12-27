@@ -20,6 +20,7 @@ export const useStudentStore = defineStore({
       englishProficiency: [],
       interestedUniversity: [],
       documentPaths: [],
+      lead: {},
     },
   }),
   actions: {
@@ -45,81 +46,83 @@ export const useStudentStore = defineStore({
         const interestedUniversityRequest = {
           interested_university: formData.universityEntry?.length
             ? formData.universityEntry
-                .map((entry) => ({
-                  country_id: entry.country_id || null,
-                  intake_id: entry.intake_id || null,
-                  university_id: entry.university_id || null,
-                  course_id: entry.course_id || null,
-                }))
-                .filter(
-                  (entry) =>
-                    entry.country_id ||
-                    entry.intake_id ||
-                    entry.university_id ||
-                    entry.course_id
-                )
+              .map((entry) => ({
+                country_id: entry.country_id || null,
+                intake_id: entry.intake_id || null,
+                university_id: entry.university_id || null,
+                course_id: entry.course_id || null,
+              }))
+              .filter(
+                (entry) =>
+                  entry.country_id ||
+                  entry.intake_id ||
+                  entry.university_id ||
+                  entry.course_id
+              )
             : [],
         };
 
         const educationalHistoryRequest = {
           educational_history: formData.educationalHistory?.length
             ? formData.educationalHistory
-                .map((edu) => ({
-                  degree_name: edu.degree || null,
-                  institution_name: edu.institution || null,
-                  passing_year: edu.passing_year || null,
-                  result: edu.result || null,
-                }))
-                .filter(
-                  (edu) =>
-                    edu.degree_name ||
-                    edu.institution_name ||
-                    edu.passing_year ||
-                    edu.result
-                )
+              .map((edu) => ({
+                degree_name: edu.degree || null,
+                institution_name: edu.institution || null,
+                passing_year: edu.passing_year || null,
+                result: edu.result || null,
+              }))
+              .filter(
+                (edu) =>
+                  edu.degree_name ||
+                  edu.institution_name ||
+                  edu.passing_year ||
+                  edu.result
+              )
             : [],
         };
 
         const englishProficiencyRequest = {
           english_proficiency: formData.englishProficiency?.length
             ? formData.englishProficiency
-                .map((prof) => ({
-                  proficiency_title: prof.title || null,
-                  overall_score: prof.overall_score || null,
-                  reading: prof.reading || null,
-                  writing: prof.writing || null,
-                  speaking: prof.speaking || null,
-                  listening: prof.listening || null,
-                }))
-                .filter(
-                  (prof) =>
-                    prof.proficiency_title ||
-                    prof.overall_score ||
-                    prof.reading ||
-                    prof.writing ||
-                    prof.speaking ||
-                    prof.listening
-                )
+              .map((prof) => ({
+                proficiency_title: prof.title || null,
+                overall_score: prof.overall_score || null,
+                reading: prof.reading || null,
+                writing: prof.writing || null,
+                speaking: prof.speaking || null,
+                listening: prof.listening || null,
+              }))
+              .filter(
+                (prof) =>
+                  prof.proficiency_title ||
+                  prof.overall_score ||
+                  prof.reading ||
+                  prof.writing ||
+                  prof.speaking ||
+                  prof.listening
+              )
             : [],
         };
 
         const employmentHistoryRequest = {
           employment_history: formData.employmentHistory?.length
             ? formData.employmentHistory
-                .map((emp) => ({
-                  company_name: emp.company_name || null,
-                  designation: emp.designation || null,
-                  year: emp.year || null,
-                }))
-                .filter(
-                  (emp) => emp.company_name || emp.designation || emp.year
-                )
+              .map((emp) => ({
+                company_name: emp.company_name || null,
+                designation: emp.designation || null,
+                year: emp.year || null,
+              }))
+              .filter(
+                (emp) => emp.company_name || emp.designation || emp.year
+              )
             : [],
         };
 
         const documentRequest = {
           document_paths: formData.documentPaths.map((path) => ({
-            path: path,
+            path: path.path,
+            document_name: path.document_name,
+            missing: path.missing || false,
           })),
         };
 
@@ -194,6 +197,7 @@ export const useStudentStore = defineStore({
           englishProficiency: studentData.englishProficiency || [],
           interestedUniversity: studentData.interestedUniversity || [],
           documentPaths: studentData.documentPaths || [],
+          lead: studentData.lead || {},
         };
 
         return response.data;
@@ -346,20 +350,20 @@ export const useStudentStore = defineStore({
         const requestBody = {
           interested_university: universityEntry?.length
             ? universityEntry
-                .map((entry) => ({
-                  id: entry.id || null,
-                  country_id: entry.country_id || null,
-                  intake_id: entry.intake_id || null,
-                  university_id: entry.university_id || null,
-                  course_id: entry.course_id || null,
-                }))
-                .filter(
-                  (entry) =>
-                    entry.country_id ||
-                    entry.intake_id ||
-                    entry.university_id ||
-                    entry.course_id
-                )
+              .map((entry) => ({
+                id: entry.id || null,
+                country_id: entry.country_id || null,
+                intake_id: entry.intake_id || null,
+                university_id: entry.university_id || null,
+                course_id: entry.course_id || null,
+              }))
+              .filter(
+                (entry) =>
+                  entry.country_id ||
+                  entry.intake_id ||
+                  entry.university_id ||
+                  entry.course_id
+              )
             : [],
         };
 
@@ -394,20 +398,20 @@ export const useStudentStore = defineStore({
             body: JSON.stringify({
               educational_history: educationalHistory?.length
                 ? educationalHistory
-                    .map((edu) => ({
-                      id: edu.id || null,
-                      degree_name: edu.degree || null,
-                      institution_name: edu.institution || null,
-                      passing_year: edu.passing_year || null,
-                      result: edu.result || null,
-                    }))
-                    .filter(
-                      (edu) =>
-                        edu.degree_name ||
-                        edu.institution_name ||
-                        edu.passing_year ||
-                        edu.result
-                    )
+                  .map((edu) => ({
+                    id: edu.id || null,
+                    degree_name: edu.degree || null,
+                    institution_name: edu.institution || null,
+                    passing_year: edu.passing_year || null,
+                    result: edu.result || null,
+                  }))
+                  .filter(
+                    (edu) =>
+                      edu.degree_name ||
+                      edu.institution_name ||
+                      edu.passing_year ||
+                      edu.result
+                  )
                 : [],
             }),
           }
@@ -431,24 +435,24 @@ export const useStudentStore = defineStore({
             body: JSON.stringify({
               english_proficiency: englishProficiency?.length
                 ? englishProficiency
-                    .map((prof) => ({
-                      id: prof.id || null,
-                      proficiency_title: prof.proficiencyTitle || null,
-                      overall_score: prof.overallScore || null,
-                      reading: prof.reading || null,
-                      writing: prof.writing || null,
-                      speaking: prof.speaking || null,
-                      listening: prof.listening || null,
-                    }))
-                    .filter(
-                      (prof) =>
-                        prof.proficiency_title ||
-                        prof.overall_score ||
-                        prof.reading ||
-                        prof.writing ||
-                        prof.speaking ||
-                        prof.listening
-                    )
+                  .map((prof) => ({
+                    id: prof.id || null,
+                    proficiency_title: prof.proficiencyTitle || null,
+                    overall_score: prof.overallScore || null,
+                    reading: prof.reading || null,
+                    writing: prof.writing || null,
+                    speaking: prof.speaking || null,
+                    listening: prof.listening || null,
+                  }))
+                  .filter(
+                    (prof) =>
+                      prof.proficiency_title ||
+                      prof.overall_score ||
+                      prof.reading ||
+                      prof.writing ||
+                      prof.speaking ||
+                      prof.listening
+                  )
                 : [],
             }),
           }
@@ -471,15 +475,15 @@ export const useStudentStore = defineStore({
             body: JSON.stringify({
               employment_history: employmentHistory?.length
                 ? employmentHistory
-                    .map((emp) => ({
-                      id: emp.id || null,
-                      company_name: emp.company_name || null,
-                      designation: emp.designation || null,
-                      year: emp.year || null,
-                    }))
-                    .filter(
-                      (emp) => emp.company_name || emp.designation || emp.year
-                    )
+                  .map((emp) => ({
+                    id: emp.id || null,
+                    company_name: emp.company_name || null,
+                    designation: emp.designation || null,
+                    year: emp.year || null,
+                  }))
+                  .filter(
+                    (emp) => emp.company_name || emp.designation || emp.year
+                  )
                 : [],
             }),
           }
@@ -507,6 +511,31 @@ export const useStudentStore = defineStore({
 
     clearSuccessMessage() {
       this.successMessage = "";
+    },
+
+    async updateDocuments(studentId, documentPaths) {
+      try {
+        // Format the document paths into the expected structure
+        const formattedDocumentPaths = documentPaths.map((doc) => ({
+          document_name: doc.document_name,
+          path: doc.path,
+          missing: doc.missing || false,
+        }));
+
+        const response = await $api(`/students/${studentId}/documents`, {
+          method: "PUT",
+          body: JSON.stringify({
+            document_paths: formattedDocumentPaths,
+          }),
+        });
+
+        this.studentInfo.documentPaths = response.data;
+        this.successMessage = "Documents updated successfully";
+        return response.data;
+      } catch (error) {
+        this.handleError(error);
+        throw error;
+      }
     },
   },
 });

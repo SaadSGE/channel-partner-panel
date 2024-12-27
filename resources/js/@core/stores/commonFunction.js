@@ -12,6 +12,7 @@ export const commonFunction = defineStore({
     activeNotices: [],
     tasks: [],
     leadStatus: [],
+    applicationStatus: [],
     errors: [],
     universities: [],
     courseDetails: [],
@@ -109,6 +110,7 @@ export const commonFunction = defineStore({
       try {
         const response = await $api("/getUniqueCountry", { method: "GET" });
         this.countries = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching countries:", error);
         this.errors = error.response
@@ -122,6 +124,7 @@ export const commonFunction = defineStore({
           method: "GET",
         });
         this.intakes = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching intakes:", error);
         this.errors = error.response
@@ -135,6 +138,7 @@ export const commonFunction = defineStore({
           method: "GET",
         });
         this.courseTypes = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching course types:", error);
         this.errors = error.response
@@ -153,6 +157,7 @@ export const commonFunction = defineStore({
           { method: "GET" }
         );
         this.universities = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching universities:", error);
         this.errors = error.response
@@ -171,6 +176,7 @@ export const commonFunction = defineStore({
         this.courseDetails = response.data;
         this.selectedIntakeId = intakeId;
         this.selectedUniversityId = universityId;
+        return response.data;
       } catch (error) {
         console.error("Error fetching course details:", error);
         this.errors = error.response
@@ -645,15 +651,22 @@ export const commonFunction = defineStore({
           : ["An unexpected error occurred"];
       }
     },
-    async getLeadStatus(searchQuery = "") {
+    async getLeadStatus(searchQuery = "", page = 1, itemsPerPage = 10, sortBy = "", orderBy = "", healthType = null) {
       try {
         const response = await $api("/lead-statuses", {
           method: "GET",
           params: {
             searchQuery,
+            page,
+            perPage: itemsPerPage,
+            sortBy,
+            orderBy,
+            health_type: healthType,
           },
         });
         this.leadStatus = response.data;
+        return response
+
       } catch (error) {
         console.error("Error fetching lead status:", error);
         this.errors = error.response
@@ -701,6 +714,65 @@ export const commonFunction = defineStore({
         this.leadStatus = this.leadStatus.filter((status) => status.id !== id);
       } catch (error) {
         console.error("Error deleting lead status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async getApplicationStatus() {
+      try {
+        const response = await $api("/application-statuses", {
+          method: "GET",
+          
+        });
+        this.applicationStatus = response.data;
+      } catch (error) {
+        console.error("Error fetching application status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async addApplicationStatus(applicationStatus) {
+      try {
+        console.log(applicationStatus);
+        const response = await $api("/application-statuses", {
+          method: "POST",
+          body: applicationStatus,
+        });
+        this.applicationStatus.push(response.data);
+      } catch (error) {
+        console.error("Error adding application status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async updateApplicationStatus(id, applicationStatus) {
+      try {
+        const response = await $api(`/application-statuses/${id}`, {
+          method: "PUT",
+          body: applicationStatus,
+        });
+        const index = this.applicationStatus.findIndex((status) => status.id === id);
+        if (index !== -1) {
+          this.applicationStatus[index] = response.data;
+        }
+      } catch (error) {
+        console.error("Error updating application status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async deleteApplicationStatus(id) {
+      try {
+        await $api(`/application-statuses/${id}`, {
+          method: "DELETE",
+        });
+        this.applicationStatus = this.applicationStatus.filter((status) => status.id !== id);
+      } catch (error) {
+        console.error("Error deleting application status:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];

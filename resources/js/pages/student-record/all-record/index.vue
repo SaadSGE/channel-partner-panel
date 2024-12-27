@@ -32,6 +32,9 @@ const selectedDateFrom = ref(null);
 const selectedDateTo = ref(null);
 const studentLists = ref([]);
 const selectedStatus = ref(null);
+const showDocumentDialog = ref(false);
+const selectedStudentDocs = ref(null);
+const selectedStudentSource = ref(null);
 
 // Stores
 const commonFunctionStore = commonFunction();
@@ -88,6 +91,7 @@ const fetchStudents = async () => {
       selectedStatus.value,
       selectedDateFrom.value,
       selectedDateTo.value,
+      selectedStudentSource.value,
     );
     studentLists.value = response.data;
     totalStudents.value = response.total;
@@ -99,7 +103,7 @@ const fetchStudents = async () => {
 };
 
 // Watchers
-watch([search, selectedStatus, selectedDateFrom, selectedDateTo], () => {
+watch([search, selectedStatus, selectedDateFrom, selectedDateTo, selectedStudentSource], () => {
   fetchStudents();
 });
 
@@ -109,16 +113,40 @@ watch([search, selectedStatus, selectedDateFrom, selectedDateTo], () => {
 // Table headers
 const headers = ref([
   { title: 'Action', key: 'action', sortable: false },
+  { title: 'Student Source', key: 'lead_id' },
+  { title: 'Document Complete?', key: 'profile_status.document_status' },
+  { title: 'Profile Complete?', key: 'profile_status.interested_university_status' },
   { title: 'Student ID', key: 'student_id' },
   { title: 'Name', key: 'full_name' },
   { title: 'Email', key: 'email' },
   { title: 'Phone', key: 'whatsapp_number' },
   { title: 'Counsellor', key: 'counsellor.full_name' },
   { title: 'University', key: 'university_intake_course_country' },
-  { title: 'Branch', key: 'counsellor.branch.branch_name_with_country' },
-  { title: 'Status', key: 'status' },
+
 
 ]);
+
+const documentTypes = [
+  { name: 'passport', label: 'Passport', required: true },
+  { name: 'academic_letter', label: 'Academic Reference Letter', required: true },
+  { name: 'professional_letter', label: 'Professional Reference Letter', required: true },
+  { name: 'cv-resume', label: 'CV/Resume', required: true },
+  { name: 'sop', label: 'SOP', required: true },
+  { name: 'supporting_document', label: 'Supporting Document', required: false }
+];
+
+const showDocumentStatus = (item) => {
+
+  selectedStudentDocs.value = item.document;
+
+
+  showDocumentDialog.value = true;
+};
+
+const addStudent = () => {
+  // Logic to add a student, e.g., navigate to a new student form page
+  router.push({ name: 'student-record' });
+};
 </script>
 <template>
   <div class="student-list-container">
@@ -126,9 +154,10 @@ const headers = ref([
 
       <VCardText>
         <VRow>
-          <Filters :selected-status="selectedStatus" @update-status="selectedStatus = $event"
-            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
-            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event"></Filters>
+          <Filters :selected-status="selectedStatus" :selected-dateFrom="selectedDateFrom"
+            :selected-dateTo="selectedDateTo" :selected-student-source="selectedStudentSource"
+            @update-status="selectedStatus = $event" @update-dateFrom="selectedDateFrom = $event"
+            @update-dateTo="selectedDateTo = $event" @update-student-source="selectedStudentSource = $event"></Filters>
         </VRow>
       </VCardText>
 
@@ -149,12 +178,34 @@ const headers = ref([
           <div style="inline-size: 15.625rem;">
             <AppTextField v-model="search" placeholder="Search Student" />
           </div>
+          <VBtn @click="addStudent" v-if="$can('create', 'student')">
+            <VIcon icon="tabler-plus" />
+            Add Student
+          </VBtn>
         </div>
+
       </VCardText>
 
       <VDataTableServer v-model:items-per-page="itemsPerPage" v-model:page="page" :items="studentLists"
         :items-length="totalStudents" :headers="headers" class="text-no-wrap color-black student-table"
         :height="tableHeight" @update:options="updateOptions">
+        <template #item.lead_id="{ item }">
+          <VChip :color="item.lead_id ? 'primary' : 'warning'" size="small" class="font-weight-medium">
+            {{ item.lead_id ? 'Lead' : 'Regular' }}
+          </VChip>
+        </template>
+        <template #item.profile_status.document_status="{ item }">
+          <VChip :color="item.profile_status.document_status ? 'success' : 'error'" size="small"
+            class="font-weight-medium" style="cursor: pointer;" @click="showDocumentStatus(item)">
+            {{ item.profile_status.document_status ? 'Yes' : 'No' }}
+          </VChip>
+        </template>
+        <template #item.profile_status.interested_university_status="{ item }">
+          <VChip :color="item.profile_status.interested_university_status ? 'success' : 'error'" size="small"
+            class="font-weight-medium">
+            {{ item.profile_status.interested_university_status ? 'Yes' : 'No' }}
+          </VChip>
+        </template>
         <template #item.full_name="{ item }">
           <p>{{ item.full_name }}</p>
         </template>
@@ -174,18 +225,22 @@ const headers = ref([
             </template>
           </ul>
         </template>
-        <template #item.status="{ item }">
-          <VChip :color="resolveStatusColor(item.status)" :class="`text-${resolveStatusColor(item.status)}`"
-            size="small" class="font-weight-medium">
-            {{ resolveStatusName(item.status) }}
-          </VChip>
+        <template #item.counsellor.full_name="{ item }">
+          <p>
+            <span style="color: #696cff;">{{ item.counsellor.full_name }}</span>
+            <span style="color: #8a8d93;"> - </span>
+            <span style="color: #28c76f;">{{ item.counsellor.branch.branch_name_with_country }}</span>
+          </p>
         </template>
+
+
+
         <template #item.action="{ item }">
           <div class="d-flex flex-column ms-3">
             <IconBtn @click="viewStudentDetail(item.id)">
               <VIcon color="primary" icon="tabler-eye" />
             </IconBtn>
-            <IconBtn @click="deleteItem(item.id)">
+            <IconBtn @click="deleteItem(item.id)" v-if="$can('delete', 'student')">
               <VIcon color="error" icon="tabler-trash" />
             </IconBtn>
           </div>
@@ -195,6 +250,47 @@ const headers = ref([
           <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalStudents" />
         </template>
       </VDataTableServer>
+
+      <VDialog v-model="showDocumentDialog" max-width="600">
+        <VCard>
+          <VCardTitle class="d-flex justify-space-between align-center pa-4">
+            Document Status
+            <VBtn icon variant="text" @click="showDocumentDialog = false">
+              <VIcon icon="tabler-x" />
+            </VBtn>
+          </VCardTitle>
+          <VDivider />
+
+          <VCardText class="pa-4">
+            <VList>
+              <VListItem v-for="doc in documentTypes" :key="doc.name">
+                <template #prepend>
+                  <VIcon
+                    :color="selectedStudentDocs?.find(d => d.document_name.toLowerCase() === doc.name.toLowerCase()) ? 'success' : 'error'"
+                    :icon="selectedStudentDocs?.find(d => d.document_name.toLowerCase() === doc.name.toLowerCase()) ? 'tabler-check' : 'tabler-x'"
+                    class="me-2" />
+                </template>
+
+                <VListItemTitle>
+                  {{ doc.label }}
+                  <VChip v-if="doc.required" color="warning" size="x-small" class="ms-2">
+                    Required
+                  </VChip>
+                </VListItemTitle>
+
+                <template #append>
+                  <VChip
+                    :color="selectedStudentDocs?.find(d => d.document_name.toLowerCase() === doc.name.toLowerCase()) ? 'success' : 'error'"
+                    size="small">
+                    {{ selectedStudentDocs?.find(d => d.document_name.toLowerCase() === doc.name.toLowerCase()) ?
+                      'Uploaded' : 'Missing' }}
+                  </VChip>
+                </template>
+              </VListItem>
+            </VList>
+          </VCardText>
+        </VCard>
+      </VDialog>
 
     </AppCardActions>
   </div>

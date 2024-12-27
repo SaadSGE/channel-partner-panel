@@ -8,6 +8,7 @@ definePage({
 import { useApplicationListStore } from "@/@core/stores/applicationList";
 import ActivityLog from "@/components/ActivityLog/ApplicationActivityLog.vue";
 
+import { commonFunction } from "@/@core/stores/commonFunction";
 import { useNotificationStore } from '@/@core/stores/notification';
 import AcoAoCommunication from '@/components/AcoAoCommunication.vue';
 import AcoCoCommunication from '@/components/AcoCoCommunication.vue';
@@ -20,13 +21,14 @@ import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Document from "./details-document.vue";
 
+const commonFunctionStore = commonFunction();
 const isAdmin = ref(getUserRole() === 'admin')
 const route = useRoute()
 const applicationId = route.params.id
 console.log(applicationId)
 const store = useApplicationListStore()
 const notificationStore = useNotificationStore()
-
+const isLoading = ref(false);
 const currentTab = ref("student-course-details")
 const showModal = ref(false) // Modal visibility state
 const showCommentModal = ref(false) // Modal visibility state for comments
@@ -122,7 +124,8 @@ onMounted(async () => {
   updateTabFromHash();
   await refreshData();
   await updateNotificationCounts();
-
+  await getAllApplicationStatuses();
+  console.log(allStatuses);
   // Mark notifications as read for the initial tab
   const notificationHash = {
     'status': 'status',
@@ -142,7 +145,13 @@ onMounted(async () => {
     await updateNotificationCounts();
   }
 });
-
+const getAllApplicationStatuses = async () => {
+  isLoading.value = true;
+  await commonFunctionStore.getApplicationStatus();
+  applicationStatuses.value = commonFunctionStore.applicationStatus;
+  allStatuses.value = applicationStatuses.value; // Update the statuses dynamically
+  isLoading.value = false;
+};
 const refreshData = async () => {
   await store.getApplicationDetails(applicationId)
   await store.getApplicationStatusses(applicationId)
@@ -154,8 +163,7 @@ const refreshData = async () => {
   statuses.value = store.statuses
   comments.value = store.comments
   universityCommunications.value = store.universityCommunications
-  allStatuses.value = store.allStatuses.filter(
-    status => status.id !== applicationData.value.status,
+  allStatuses.value = store.allStatuses.filter(status => status.id !== applicationData.value.status,
   )
 
   console.log(studentData);

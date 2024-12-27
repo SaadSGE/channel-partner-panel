@@ -18,7 +18,11 @@ export const useLeadStore = defineStore({
       status = null,
       dateFrom = null,
       dateTo = null,
-      assignedStatus = null
+      assignedStatus = null,
+      leadType = null,
+      event = null,
+      branch = null,
+      leadCountry = null
     ) {
       try {
         return await $api("/leads", {
@@ -37,6 +41,10 @@ export const useLeadStore = defineStore({
             dateFrom,
             dateTo,
             assigned_status: assignedStatus,
+            lead_type: leadType,
+            event,
+            branch,
+            lead_country: leadCountry
           },
         });
       } catch (error) {

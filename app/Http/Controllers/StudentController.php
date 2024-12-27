@@ -34,16 +34,20 @@ class StudentController extends Controller
         $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
         $sortBy = $request->query('sortBy', 'created_at');
         $orderBy = $request->query('orderBy', 'desc');
+        $id = $request->query('id');
 
+        $user = auth('api')->user();
         $query = Student::with([
             'interestedUniversities.university',
             'interestedUniversities.course',
             'interestedUniversities.country',
             'interestedUniversities.intake',
             'counsellor:id,first_name,last_name,branch_id',
-            'counsellor.branch'
+            'counsellor.branch',
+            'profileStatus',
+            'document',
 
-        ]);
+        ])->visibleToUser($user, $id);
 
         if ($searchQuery) {
             $query->where(function ($q) use ($searchQuery) {
@@ -179,7 +183,6 @@ class StudentController extends Controller
             DB::commit();
 
             return $this->successJsonResponse('Student created successfully', $student, '', 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             return $this->handleValidationErrors($e);
@@ -205,7 +208,8 @@ class StudentController extends Controller
                 'interestedUniversities.course',
                 'interestedUniversities.country',
                 'interestedUniversities.intake',
-                'creator'
+                'creator',
+                'lead'
             ])->findOrFail($id); // Using findOrFail instead of separate exists check
 
             // Map interested universities with dependent data
@@ -240,13 +244,13 @@ class StudentController extends Controller
                 'englishProficiency' => $this->transformEnglishProficiency($student->englishProficiency),
                 'interestedUniversity' => $interestedUniversities,
                 'documentPaths' => $student->document->pluck('path'),
+                'lead' => $student->lead
             ];
 
             // Log activity
             $this->logStudentView($student);
 
             return $this->successJsonResponse('Student details retrieved successfully', $transformedData);
-
         } catch (\Exception $e) {
             Log::error('Failed to retrieve student details', [
                 'error' => $e->getMessage(),
@@ -272,6 +276,7 @@ class StudentController extends Controller
             'student_country' => $student->country,
             'visa_refusal' => $student->visa_refusal,
             'student_id' => $student->student_id,
+            'zip_link' => $student->document_zip_link
         ];
     }
 
@@ -517,21 +522,41 @@ class StudentController extends Controller
     public function updateDocuments(StudentDocumentRequest $request, $id, StudentService $studentService)
     {
         try {
+            DB::beginTransaction();
+
             $student = Student::findOrFail($id);
             $documentPaths = $request->validated()['document_paths'] ?? [];
 
+            // Use the existing handleDocumentUploads method
             if (!empty($documentPaths)) {
                 $studentService->handleDocumentUploads($student, $documentPaths);
             }
 
+            DB::commit();
+
+            // Return updated documents with status
+            $updatedDocuments = $student->document()->get()->map(function ($doc) {
+                return [
+                    'document_name' => $doc->document_name,
+                    'path' => $doc->path,
+                    'file_name' => basename($doc->path['path']),
+                    'file_type' => $doc->path['file_type'] ?? null,
+                    'status' => $doc->status,
+                    'missing' => $doc->status === 'missing'
+                ];
+            });
+
             return $this->successJsonResponse(
                 'Documents updated successfully',
-                $student->load('document')
+                $updatedDocuments
             );
         } catch (\Throwable $th) {
-            Log::error('Failed to update documents', ['error' => $th->getMessage()]);
+            DB::rollBack();
+            Log::error('Failed to update documents', [
+                'error' => $th->getMessage(),
+                'student_id' => $id
+            ]);
             return $this->exceptionJsonResponse('Failed to update documents', $th);
         }
     }
-
 }

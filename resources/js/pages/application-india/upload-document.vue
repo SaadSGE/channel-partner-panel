@@ -35,6 +35,7 @@
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
 import { useFileStore } from "@/@core/stores/fileStore";
+import { useStudentStore } from '@/@core/stores/studentStore';
 import { useApplicationStore } from "@/@core/stores/submitApplication";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
@@ -46,8 +47,6 @@ import Swal from "sweetalert2";
 import { ref, watch } from 'vue';
 import vueFilePond from "vue-filepond";
 import { useRouter } from 'vue-router';
-import { useStudentStore } from '../../stores/studentStore';
-
 const FilePond = vueFilePond(
   FilePondPluginFileValidateType,
   FilePondPluginImagePreview,

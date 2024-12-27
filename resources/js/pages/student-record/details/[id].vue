@@ -5,11 +5,11 @@ import EducationHistory from '@/components/student/EducationHistory.vue';
 import EmploymentHistory from '@/components/student/EmploymentHistory.vue';
 import EnglishProficiency from '@/components/student/EnglishProficiency.vue';
 import GeneralInformation from '@/components/student/GeneralInformation.vue';
+import LeadInfo from '@/components/student/LeadInfo.vue';
 import StudentDocuments from '@/components/student/StudentDocuments.vue';
 import UniversityEntry from '@/components/student/UniversityEntry.vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
-
 definePage({
   meta: {
     action: 'read',
@@ -63,8 +63,21 @@ const formData = ref({
     designation: '',
     year: ''
   }],
-  documents: []
+  documents: [],
+  lead: {
+    email: '',
+    name: '',
+    phone: '',
+    interested_course: '',
+    interested_country: '',
+    Ielts_or_english_test: '',
+    current_educational_qualifications: ''
+  }
 });
+
+// Assuming lead_id is part of the route params or fetched from the storeonst lead_id = ref(null); // Replace with actual logic to get lead_id
+
+const hasLeadInfo = computed(() => studentStore.studentInfo.lead !== null);
 
 const router = useRouter();
 
@@ -95,13 +108,23 @@ const getStudentDetails = async (id) => {
         address: studentStore.studentInfo.generalInfo.student_address,
         city: studentStore.studentInfo.generalInfo.student_city,
         country: studentStore.studentInfo.generalInfo.student_country,
-        visa_refusal: studentStore.studentInfo.generalInfo.visa_refusal
+        visa_refusal: studentStore.studentInfo.generalInfo.visa_refusal,
+        zip_link: studentStore.studentInfo.generalInfo.zip_link
       },
       universityEntry: studentStore.studentInfo.interestedUniversity,
       educationalHistory: studentStore.studentInfo.educationalHistory,
       englishProficiency: studentStore.studentInfo.englishProficiency,
       employmentHistory: studentStore.studentInfo.employmentHistory,
-      documents: studentStore.studentInfo.documentPaths
+      documents: studentStore.studentInfo.documentPaths,
+      leadInfo: {
+        email: studentStore.studentInfo.lead.email,
+        name: studentStore.studentInfo.lead.name,
+        phone: studentStore.studentInfo.lead.phone,
+        interested_course: studentStore.studentInfo.lead.interested_course,
+        interested_country: studentStore.studentInfo.lead.interested_country,
+        Ielts_or_english_test: studentStore.studentInfo.lead.Ielts_or_english_test,
+        current_educational_qualifications: studentStore.studentInfo.lead.current_educational_qualifications
+      }
     };
   } catch (error) {
     console.error('Error fetching student details:', error);
@@ -198,6 +221,24 @@ const handleEmploymentHistoryUpdate = async (data) => {
   }
 };
 
+const handleDocumentsUpdate = async (data) => {
+  try {
+    isLoading.value = true;
+    formData.value.documents = data;
+    toast.success('Documents updated successfully', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } catch (error) {
+    console.error('Error updating documents:', error);
+    toast.error('Failed to update documents', {
+      position: 'top-right',
+      theme: 'colored',
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 </script>
 
@@ -230,6 +271,9 @@ const handleEmploymentHistoryUpdate = async (data) => {
       <VTab value="employment-history">
         Employment History
       </VTab>
+      <VTab v-if="hasLeadInfo" value="lead-info">
+        Lead Information
+      </VTab>
 
     </VTabs>
 
@@ -261,8 +305,14 @@ const handleEmploymentHistoryUpdate = async (data) => {
         </VWindowItem>
 
         <VWindowItem value="documents">
-          <StudentDocuments :documents="formData.documents" :is-edit="true" />
+          <StudentDocuments :documents="formData.documents" :is-edit="true" @update:documents="handleDocumentsUpdate"
+            :zip-link="formData.generalInfo.zip_link" />
         </VWindowItem>
+
+        <VWindowItem v-if="hasLeadInfo" value="lead-info">
+          <LeadInfo :lead="studentStore.studentInfo.lead" />
+        </VWindowItem>
+
       </VWindow>
     </VCardText>
   </VCard>

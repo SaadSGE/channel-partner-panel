@@ -9,7 +9,7 @@ class Student extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    protected $appends = ['full_name', 'student_name_with_email','university_intake_course_country'];
+    protected $appends = ['full_name', 'student_name_with_email', 'university_intake_course_country'];
 
     public function creator()
     {
@@ -50,15 +50,15 @@ class Student extends Model
     {
         return $this->interestedUniversities->map(function ($choice) {
             return $choice->course->name . ' | ' .
-                   $choice->intake->name . ' | ' .
-                   $choice->university->name . ' | ' .
-                   $choice->country->name;
+                $choice->intake->name . ' | ' .
+                $choice->university->name . ' | ' .
+                $choice->country->name;
         })->toArray();
     }
 
     public function getDocumentZipLinkAttribute($value)
     {
-        return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/".$value;
+        return "https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/" . $value;
     }
 
     public function getStudentNameWithEmailAttribute(): string
@@ -71,6 +71,11 @@ class Student extends Model
         return $this->belongsTo(User::class, 'counsellor_id');
     }
 
+    public function profileStatus()
+    {
+        return $this->hasOne(StudentProfileStatus::class, 'student_id');
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -78,11 +83,44 @@ class Student extends Model
         static::creating(function ($model) {
             if (auth('api')->check()) {
                 $model->created_by = auth('api')->id();
-
+                $model->counsellor_id = auth('api')->user()->id;
             } else {
                 $model->created_by = 2;
-
             }
         });
+    }
+
+    public function lead()
+    {
+        return $this->belongsTo(Lead::class, 'lead_id');
+    }
+
+    public function scopeVisibleToUser($query, User $user, $id = null): void
+    {
+        if ($user->hasRole('admin')) {
+            if ($id) {
+                $selectedUser = User::find($id);
+                $childIds = $selectedUser ? $selectedUser->fetch_children : [];
+                $userIds = array_merge([$id], $childIds);
+                $query->whereIn('created_by', $userIds);
+            }
+            // For admins, don't add any further restrictions if no $id is provided
+        } else {
+            if ($id) {
+                $selectedUser = User::find($id);
+            } else {
+                $selectedUser = $user;
+            }
+
+            $childIds = $selectedUser ? $selectedUser->fetch_children : [];
+            $userIds = array_merge([$selectedUser->id], $childIds);
+
+            $query->where(function ($q) use ($userIds, $user) {
+                if (!empty($userIds)) {
+                    $q->whereIn('created_by', $userIds);
+                }
+
+            });
+        }
     }
 }
