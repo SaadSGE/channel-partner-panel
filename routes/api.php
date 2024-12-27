@@ -63,7 +63,7 @@ Route::middleware('auth:api')->group(function () {
     // Demo Dashboard
     Route::get('demo-dashboard', [DemoDashboardController::class, 'getDemoStats']);
     Route::get('demo-application-statuses/{id}', [DemoDashboardController::class, 'getApplicationStatuses']);
-
+    Route::get('demo-lead-statuses/{id}', [DemoDashboardController::class, 'getLeadStatuses']);
 
 
     Route::get('get-country-intake-university-course', [CourseDetailsController::class, 'countryIntakeUniversityCourse']);

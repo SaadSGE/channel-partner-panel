@@ -25,17 +25,8 @@ const moreList = [
 
 <template>
     <VCard>
-        <VCardItem>
-            <VCardTitle>Top Ten Channel Partners</VCardTitle>
-            <VCardSubtitle>
-                Average 72% completed
-            </VCardSubtitle>
-            <template #append>
-                <div class="mt-n4 me-n2">
-                    <MoreBtn size="small" :menu-list="moreList" />
-                </div>
-            </template>
-        </VCardItem>
+        <DateRangePicker title="Top Channel Partners" @dateRangeSelected="handleDateRangeSelected"
+            @close-menu="closeMenu" />
 
         <VCardText>
             <VList class="card-list">
@@ -67,9 +58,3 @@ const moreList = [
         </VCardText>
     </VCard>
 </template>
-
-<style lang="scss" scoped>
-.card-list {
-    --v-card-list-gap: 16px;
-}
-</style>

@@ -1,15 +1,26 @@
 <template>
-  <VRow>
+  <VCard>
+    <DateRangePicker title="Dashboard Overview" @dateRangeSelected="handleDateRangeSelected" @close-menu="closeMenu" />
     <VCard class="pa-5">
-      <div class="d-flex justify-space-between align-center mb-5">
-        <div class="d-flex align-center">
-          <h2 class="text-h5 font-weight-bold" style="margin-inline-end: 16px;">Dashboard Overview</h2>
-        </div>
-        <div class="d-flex align-center">
-          <AppAutocomplete v-model="dateValue" :items="items" :formatter="formatDate" :label="dateValue"
-            :placeholder="dateValue" />
-        </div>
+      <!-- <div class="d-flex justify-space-between align-center mb-5">
+      <div class="d-flex align-center">
+        <h2 class="text-h5 font-weight-bold" style="margin-inline-end: 16px;">Dashboard Overview</h2>
       </div>
+      <div class="d-flex align-center">
+        <div class="mt-n4 me-n2">
+          <VMenu v-model="menuVisible" :close-on-content-click="false">
+            <template #activator="{ props }">
+              <MoreBtn size="small" v-bind="props" class="ma-2" />
+            </template>
+<VCard min-width="400" class="pa-1 mt-2" style="margin-block-start: 10px;">
+  <VCardText>
+    <DateRangePicker @dateRangeSelected="handleDateRangeSelected" @close-menu="closeMenu" />
+  </VCardText>
+</VCard>
+</VMenu>
+</div>
+</div>
+</div> -->
       <VRow>
         <!-- Conditional rendering based on user role -->
         <VCol cols="12" md="4" sm="6" lg="3" v-if="isAdmin">
@@ -70,7 +81,8 @@
         </VCol>
       </VRow>
     </VCard>
-
+  </VCard>
+  <VRow class="mt-5">
     <!-- 👉 Application Status Charts -->
     <VCol cols="12" lg="12" md="8">
       <ApplicationStatusCharts />
@@ -81,15 +93,15 @@
     </VCol>
 
     <VCol cols="12" md="4">
-      <TopTenUniversities />
+      <TopTenUniversities @dateRangeSelected="handleDateRangeSelected" @close-menu="closeMenu" />
     </VCol>
 
     <VCol cols="12" md="6">
-      <TopTenCP />
+      <TopTenCP @dateRangeSelected="handleDateRangeSelected" @close-menu="closeMenu" />
     </VCol>
 
     <VCol cols="12" md="6">
-      <TopTenACO />
+      <TopTenACO @dateRangeSelected="handleDateRangeSelected" @close-menu="closeMenu" />
     </VCol>
 
     <VCol cols="12" lg="12" md="8">
@@ -97,9 +109,7 @@
     </VCol>
   </VRow>
 
-
 </template>
-
 
 <script setup>
 import { commonFunction } from "@/@core/stores/commonFunction";
@@ -130,6 +140,17 @@ const formatter = ref({
   date: 'DD MMM YYYY',
   month: 'MMM',
 });
+
+const menuVisible = ref(false);
+
+const handleDateRangeSelected = (dateRange) => {
+  console.log('Date Range Selected:', dateRange);
+  menuVisible.value = false; // Close menu after selecting dates
+};
+
+const closeMenu = () => {
+  menuVisible.value = false;
+};
 onMounted(async () => {
   await dashboardStore.fetchDashboard();
   dashboards.value = dashboardStore.dashboards;

@@ -14,54 +14,13 @@ onMounted(async () => {
     await fetchTopTenUniversities();
 });
 
-// const topTenUniversities = [
-//     {
-//         name: 'University of Oxford',
-//         country: 'UK',
-//         applications: 450,
-//     },
-//     {
-//         name: 'University of Cambridge',
-//         country: 'UK',
-//         applications: 425,
-//     },
-//     {
-//         name: 'Harvard University',
-//         country: 'USA',
-//         applications: 400,
-//     },
-//     {
-//         name: 'MIT',
-//         country: 'USA',
-//         applications: 380,
-//     },
-//     {
-//         name: 'Stanford University',
-//         country: 'USA',
-//         applications: 350,
-//     },
-//     {
-//         name: 'Imperial College London',
-//         country: 'UK',
-//         applications: 320,
-//     },
-// ]
 
-const moreList = [
-    {
-        title: 'View All',
-        value: 'View All',
-    },
-]
 </script>
 
 <template>
-    <VCard title="Top Ten Universities" subtitle="The best 10 universities in the world">
-        <template #append>
-            <div class="mt-n4 me-n2">
-                <MoreBtn size="small" :menu-list="moreList" />
-            </div>
-        </template>
+    <VCard>
+        <DateRangePicker title="Top 10 Universities" subtitle="8.52k Total Applications"
+            @dateRangeSelected="handleDateRangeSelected" @close-menu="closeMenu" />
 
         <VCardText>
             <VList class="card-list">
@@ -89,9 +48,3 @@ const moreList = [
         </VCardText>
     </VCard>
 </template>
-
-<style lang="scss" scoped>
-.card-list {
-    --v-card-list-gap: 1rem;
-}
-</style>

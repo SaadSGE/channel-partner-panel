@@ -6,6 +6,7 @@ export const useDemoDashboardStore = defineStore({
     dateValue: "",
     applicationStatuses: [],
     dashboardData: [],
+    leadStatuses: [],
   }),
 
   actions: {
@@ -15,7 +16,6 @@ export const useDemoDashboardStore = defineStore({
           `/demo-application-statuses/${application_status_id}`
         );
         this.applicationStatuses = response;
-        console.log(this.applicationStatuses);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       }
@@ -27,6 +27,15 @@ export const useDemoDashboardStore = defineStore({
         this.dashboardData = response;
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+      }
+    },
+
+    async fetchLeadStatuses(lead_status_id = 1) {
+      try {
+        const response = await $api(`/demo-lead-statuses/${lead_status_id}`);
+        this.leadStatuses = response;
+      } catch (error) {
+        console.error("Error fetching lead statuses:", error);
       }
     },
   },

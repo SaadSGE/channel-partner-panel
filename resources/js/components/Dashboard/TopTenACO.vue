@@ -24,18 +24,8 @@ const moreList = [
 
 <template>
     <VCard>
-        <VCardItem>
-            <VCardTitle>Top 10 ACO</VCardTitle>
-            <VCardSubtitle>
-                8.52k Total Applications
-            </VCardSubtitle>
-            <template #append>
-                <div class="mt-n4 me-n2">
-                    <MoreBtn size="small" :menu-list="moreList" />
-                </div>
-            </template>
-        </VCardItem>
-
+        <DateRangePicker title="Top 10 ACO" subtitle="8.52k Total Applications"
+            @dateRangeSelected="handleDateRangeSelected" @close-menu="closeMenu" />
         <VCardText>
             <VList class="card-list">
                 <VListItem v-for="aco in topTenACO" :key="aco.name">
@@ -67,9 +57,3 @@ const moreList = [
         </VCardText>
     </VCard>
 </template>
-
-<style lang="scss" scoped>
-.card-list {
-    --v-card-list-gap: 16px;
-}
-</style>

@@ -74,15 +74,3 @@ const headers = [
         <!-- !SECTION -->
     </VCard>
 </template>
-
-<style lang="scss">
-#application-list {
-    .application-list-actions {
-        inline-size: 8rem;
-    }
-
-    .application-list-filter {
-        inline-size: 12rem;
-    }
-}
-</style>

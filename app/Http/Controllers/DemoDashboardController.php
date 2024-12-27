@@ -161,4 +161,31 @@ class DemoDashboardController extends Controller
             return $status['application_status_id'] == $application_status_id;
         });
     }
+
+
+    public function getLeadStatuses($lead_status_id): array
+    {
+
+        $leadStatuses = [
+            [
+                'lead_status_id' => 1,
+                'lead_status_name' => 'Hot Leads',
+                'monthly_counts' => [28, 100, 45, 38, 15, 30, 35, 32, 8, 10, 15, 4]
+            ],
+            [
+                'lead_status_id' => 2,
+                'lead_status_name' => 'Cold Leads',
+                'monthly_counts' => [35, 25, 15, 40, 42, 25, 48, 8, 30, 10, 15, 20]
+            ],
+            [
+                'lead_status_id' => 3,
+                'lead_status_name' => 'Warm Leads',
+                'monthly_counts' => [10, 22, 27, 33, 42, 32, 27, 22, 8, 10, 15, 20]
+            ]
+        ];
+
+        return array_filter($leadStatuses, function ($status) use ($lead_status_id) {
+            return $status['lead_status_id'] == $lead_status_id;
+        });
+    }
 }

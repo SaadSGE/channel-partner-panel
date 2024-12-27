@@ -28,7 +28,6 @@ const statusItems = ref([
     }
 ]);
 
-console.log(selectedStatus.value);
 
 const chartConfigs = computed(() => {
     const currentTheme = vuetifyTheme.current.value.colors;
@@ -192,7 +191,6 @@ watch(selectedStatus, async () => {
 
 onMounted(async () => {
     chartData.value = await fetchChartData();
-    console.log(chartData.value);
 });
 
 </script>
@@ -200,7 +198,7 @@ onMounted(async () => {
 <template>
     <VCard title="Application Status">
         <template #append>
-            <div class="mt-n4 me-n2" style="inline-size: 250px;">
+            <div class="me-n1" style="inline-size: 250px;">
                 <AppAutocomplete v-model="selectedStatus" :items="statusItems" item-title="application_status_name"
                     item-value="application_status_id" />
             </div>

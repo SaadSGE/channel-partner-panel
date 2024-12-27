@@ -1,10 +1,39 @@
 <script setup>
+import { useDemoDashboardStore } from '@/@core/stores/demodashboard';
 import { hexToRgb } from '@layouts/utils';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useTheme } from 'vuetify';
 
-const vuetifyTheme = useTheme()
-const currentTab = ref(0)
-const refVueApexChart = ref()
+const vuetifyTheme = useTheme();
+const currentTab = ref(0);
+const refVueApexChart = ref();
+const demoDashboardStore = useDemoDashboardStore();
+const chartData = ref([]);
+
+// Fetch data when tab changes
+watch(currentTab, async () => {
+    // Add 1 to currentTab since API expects 1-based index
+    chartData.value = await fetchChartData(currentTab.value + 1);
+
+});
+
+async function fetchChartData(leadStatusId) {
+    const response = await demoDashboardStore.fetchLeadStatuses(leadStatusId);
+
+    const statusData = demoDashboardStore.leadStatuses[leadStatusId - 1];
+
+    if (statusData?.monthly_counts) {
+        return [{
+            data: statusData.monthly_counts
+        }];
+    }
+    return [];
+}
+
+// Initial data fetch
+onMounted(async () => {
+    chartData.value = await fetchChartData(1); // Fetch initial data for first tab
+});
 
 const chartConfigs = computed(() => {
     const currentTheme = vuetifyTheme.current.value.colors
@@ -13,6 +42,23 @@ const chartConfigs = computed(() => {
     const legendColor = `rgba(${hexToRgb(currentTheme['on-background'])},${variableTheme['high-emphasis-opacity']})`
     const borderColor = `rgba(${hexToRgb(String(variableTheme['border-color']))},${variableTheme['border-opacity']})`
     const labelColor = `rgba(${hexToRgb(currentTheme['on-surface'])},${variableTheme['disabled-opacity']})`
+
+    // Find max value index
+    const getMaxIndex = (data) => {
+        if (!data || !data[0] || !data[0].data) return -1;
+        return data[0].data.reduce((maxIdx, curr, idx, arr) =>
+            curr > arr[maxIdx] ? idx : maxIdx, 0);
+    }
+
+    const getColorArray = (maxIndex) => {
+        const colors = new Array(12).fill(labelPrimaryColor);
+        if (maxIndex >= 0) {
+            colors[maxIndex] = `rgba(${hexToRgb(currentTheme.primary)}, 1)`;
+        }
+        return colors;
+    }
+
+    const maxIndex = getMaxIndex(chartData.value);
 
     return [
         {
@@ -42,20 +88,7 @@ const chartConfigs = computed(() => {
                         right: -10,
                     },
                 },
-                colors: [
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    `rgba(${hexToRgb(currentTheme.primary)}, 1)`,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                ],
+                colors: getColorArray(maxIndex),
                 dataLabels: {
                     enabled: true,
                     formatter(val) {
@@ -141,22 +174,7 @@ const chartConfigs = computed(() => {
                     },
                 ],
             },
-            series: [{
-                data: [
-                    28,
-                    10,
-                    45,
-                    38,
-                    15,
-                    30,
-                    35,
-                    32,
-                    8,
-                    10,
-                    15,
-                    4
-                ],
-            }],
+            series: chartData.value
         },
         {
             title: 'Warm Leads',
@@ -185,20 +203,7 @@ const chartConfigs = computed(() => {
                         right: -10,
                     },
                 },
-                colors: [
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    `rgba(${hexToRgb(currentTheme.primary)}, 1)`,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                ],
+                colors: getColorArray(maxIndex),
                 dataLabels: {
                     enabled: true,
                     formatter(val) {
@@ -279,22 +284,7 @@ const chartConfigs = computed(() => {
                     },
                 ],
             },
-            series: [{
-                data: [
-                    35,
-                    25,
-                    15,
-                    40,
-                    42,
-                    25,
-                    48,
-                    8,
-                    30,
-                    10,
-                    15,
-                    20,
-                ],
-            }],
+            series: chartData.value
         },
         {
             title: 'Dead Leads',
@@ -323,20 +313,7 @@ const chartConfigs = computed(() => {
                         right: -10,
                     },
                 },
-                colors: [
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    `rgba(${hexToRgb(currentTheme.primary)}, 1)`,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                    labelPrimaryColor,
-                ],
+                colors: getColorArray(maxIndex),
                 dataLabels: {
                     enabled: true,
                     formatter(val) {
@@ -417,42 +394,18 @@ const chartConfigs = computed(() => {
                     },
                 ],
             },
-            series: [{
-                data: [
-                    10,
-                    22,
-                    27,
-                    33,
-                    42,
-                    32,
-                    27,
-                    22,
-                    8,
-                    10,
-                    15,
-                    20,
-                ],
-            }],
+            series: chartData.value
         },
 
     ]
 })
 
-const moreList = [
-    {
-        title: 'View More',
-        value: 'View More',
-    },
-]
+
 </script>
 
 <template>
     <VCard title="Leads Status" subtitle="Yearly Leads Status Overview">
-        <template #append>
-            <div class="mt-n4 me-n2">
-                <MoreBtn size="small" :menu-list="moreList" />
-            </div>
-        </template>
+
 
         <VCardText>
             <VSlideGroup v-model="currentTab" show-arrows mandatory class="mb-10">

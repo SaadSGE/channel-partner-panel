@@ -32,7 +32,7 @@ const addStatus = async () => {
     try {
         isLoading.value = true;
         await commonFunctionStore.addApplicationStatus(statusData);
-       
+
         isLoading.value = false;
         // Reset form fields
         statusName.value = "";
@@ -78,3 +78,9 @@ const addStatus = async () => {
         </VForm>
     </VNavigationDrawer>
 </template>
+<style lang="scss">
+.form-padding {
+    padding-block: 0 2rem;
+    padding-inline: 2rem;
+}
+</style>
