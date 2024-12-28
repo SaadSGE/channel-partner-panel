@@ -1,6 +1,7 @@
+<template></template>
 <script>
-import { VerticalNav } from '@layouts/components'
-import { useLayoutConfigStore } from '@layouts/stores/config'
+import { VerticalNav } from '@layouts/components';
+import { useLayoutConfigStore } from '@layouts/stores/config';
 
 export default defineComponent({
   props: {
@@ -124,6 +125,7 @@ export default defineComponent({
           @if variables.$layout-vertical-nav-navbar-is-contained {
             @include mixins.boxed-content;
           }
+
           /* stylelint-disable-next-line @stylistic/indentation */
           @else {
             .navbar-content-container {

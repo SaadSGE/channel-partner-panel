@@ -35,6 +35,8 @@ const selectedStatus = ref(null);
 const showDocumentDialog = ref(false);
 const selectedStudentDocs = ref(null);
 const selectedStudentSource = ref(null);
+const showApplicationDialog = ref(false);
+const selectedStudentUniversities = ref([]);
 
 // Stores
 const commonFunctionStore = commonFunction();
@@ -147,6 +149,18 @@ const addStudent = () => {
   // Logic to add a student, e.g., navigate to a new student form page
   router.push({ name: 'student-record' });
 };
+
+const makeApplication = (studentId) => {
+  // Fetch university data for the student
+  selectedStudentUniversities.value = studentStore.getUniversitiesForStudent(studentId);
+  showApplicationDialog.value = true;
+};
+
+const applyToUniversity = () => {
+  // Logic to apply to the selected university
+  console.log('Applying to university:', selectedStudentUniversities.value);
+  showApplicationDialog.value = false;
+};
 </script>
 <template>
   <div class="student-list-container">
@@ -240,9 +254,13 @@ const addStudent = () => {
             <IconBtn @click="viewStudentDetail(item.id)">
               <VIcon color="primary" icon="tabler-eye" />
             </IconBtn>
+            <IconBtn @click="makeApplication(item.id)" v-if="$can('create', 'application')">
+              <VIcon color="success" icon="tabler-file-plus" />
+            </IconBtn>
             <IconBtn @click="deleteItem(item.id)" v-if="$can('delete', 'student')">
               <VIcon color="error" icon="tabler-trash" />
             </IconBtn>
+
           </div>
         </template>
 
@@ -288,6 +306,25 @@ const addStudent = () => {
                 </template>
               </VListItem>
             </VList>
+          </VCardText>
+        </VCard>
+      </VDialog>
+
+      <VDialog v-model="showApplicationDialog" max-width="800">
+        <VCard>
+          <VCardTitle class="d-flex justify-space-between align-center pa-4">
+            University Information
+            <VBtn icon variant="text" @click="showApplicationDialog = false">
+              <VIcon icon="tabler-x" />
+            </VBtn>
+          </VCardTitle>
+          <VDivider />
+
+          <VCardText class="pa-4">
+            <UniversityEntry :universityEntry="selectedStudentUniversities" :isEdit="false" />
+            <VBtn color="primary" class="mt-4" @click="applyToUniversity">
+              Apply
+            </VBtn>
           </VCardText>
         </VCard>
       </VDialog>

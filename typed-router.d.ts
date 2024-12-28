@@ -57,7 +57,6 @@ declare module 'vue-router/auto/routes' {
     'application-india-student-information': RouteRecordInfo<'application-india-student-information', '/application-india/student-information', Record<never, never>, Record<never, never>>,
     'application-india-upload-document': RouteRecordInfo<'application-india-upload-document', '/application-india/upload-document', Record<never, never>, Record<never, never>>,
     'application-request': RouteRecordInfo<'application-request', '/application-request', Record<never, never>, Record<never, never>>,
-    'applications': RouteRecordInfo<'applications', '/applications', Record<never, never>, Record<never, never>>,
     'applications-status': RouteRecordInfo<'applications-status', '/applications/status', Record<never, never>, Record<never, never>>,
     'applications-status-add': RouteRecordInfo<'applications-status-add', '/applications/status/add', Record<never, never>, Record<never, never>>,
     'applications-status-edit': RouteRecordInfo<'applications-status-edit', '/applications/status/edit', Record<never, never>, Record<never, never>>,

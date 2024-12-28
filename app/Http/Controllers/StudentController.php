@@ -559,4 +559,10 @@ class StudentController extends Controller
             return $this->exceptionJsonResponse('Failed to update documents', $th);
         }
     }
+
+    public function getUniversitiesForStudent($id)
+    {
+        $student = Student::findOrFail($id);
+        return $this->successJsonResponse('Universities fetched successfully', $student->load('interestedUniversities.university', 'interestedUniversities.course'));
+    }
 }

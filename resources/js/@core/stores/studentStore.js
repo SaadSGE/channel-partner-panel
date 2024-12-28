@@ -181,6 +181,18 @@ export const useStudentStore = defineStore({
       }
     },
 
+    async getUniversitiesForStudent(studentId) {
+      try {
+        const response = await $api(`/students/${studentId}/universities`, {
+          method: "GET",
+        });
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching universities for student:", error);
+        throw error;
+      }
+    },
+
     async getStudentDetails(id) {
       try {
         const response = await $api(`/students/${id}`, {

@@ -118,6 +118,7 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/students/{id}/english-proficiency', [StudentController::class, 'updateEnglishProficiency']);
     Route::put('/students/{id}/employment-history', [StudentController::class, 'updateEmploymentHistory']);
     Route::put('/students/{id}/documents', [StudentController::class, 'updateDocuments']);
+    Route::get('/students/{id}/universities', [StudentController::class, 'getUniversitiesForStudent']);
 });
 Route::apiResource('events', EventController::class);
 Route::get('/leads/count', [LeadController::class, 'getLeadCount']);

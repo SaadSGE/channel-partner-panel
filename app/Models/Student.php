@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ApplicationList;
 
 class Student extends Model
 {
@@ -41,10 +42,25 @@ class Student extends Model
         return $this->hasMany(StudentInterestedUniversity::class, 'student_id');
     }
 
+    public function application()
+    {
+        return $this->hasMany(ApplicationList::class, 'student_id');
+    }
+
+    public function getInterestedUniversityAttribute()
+    {
+        return $this->application->map(function ($application) {
+            return $application->university->name . ' | ' . $application->course->name . ' | ' . $application->country->name;
+        })->toArray();
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->last_name}");
     }
+
+
+
 
     public function getUniversityIntakeCourseCountryAttribute(): array
     {
