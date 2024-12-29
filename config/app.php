@@ -121,6 +121,9 @@ return [
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
+        'view' => '503',
+        'secret' => env('APP_MAINTENANCE_SECRET'),
+        'status' => 503,
     ],
 
 ];
