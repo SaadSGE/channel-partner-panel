@@ -6,8 +6,8 @@ definePage({
 })
 import { commonFunction } from '@/@core/stores/commonFunction';
 import { useFileStore } from "@/@core/stores/fileStore";
+import { useStudentStore } from '@/@core/stores/studentStore';
 import { useApplicationStore } from '@/@core/stores/submitApplication';
-import { useStudentStore } from '@/stores/studentStore';
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
 
