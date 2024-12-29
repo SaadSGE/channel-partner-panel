@@ -150,9 +150,11 @@ const addStudent = () => {
   router.push({ name: 'student-record' });
 };
 
-const makeApplication = (studentId) => {
+const makeApplication = async (studentId) => {
   // Fetch university data for the student
-  selectedStudentUniversities.value = studentStore.getUniversitiesForStudent(studentId);
+  const response = await studentStore.getUniversitiesForStudent(studentId);
+  selectedStudentUniversities.value = response.applied_university;
+  console.log(selectedStudentUniversities.value);
   showApplicationDialog.value = true;
 };
 
@@ -269,7 +271,7 @@ const applyToUniversity = () => {
         </template>
       </VDataTableServer>
 
-      <VDialog v-model="showDocumentDialog" max-width="600">
+      <VDialog v-model="showDocumentDialog" max-width="800" class="centered-dialog">
         <VCard>
           <VCardTitle class="d-flex justify-space-between align-center pa-4">
             Document Status
@@ -310,7 +312,7 @@ const applyToUniversity = () => {
         </VCard>
       </VDialog>
 
-      <VDialog v-model="showApplicationDialog" max-width="800">
+      <VDialog v-model="showApplicationDialog" max-width="100%" class="centered-dialog">
         <VCard>
           <VCardTitle class="d-flex justify-space-between align-center pa-4">
             University Information
@@ -321,10 +323,33 @@ const applyToUniversity = () => {
           <VDivider />
 
           <VCardText class="pa-4">
-            <UniversityEntry :universityEntry="selectedStudentUniversities" :isEdit="false" />
-            <VBtn color="primary" class="mt-4" @click="applyToUniversity">
-              Apply
-            </VBtn>
+            <VTable>
+              <thead>
+                <tr>
+                  <th>Intake Name</th>
+                  <th>University Name</th>
+                  <th>Course Name</th>
+                  <th>Course Type</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="university in selectedStudentUniversities" :key="university?.id">
+                  <td>{{ university?.intake_name || 'N/A' }}</td>
+                  <td>{{ university?.university_name || 'N/A' }}</td>
+                  <td>{{ university?.course_name || 'N/A' }}</td>
+                  <td>{{ university?.course_type || 'N/A' }}</td>
+                  <td>
+                    <VBtn :disabled="university?.document_status === 'false'"
+                      :title="university?.document_status === 'false' ? 'Document incomplete' : ''"
+                      @click="applyToUniversity" v-if="university?.application_done === 'false'">
+                      Apply
+                    </VBtn>
+                    <span v-else>Already Applied</span>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
           </VCardText>
         </VCard>
       </VDialog>
@@ -374,5 +399,18 @@ td {
 .university-list li {
   color: black;
   font-size: 0.85rem;
+}
+
+.centered-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.v-overlay__content) {
+  display: flex;
+  justify-content: center;
+  margin: auto;
+  margin-inline-start: 150px;
 }
 </style>

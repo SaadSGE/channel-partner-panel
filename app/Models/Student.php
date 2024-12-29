@@ -47,12 +47,11 @@ class Student extends Model
         return $this->hasMany(ApplicationList::class, 'student_id');
     }
 
-    public function getInterestedUniversityAttribute()
+    public function appliedUniversity()
     {
-        return $this->application->map(function ($application) {
-            return $application->university->name . ' | ' . $application->course->name . ' | ' . $application->country->name;
-        })->toArray();
+        return $this->hasMany(StudentUniversityApplied::class, 'id');
     }
+
 
     public function getFullNameAttribute(): string
     {

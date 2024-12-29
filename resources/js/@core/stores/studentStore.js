@@ -186,6 +186,7 @@ export const useStudentStore = defineStore({
         const response = await $api(`/students/${studentId}/universities`, {
           method: "GET",
         });
+
         return response.data;
       } catch (error) {
         console.error("Error fetching universities for student:", error);

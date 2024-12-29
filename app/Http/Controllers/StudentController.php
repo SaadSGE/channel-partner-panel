@@ -562,7 +562,7 @@ class StudentController extends Controller
 
     public function getUniversitiesForStudent($id)
     {
-        $student = Student::findOrFail($id);
-        return $this->successJsonResponse('Universities fetched successfully', $student->load('interestedUniversities.university', 'interestedUniversities.course'));
+        $student = Student::where('id', $id)->with('appliedUniversity')->first();
+        return $this->successJsonResponse('Universities fetched successfully', $student);
     }
 }
