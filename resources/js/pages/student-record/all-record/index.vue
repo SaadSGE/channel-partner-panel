@@ -2,7 +2,10 @@
 import { useApplicationListStore } from '@/@core/stores/applicationList';
 import { commonFunction } from '@/@core/stores/commonFunction';
 import { useStudentStore } from '@/@core/stores/studentStore';
+import { useApplicationStore } from '@/@core/stores/submitApplication';
+import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
+
 // Page definition
 definePage({
   meta: {
@@ -42,6 +45,7 @@ const selectedStudentUniversities = ref([]);
 const commonFunctionStore = commonFunction();
 const store = useApplicationListStore();
 const studentStore = useStudentStore();
+const applicationStore = useApplicationStore();
 
 const router = useRouter();
 // Methods
@@ -158,10 +162,65 @@ const makeApplication = async (studentId) => {
   showApplicationDialog.value = true;
 };
 
-const applyToUniversity = () => {
-  // Logic to apply to the selected university
-  console.log('Applying to university:', selectedStudentUniversities.value);
+const applyToUniversity = async (university) => {
+  // Hide the university information modal
   showApplicationDialog.value = false;
+
+  try {
+    const result = await Swal.fire({
+      title: 'Confirm Application',
+      text: `Are you sure you want to apply to ${university.university_name} for ${university.course_name}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Apply',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      allowOutsideClick: false,
+      backdrop: true,
+      position: 'center',
+      customClass: {
+        container: 'swal-over-modal',
+        popup: 'swal-popup-over-modal',
+        backdrop: 'swal-backdrop-over-modal'
+      }
+    });
+
+    if (result.isConfirmed) {
+      // Proceed with the application
+      await applicationStore.submitApplication(
+        {},
+        university.course_id,
+        university.intake_id,
+        university.university_id,
+        university.country_id,
+        university.course_details_id || null,
+        [],
+        university.id,
+        null
+      );
+
+      Swal.fire({
+        title: 'Success!',
+        text: 'Application created successfully',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+    } else {
+      // If the user cancels, show the university information modal again
+      showApplicationDialog.value = true;
+    }
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Application Failed',
+      text: error,
+      confirmButtonText: 'OK',
+    });
+
+    // Show the university information modal again in case of an error
+    showApplicationDialog.value = true;
+  }
 };
 </script>
 <template>
@@ -271,7 +330,7 @@ const applyToUniversity = () => {
         </template>
       </VDataTableServer>
 
-      <VDialog v-model="showDocumentDialog" max-width="800" class="centered-dialog">
+      <VDialog v-model="showDocumentDialog" max-width="800" class="centered-dialog" transition="dialog-transition">
         <VCard>
           <VCardTitle class="d-flex justify-space-between align-center pa-4">
             Document Status
@@ -312,7 +371,7 @@ const applyToUniversity = () => {
         </VCard>
       </VDialog>
 
-      <VDialog v-model="showApplicationDialog" max-width="100%" class="centered-dialog">
+      <VDialog v-model="showApplicationDialog" max-width="100%" class="centered-dialog" transition="dialog-transition">
         <VCard>
           <VCardTitle class="d-flex justify-space-between align-center pa-4">
             University Information
@@ -323,14 +382,14 @@ const applyToUniversity = () => {
           <VDivider />
 
           <VCardText class="pa-4">
-            <VTable>
+            <VTable class="university-info-table">
               <thead>
                 <tr>
-                  <th>Intake Name</th>
-                  <th>University Name</th>
-                  <th>Course Name</th>
-                  <th>Course Type</th>
-                  <th>Action</th>
+                  <th class="text-primary">Intake Name</th>
+                  <th class="text-primary">University Name</th>
+                  <th class="text-primary">Course Name</th>
+                  <th class="text-primary">Course Type</th>
+                  <th class="text-primary">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -340,12 +399,16 @@ const applyToUniversity = () => {
                   <td>{{ university?.course_name || 'N/A' }}</td>
                   <td>{{ university?.course_type || 'N/A' }}</td>
                   <td>
-                    <VBtn :disabled="university?.document_status === 'false'"
-                      :title="university?.document_status === 'false' ? 'Document incomplete' : ''"
-                      @click="applyToUniversity" v-if="university?.application_done === 'false'">
-                      Apply
-                    </VBtn>
-                    <span v-else>Already Applied</span>
+                    <template v-if="university?.document_status === 'false'">
+                      <span class="text-error font-weight-medium">Missing Document</span>
+                    </template>
+                    <template v-else>
+                      <VBtn @click="applyToUniversity(university)" v-if="university?.application_done === 'false'"
+                        color="primary" size="small" class="px-4">
+                        Apply
+                      </VBtn>
+                      <VChip v-else color="success" size="small">Already Applied</VChip>
+                    </template>
                   </td>
                 </tr>
               </tbody>
@@ -411,6 +474,85 @@ td {
   display: flex;
   justify-content: center;
   margin: auto;
+  animation: slideIn 0.3s ease-out;
   margin-inline-start: 150px;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dialog Animation */
+.dialog-transition-enter-active,
+.dialog-transition-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.dialog-transition-enter-from,
+.dialog-transition-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* University Information Table Styling */
+.university-info-table {
+  border-radius: 8px;
+  border-collapse: collapse;
+  inline-size: 100%;
+}
+
+.university-info-table th {
+  background-color: #f8f8f8;
+  font-weight: 600;
+  padding-block: 12px;
+  padding-inline: 16px;
+  text-align: start;
+}
+
+.university-info-table td {
+  border-block-end: 1px solid #eee;
+  padding-block: 12px;
+  padding-inline: 16px;
+}
+
+.university-info-table tbody tr:hover {
+  background-color: #f5f5f5;
+  transition: background-color 0.2s ease;
+}
+
+.university-info-table tbody tr td {
+  vertical-align: middle;
+}
+
+.text-error {
+  color: #ea5455 !important;
+  font-size: 0.875rem;
+}
+
+:deep(.swal-over-modal) {
+  position: relative;
+  z-index: 10000 !important;
+}
+
+:deep(.swal-popup-over-modal) {
+  position: relative;
+  z-index: 10001 !important;
+}
+
+:deep(.swal-backdrop-over-modal) {
+  position: fixed;
+  z-index: 9999 !important;
+}
+
+:deep(.v-dialog) {
+  z-index: 9000;
 }
 </style>

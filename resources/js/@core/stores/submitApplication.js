@@ -1,19 +1,19 @@
 // src/stores/applicationStore.ts
 import { defineStore } from 'pinia';
 
-export const useApplicationStore = defineStore( {
-    id: "application-store",
+export const useApplicationStore = defineStore({
+  id: "application-store",
   state: () => ({
     errors: [],
     successMessage: '',
   }),
   actions: {
-    async updateApplicationsFile(applicationId,filePaths){
+    async updateApplicationsFile(applicationId, filePaths) {
       try {
         const response = await $api('/update-application-file', {
           method: 'POST',
           body: JSON.stringify({
-            application_id:applicationId,
+            application_id: applicationId,
             document_paths: filePaths,
           }),
           headers: {
@@ -28,7 +28,7 @@ export const useApplicationStore = defineStore( {
         throw error;
       }
     },
-    async submitApplication(studentData, courseId, intakeId, universityId, countryId, courseDetailsId, filePaths,studentId=null,channelPartnerEmail=null) {
+    async submitApplication(studentData = {}, courseId, intakeId, universityId, countryId, courseDetailsId, filePaths, studentId = null, channelPartnerEmail = null) {
       try {
         const response = await $api('/application', {
           method: 'POST',
@@ -59,25 +59,25 @@ export const useApplicationStore = defineStore( {
     },
 
 
-   async updateApplication(updatedData, studentID) {
-  try {
-    const response = await $api(`/students/${studentID}`, {
-      method: 'PATCH', // Use PATCH for partial updates
-      body: JSON.stringify(updatedData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    async updateApplication(updatedData, studentID) {
+      try {
+        const response = await $api(`/students/${studentID}`, {
+          method: 'PATCH', // Use PATCH for partial updates
+          body: JSON.stringify(updatedData),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-    console.log("Updated application:", updatedData, studentID);
-    this.errors = {};
-    this.successMessage = 'Application updated successfully';
-    return response.data;
+        console.log("Updated application:", updatedData, studentID);
+        this.errors = {};
+        this.successMessage = 'Application updated successfully';
+        return response.data;
 
-  } catch (error) {
-    console.error("Update error:", error);
-    handleErrorResponse(error);
-  }
-}
+      } catch (error) {
+        console.error("Update error:", error);
+        handleErrorResponse(error);
+      }
+    }
   },
 });
