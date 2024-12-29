@@ -82,7 +82,7 @@
       </VRow>
     </VCard>
   </VCard>
-  <VRow class="mt-5">
+  <VRow class="mt-5" v-if="isAdmin">
     <!-- 👉 Application Status Charts -->
     <VCol cols="12" lg="12" md="8">
       <ApplicationStatusCharts />
