@@ -37,13 +37,17 @@ return new class () extends Migration {
     CASE
         WHEN ssv.document_status = 0 THEN 'false'
         ELSE 'true'
-    END AS document_status  -- Added document_status
+    END AS document_status,  -- Added document_status
+    al.id AS application_list_id  -- Added application_list_id
 FROM
     students s
 LEFT JOIN
     student_interested_universities siu ON s.id = siu.student_id
 LEFT JOIN
     application_lists al ON s.id = al.student_id
+    AND al.university_id = siu.university_id
+    AND al.course_id = siu.course_id
+    AND al.intake_id = siu.intake_id
 LEFT JOIN
     universities u ON siu.university_id = u.id
 LEFT JOIN
