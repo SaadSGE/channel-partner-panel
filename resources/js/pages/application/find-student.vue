@@ -26,7 +26,7 @@ files.value = fileStore.files;
 // Watch for changes in selected student
 watch(selectedStudent, (newValue) => {
   if (newValue) {
-    console.log('Selected student:', newValue);
+
     // You can emit an event or update a store with the selected student data
   }
 });
