@@ -93,6 +93,7 @@ class LeadsImport implements ToCollection, WithHeadingRow
                     'status' => 1,
                     'lead_type' => $this->leadType,
                     'lead_event_id' => $this->leadEventId,
+                    'lead_country_id' => $this->leadCountryId,
                     'created_by' => auth('api')->user()->id
                 ]);
 
