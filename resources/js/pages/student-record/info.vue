@@ -8,6 +8,7 @@ import EnglishProficiency from '@/components/student/EnglishProficiency.vue';
 import GeneralInformation from '@/components/student/GeneralInformation.vue';
 import UniversityEntry from '@/components/student/UniversityEntry.vue';
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 definePage({
@@ -69,7 +70,7 @@ onMounted(async () => {
   await commonFunctionStore.getUniqueCountries();
   isLoading.value = false;
 });
-
+const router = useRouter();
 const emit = defineEmits(['back'])
 
 const handleBack = () => {
