@@ -80,6 +80,7 @@ class LeadController extends Controller
             // Sorting
             $query->orderBy($sortBy, $orderBy);
 
+
             // Pagination
             $leads = $query->paginate($perPage);
 
