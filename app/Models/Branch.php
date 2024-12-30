@@ -21,6 +21,9 @@ class Branch extends Model
 
     public function getBranchNameWithCountryAttribute()
     {
-        return $this->name . ' ( ' . $this->country->name . ' )';
+        if ($this->name && $this->country) {
+            return $this->name . ' ( ' . $this->country->name . ' )';
+        }
+        return 'N/A';
     }
 }
