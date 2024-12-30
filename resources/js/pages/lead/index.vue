@@ -26,10 +26,7 @@ const commonFunctionStore = commonFunction();
 const leadStatuses = ref([]);
 // Add this to your onMounted hook
 onMounted(async () => {
-  await commonFunctionStore.getAllCountries();
-  await commonFunctionStore.getBranches();
-  await fetchLeads();
-  await fetchLeadStatuses();
+
 
 });
 
@@ -104,11 +101,7 @@ watch([
   fetchLeads()
 })
 
-onMounted(async () => {
 
-  await fetchLeadStatuses();
-
-});
 
 const fetchLeadStatuses = async () => {
   await commonFunctionStore.getLeadStatus();
@@ -144,6 +137,7 @@ const fetchLeads = async () => {
   }
 }
 const updateOptions = options => {
+  fetchLeads();
   sortBy.value = options.sortBy[0]?.key
   orderBy.value = options.sortBy[0]?.order
 }
