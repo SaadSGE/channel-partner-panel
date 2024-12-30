@@ -18,74 +18,80 @@ class LeadController extends Controller
      */
     public function index(Request $request)
     {
-        $user = auth('api')->user();
-        $perPage = (int) $request->query('perPage', 10);
-        $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
-        $sortBy = $request->query('sortBy', 'created_at');
-        $orderBy = $request->query('orderBy', 'desc');
-        $assignedUser = $request->query('assigned_status', null);
-        $leadType = $request->query('lead_type', null);
-        $event = $request->query('event', null);
-        $branch = $request->query('branch', null);
-        $country = $request->query('lead_country', null);
-        $id = $request->query('id', null);
-        $user = auth('api')->user();
-        \Log::info('User ID:', ['id' => $user->id]);
-        $query = Lead::query()->visibleToUser($user, $id);
+        try {
+            $user = auth('api')->user();
+            $perPage = (int) $request->query('perPage', 10);
+            $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
+            $sortBy = $request->query('sortBy', 'created_at');
+            $orderBy = $request->query('orderBy', 'desc');
+            $assignedUser = $request->query('assigned_status', null);
+            $leadType = $request->query('lead_type', null);
+            $event = $request->query('event', null);
+            $branch = $request->query('branch', null);
+            $country = $request->query('lead_country', null);
+            $id = $request->query('id', null);
+            $user = auth('api')->user();
+            \Log::info('User ID:', ['id' => $user->id]);
+            $query = Lead::query()->visibleToUser($user, $id);
 
-        $query->with(['notes', 'branch', 'assignedUser', 'status:id,name,color_code', 'statusHistory', 'leadCountry:id,name', 'leadEvent:id,name']);
+            $query->with(['notes', 'branch', 'assignedUser', 'status:id,name,color_code', 'statusHistory', 'leadCountry:id,name', 'leadEvent:id,name']);
 
-        $query->whereHas('status', function ($q) {
-            $q->where('convert_to_student', 0)
-                ->where('dead_lead', 0);
-        });
-
-        $query->when($searchQuery, function ($q) use ($searchQuery) {
-            return $q->where(function ($q) use ($searchQuery) {
-                $q->where('name', 'LIKE', "%$searchQuery%")
-                    ->orWhere('email', 'LIKE', "%$searchQuery%")
-                    ->orWhere('phone', 'LIKE', "%$searchQuery%")
-                    ->orWhere('branch', 'LIKE', "%$searchQuery%")
-                    ->orWhere('interested_course', 'LIKE', "%$searchQuery%")
-                    ->orWhere('interested_country', 'LIKE', "%$searchQuery%");
+            $query->whereHas('status', function ($q) {
+                $q->where('convert_to_student', 0)
+                    ->where('dead_lead', 0);
             });
-        })->when($request->filled('status'), function ($q) use ($request) {
-            return $q->where('status', $request->query('status'));
-        })->when($request->filled('branch'), function ($q) use ($request) {
-            return $q->where('assigned_branch', $request->query('branch'));
-        })->when($request->filled('source'), function ($q) use ($request) {
-            return $q->where('source', $request->query('source'));
-        })->when($assignedUser !== null, function ($q) use ($assignedUser) {
-            if ($assignedUser == 1) {
-                return $q->whereNotNull('assigned_user');
-            } elseif ($assignedUser == 0) {
-                return $q->whereNull('assigned_user');
-            }
-        })->when($request->filled('dateFrom'), function ($q) use ($request) {
-            return $q->whereDate('lead_date', '>=', $request->query('dateFrom'));
-        })->when($request->filled('dateTo'), function ($q) use ($request) {
-            return $q->whereDate('lead_date', '<=', $request->query('dateTo'));
-        })->when($country, function ($q) use ($country) {
-            return $q->where('lead_country_id', $country);
-        })
-        ->when($leadType, function ($q) use ($leadType) {
-            return $q->where('lead_type', $leadType);
-        })->when($event, function ($q) use ($event) {
-            return $q->where('lead_event_id', $event);
-        })->when($branch, function ($q) use ($branch) {
-            return $q->where('assigned_branch', $branch);
-        });
 
-        // Sorting
-        $query->orderBy($sortBy, $orderBy);
+            $query->when($searchQuery, function ($q) use ($searchQuery) {
+                return $q->where(function ($q) use ($searchQuery) {
+                    $q->where('name', 'LIKE', "%$searchQuery%")
+                        ->orWhere('email', 'LIKE', "%$searchQuery%")
+                        ->orWhere('phone', 'LIKE', "%$searchQuery%")
+                        ->orWhere('branch', 'LIKE', "%$searchQuery%")
+                        ->orWhere('interested_course', 'LIKE', "%$searchQuery%")
+                        ->orWhere('interested_country', 'LIKE', "%$searchQuery%");
+                });
+            })->when($request->filled('status'), function ($q) use ($request) {
+                return $q->where('status', $request->query('status'));
+            })->when($request->filled('branch'), function ($q) use ($request) {
+                return $q->where('assigned_branch', $request->query('branch'));
+            })->when($request->filled('source'), function ($q) use ($request) {
+                return $q->where('source', $request->query('source'));
+            })->when($assignedUser !== null, function ($q) use ($assignedUser) {
+                if ($assignedUser == 1) {
+                    return $q->whereNotNull('assigned_user');
+                } elseif ($assignedUser == 0) {
+                    return $q->whereNull('assigned_user');
+                }
+            })->when($request->filled('dateFrom'), function ($q) use ($request) {
+                return $q->whereDate('lead_date', '>=', $request->query('dateFrom'));
+            })->when($request->filled('dateTo'), function ($q) use ($request) {
+                return $q->whereDate('lead_date', '<=', $request->query('dateTo'));
+            })->when($country, function ($q) use ($country) {
+                return $q->where('lead_country_id', $country);
+            })
+            ->when($leadType, function ($q) use ($leadType) {
+                return $q->where('lead_type', $leadType);
+            })->when($event, function ($q) use ($event) {
+                return $q->where('lead_event_id', $event);
+            })->when($branch, function ($q) use ($branch) {
+                return $q->where('assigned_branch', $branch);
+            });
 
-        // Pagination
-        $leads = $query->paginate($perPage);
+            // Sorting
+            $query->orderBy($sortBy, $orderBy);
 
-        // Log the activity
-        //$this->logIndexActivity($request, $leads->total());
+            // Pagination
+            $leads = $query->paginate($perPage);
 
-        return $this->successJsonResponse("Leads found successfully!", $leads->items(), $leads->total());
+            // Log the activity
+            //$this->logIndexActivity($request, $leads->total());
+
+            return $this->successJsonResponse("Leads found successfully!", $leads->items(), $leads->total());
+        } catch (\Exception $e) {
+            return $this->errorJsonResponse(
+                'Failed to retrieve leads.'
+            );
+        }
     }
 
     /**

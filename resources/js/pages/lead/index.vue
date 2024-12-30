@@ -105,7 +105,7 @@ watch([
 })
 
 onMounted(async () => {
-  await fetchLeads();
+
   await fetchLeadStatuses();
 
 });
