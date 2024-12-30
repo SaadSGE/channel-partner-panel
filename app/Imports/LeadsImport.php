@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\Lead;
+use App\Models\lead as Lead;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
