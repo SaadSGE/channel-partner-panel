@@ -15,59 +15,62 @@ class UserController extends Controller
      */
     public function index()
     {
-        // Retrieve query parameters
-        $searchQuery = strtoupper(strtolower(trim(request()->query('searchQuery'))));
-        $perPage = (int) request()->query('perPage', 10);
-        $sortBy = request()->query('sortBy', 'created_at');
-        $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
-        $roleFilter = request()->query('role', null);
-        $parentId = request()->query('parentId', null);
-        $fetchAll = filter_var(request()->query('fetchAll'), FILTER_VALIDATE_BOOLEAN);
-        $statusFilter = request()->query('status', null); // New status filter
-        $branchId = request()->query('branch_id', null);
+        try {
+            // Retrieve query parameters
+            $searchQuery = strtoupper(strtolower(trim(request()->query('searchQuery'))));
+            $perPage = (int) request()->query('perPage', 10);
+            $sortBy = request()->query('sortBy', 'created_at');
+            $sortDesc = filter_var(request()->query('sortDesc'), FILTER_VALIDATE_BOOLEAN);
+            $roleFilter = request()->query('role', null);
+            $parentId = request()->query('parentId', null);
+            $fetchAll = filter_var(request()->query('fetchAll'), FILTER_VALIDATE_BOOLEAN);
+            $statusFilter = request()->query('status', null); // New status filter
+            $branchId = request()->query('branch_id', null);
 
+            if (auth('api')->user()->role != 'admin') {
+                //$parentId = auth('api')->user()->id;
+            }
 
-        if (auth('api')->user()->role != 'admin') {
-            //$parentId = auth('api')->user()->id;
-        }
-
-        // Query the users
-        $query = User::with(['parent:id,parent_id,first_name,last_name,role','documents','branch'])
-            ->where('role', '!=', 'admin')
-            ->when($searchQuery, function ($query, $searchQuery) {
-                return $query->where(function ($query) use ($searchQuery) {
-                    $query->where('first_name', 'LIKE', "%$searchQuery%")
-                        ->orWhere('last_name', 'LIKE', "%$searchQuery%")
-                        ->orWhere('email', 'LIKE', "%$searchQuery%")
-                        // ... added company_name search
-                        ->orWhere('company_name', 'LIKE', "%$searchQuery%"); // New search condition for company_name
+            // Query the users
+            $query = User::with(['parent:id,parent_id,first_name,last_name,role','documents','branch'])
+                ->where('role', '!=', 'admin')
+                ->when($searchQuery, function ($query, $searchQuery) {
+                    return $query->where(function ($query) use ($searchQuery) {
+                        $query->where('first_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('last_name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%")
+                            // ... added company_name search
+                            ->orWhere('company_name', 'LIKE', "%$searchQuery%"); // New search condition for company_name
+                    });
+                })
+                ->when($branchId, function ($query, $branchId) {
+                    return $query->where('branch_id', $branchId);
+                })
+                ->when($roleFilter, function ($query, $roleFilter) {
+                    return $query->where('role', 'LIKE', "%$roleFilter%");
+                })
+                ->when($parentId, function ($query, $parentId) {
+                    return $query->where('parent_id', $parentId);
+                })
+                ->when($statusFilter !== null, function ($query) use ($statusFilter) {
+                    return $query->where('status', $statusFilter);
                 });
-            })
-            ->when($branchId, function ($query, $branchId) {
-                return $query->where('branch_id', $branchId);
-            })
 
-            ->when($roleFilter, function ($query, $roleFilter) {
-                return $query->where('role', 'LIKE', "%$roleFilter%");
-            })
-            ->when($parentId, function ($query, $parentId) {
-                return $query->where('parent_id', $parentId);
-            })
-            ->when($statusFilter !== null, function ($query) use ($statusFilter) {
-                return $query->where('status', $statusFilter);
-            });
+            if ($fetchAll) {
+                $users = $query->get();
+                $totalRows = $users->count();
+            } else {
+                $queryResult = $query->orderBy('created_at', 'DESC')->paginate($perPage)->toArray();
+                $users = $queryResult['data'];
+                $totalRows = $queryResult['total'];
+            }
 
-        if ($fetchAll) {
-            $users = $query->get();
-            $totalRows = $users->count();
-        } else {
-            $queryResult = $query->orderBy('created_at', 'DESC')->paginate($perPage)->toArray();
-            $users = $queryResult['data'];
-            $totalRows = $queryResult['total'];
+            // Return success response with user data
+            return $this->successJsonResponse('User List Found', $users, $totalRows);
+        } catch (\Throwable $th) {
+            \Log::error($th);
+            return $this->exceptionJsonResponse('Failed to retrieve user list', $th);
         }
-
-        // Return success response with user data
-        return $this->successJsonResponse('User List Found', $users, $totalRows);
     }
 
 
