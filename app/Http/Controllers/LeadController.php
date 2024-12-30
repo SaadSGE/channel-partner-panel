@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Lead;
+use App\Models\lead as Lead;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\LeadsImport;
 use Illuminate\Validation\ValidationException;
