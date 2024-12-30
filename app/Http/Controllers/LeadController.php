@@ -90,7 +90,11 @@ class LeadController extends Controller
             return $this->successJsonResponse("Leads found successfully!", $leads->items(), $leads->total());
         } catch (\Exception $e) {
             return $this->errorJsonResponse(
-                'Failed to retrieve leads.'
+                'Failed to retrieve leads.',
+                [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ],
             );
         }
     }
