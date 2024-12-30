@@ -129,7 +129,7 @@ const handleSubmit = async () => {
       theme: "colored",
     });
 
-    router.push({ name: 'student-record' })
+    router.push({ name: 'student-record-all-record' })
   } catch (error) {
     toast("Failed to save student information", {
       type: "error",
