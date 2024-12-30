@@ -24,6 +24,13 @@ export const useStudentStore = defineStore({
     },
   }),
   actions: {
+    async search(query) {
+      const response = await $api(`/students/search`, {
+        method: "GET",
+        params: { query },
+      });
+      return response.data;
+    },
     async storeStudent(formData) {
       try {
         const generalInfoRequest = {
