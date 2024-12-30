@@ -26,7 +26,7 @@ const commonFunctionStore = commonFunction();
 const leadStatuses = ref([]);
 // Add this to your onMounted hook
 onMounted(async () => {
-
+  fetchLeadStatuses()
 
 });
 
@@ -143,12 +143,12 @@ const updateOptions = options => {
 }
 
 // Open dialog and set selected lead ID
-const openChangeStatusDialog = (leadId, statusId, convertToStudent) => {
+const openChangeStatusDialog = (leadId, statusId, converStatus) => {
 
   selectedLeadId.value = leadId;
   selectedStatusId.value = statusId;
   showDialog.value = true;
-  convertToStudent.value = convertToStudent;
+  convertToStudent.value = converStatus;
 };
 
 // Handle status update from dialog
