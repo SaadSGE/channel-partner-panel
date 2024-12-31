@@ -399,14 +399,11 @@ const applyToUniversity = async (university) => {
                   <td>{{ university?.course_name || 'N/A' }}</td>
                   <td>{{ university?.course_type || 'N/A' }}</td>
                   <td>
-
-                    <template>
-                      <VBtn @click="applyToUniversity(university)" v-if="university?.application_done === 'false'"
-                        color="primary" size="small" class="px-4">
-                        Apply
-                      </VBtn>
-                      <VChip v-else color="success" size="small">Already Applied</VChip>
-                    </template>
+                    <VBtn @click="applyToUniversity(university)" v-if="university?.application_done === 'false'"
+                      color="primary" size="small" class="px-4">
+                      Apply
+                    </VBtn>
+                    <VChip v-else color="success" size="small">Already Applied</VChip>
                   </td>
                 </tr>
               </tbody>
