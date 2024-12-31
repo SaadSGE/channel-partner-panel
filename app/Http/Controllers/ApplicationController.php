@@ -721,7 +721,7 @@ class ApplicationController extends Controller
             'country_id' => $request->country_id,
             'intake_id' => $request->intake_id,
             'university_id' => $request->university_id,
-            'course_details_id' => $request->course_details_id,
+            'course_details_id' => $courseDetails->id,
             'user_id' => auth('api')->id(),
             'student_id' => $student->id,
             'counsellor_number' => $request->counsellor_number,
