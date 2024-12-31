@@ -398,9 +398,14 @@ export const commonFunction = defineStore({
       }
     },
     async getBranches() {
+
+      if (this.branches.length != 0) {
+        return this.branches;
+      }
       try {
         const response = await $api("/branches", { method: "GET" });
         this.branches = response.data;
+        return response.data;
       } catch (error) {
         console.error("Error fetching branches:", error);
         this.errors = error.response
@@ -723,7 +728,7 @@ export const commonFunction = defineStore({
       try {
         const response = await $api("/application-statuses", {
           method: "GET",
-          
+
         });
         this.applicationStatus = response.data;
       } catch (error) {

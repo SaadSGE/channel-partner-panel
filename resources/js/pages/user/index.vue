@@ -47,6 +47,8 @@ const parentId = ref(null);
 const userToSetParent = ref(null);
 const isAdmin = ref(getUserRole() === 'admin');
 const branches = ref([]);
+const selectedBranch = ref(null);
+
 // Methods
 const setParent = (user) => {
   userToSetParent.value = user;
@@ -75,7 +77,7 @@ const handleParentSet = async () => {
 };
 
 const handleUserUpdate = (updatedUser) => {
-  console.log(updatedUser)
+
   const index = users.value.findIndex((user) => user.id === updatedUser.id);
   if (index !== -1) {
     users.value.splice(index, 1, updatedUser);
@@ -101,7 +103,8 @@ const fetchUsers = async () => {
       selectedParent.value,
       selectedUserStatus.value,
       selectedCountry.value,
-      selectedMou.value
+      selectedMou.value,
+      selectedBranch.value
     );
     users.value = response.data;
     totalUsers.value = response.total;
@@ -187,14 +190,10 @@ const updateUserStatus = async (user) => {
 };
 
 onMounted(async () => {
-  await roleStore.getAllRoles();
-  roles.value = roleStore.roles;
-  await userStore.fetchParentUsers(); // Fetch parent users on mount from the Pinia store
-  fetchUsers(); // Fetch the main user list
-  getAllBranches();
+
 });
 
-watch([searchQuery, selectedRole, selectedParent, selectedUserStatus, selectedCountry, selectedMou], () => {
+watch([searchQuery, selectedRole, selectedParent, selectedUserStatus, selectedCountry, selectedMou, selectedBranch], () => {
   fetchUsers();
 });
 
@@ -246,7 +245,8 @@ const getAllBranches = async () => {
           <Filters :selected-role="selectedRole" @update-role="selectedRole = $event" :selected-parent="selectedParent"
             @update-parent="selectedParent = $event" :selected-userStatus="selectedUserStatus"
             @update-userStatus="selectedUserStatus = $event" :selected-country="selectedCountry"
-            @update-country="selectedCountry = $event" :selected-mou="selectedMou" @update-mou="selectedMou = $event">
+            @update-country="selectedCountry = $event" :selected-mou="selectedMou" @update-mou="selectedMou = $event"
+            :selected-branch="selectedBranch" @update-branch="selectedBranch = $event">
           </Filters>
 
 

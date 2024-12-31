@@ -33,7 +33,7 @@ class UserController extends Controller
 
             // Query the users
             $query = User::with(['parent:id,parent_id,first_name,last_name,role','documents','branch'])
-                ->where('role', '!=', 'admin')
+
                 ->when($searchQuery, function ($query, $searchQuery) {
                     return $query->where(function ($query) use ($searchQuery) {
                         $query->where('first_name', 'LIKE', "%$searchQuery%")
@@ -55,6 +55,7 @@ class UserController extends Controller
                 ->when($statusFilter !== null, function ($query) use ($statusFilter) {
                     return $query->where('status', $statusFilter);
                 });
+
 
             if ($fetchAll) {
                 $users = $query->get();

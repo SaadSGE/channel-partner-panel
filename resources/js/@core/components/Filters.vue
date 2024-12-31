@@ -479,6 +479,7 @@ const fetchEvents = async () => {
 
 onMounted(async () => {
   await fetchEvents(); // Fetch events on component mount
+  await commonFunctionStore.getBranches();
 });
 
 </script>

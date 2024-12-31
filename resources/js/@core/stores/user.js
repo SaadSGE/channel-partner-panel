@@ -38,7 +38,6 @@ export const useUserStore = defineStore({
       userStatus = "",
       selectedCountry = "",
       selectedMou = "",
-      selectedBranch = "", // Add branch parameter
       selectedAssignedBranch = "", // Add assigned branch parameter
       fetchAll = false
     ) {
