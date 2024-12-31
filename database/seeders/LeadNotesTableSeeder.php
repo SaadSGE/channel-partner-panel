@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\LeadNote;
-use App\Models\Lead;
+use App\Models\lead as Lead;
 use App\Models\User;
 
 class LeadNotesTableSeeder extends Seeder

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Lead;
+use App\Models\lead as Lead;
 use App\Models\User;
 use Carbon\Carbon;
 
