@@ -180,7 +180,7 @@ export default [
       // },
     ],
   },
- 
+
   {
     title: "Daily Task",
     icon: { icon: "tabler-clipboard-copy" },
@@ -260,6 +260,13 @@ export default [
         title: "Branch List",
         icon: { icon: "tabler-tree" },
         to: "branch-list",
+        action: "create",
+        subject: "dashboard",
+      },
+      {
+        title: "Event",
+        icon: { icon: "tabler-calendar" },
+        to: "event",
         action: "create",
         subject: "dashboard",
       },

@@ -13,6 +13,7 @@ export const commonFunction = defineStore({
     tasks: [],
     leadStatus: [],
     applicationStatus: [],
+    events: [],
     errors: [],
     universities: [],
     courseDetails: [],
@@ -723,7 +724,7 @@ export const commonFunction = defineStore({
       try {
         const response = await $api("/application-statuses", {
           method: "GET",
-          
+
         });
         this.applicationStatus = response.data;
       } catch (error) {
@@ -773,6 +774,64 @@ export const commonFunction = defineStore({
         this.applicationStatus = this.applicationStatus.filter((status) => status.id !== id);
       } catch (error) {
         console.error("Error deleting application status:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+
+    async getEvents() {
+      try {
+        const response = await $api("/events", { method: "GET" });
+        this.events = response.data;
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+    async addEvent(event) {
+      try {
+        const response = await $api("/events", {
+          method: "POST",
+          body: event,
+        });
+        this.events.push(response.data);
+      } catch (error) {
+        console.error("Error adding event:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+
+    async updateEvent(id, event) {
+      try {
+        const response = await $api(`/events/${id}`, {
+          method: "PUT",
+          body: event,
+        });
+        const index = this.events.findIndex((event) => event.id === id);
+        if (index !== -1) {
+          this.events[index] = response.data;
+        }
+      } catch (error) {
+        console.error("Error updating event:", error);
+        this.errors = error.response
+          ? error.response.data.errors
+          : ["An unexpected error occurred"];
+      }
+    },
+
+    async deleteEvent(id) {
+      try {
+        await $api(`/events/${id}`, {
+          method: "DELETE",
+        });
+        this.events = this.events.filter((event) => event.id !== id);
+      } catch (error) {
+        console.error("Error deleting event:", error);
         this.errors = error.response
           ? error.response.data.errors
           : ["An unexpected error occurred"];
