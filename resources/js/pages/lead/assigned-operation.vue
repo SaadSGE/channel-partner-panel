@@ -352,7 +352,12 @@ watch([selectedLeadType, selectedEvent, selectedCountry, selectedBranch], () => 
 
           <VRow class="mt-4">
             <VCol cols="12" class="text-center">
-              <VBtn color="primary" :disabled="!selectedCountry" :loading="isLoading" @click="fetchLeads">
+              <VBtn color="primary" :disabled="!selectedEvent" :loading="isLoading" @click="fetchLeads"
+                v-if="selectedLeadType === 'event'">
+                Continue
+              </VBtn>
+              <VBtn color="primary" :disabled="!selectedCountry" :loading="isLoading" @click="fetchLeads"
+                v-if="selectedLeadType === 'social'">
                 Continue
               </VBtn>
             </VCol>
