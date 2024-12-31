@@ -280,7 +280,10 @@ const toggleUploadCard = () => {
         <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
           <!-- 👉 Search  -->
 
-
+          <div style="inline-size: 15.625rem;">
+            <AppTextField v-model="search" placeholder="Search ..." append-inner-icon="tabler-search" single-line
+              hide-details dense outlined />
+          </div>
           <!-- 👉 Upload lead button-->
           <VBtn prepend-icon="tabler-plus" @click="toggleUploadCard" v-if="$can('create', 'lead')">
             Upload Lead

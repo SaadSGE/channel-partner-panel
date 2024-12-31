@@ -45,7 +45,6 @@ class LeadController extends Controller
                     $q->where('name', 'LIKE', "%$searchQuery%")
                         ->orWhere('email', 'LIKE', "%$searchQuery%")
                         ->orWhere('phone', 'LIKE', "%$searchQuery%")
-                        ->orWhere('branch', 'LIKE', "%$searchQuery%")
                         ->orWhere('interested_course', 'LIKE', "%$searchQuery%")
                         ->orWhere('interested_country', 'LIKE', "%$searchQuery%");
                 });
