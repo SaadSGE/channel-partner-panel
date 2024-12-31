@@ -190,7 +190,7 @@ const updateUserStatus = async (user) => {
 };
 
 onMounted(async () => {
-
+  getAllBranches();
 });
 
 watch([searchQuery, selectedRole, selectedParent, selectedUserStatus, selectedCountry, selectedMou, selectedBranch], () => {
