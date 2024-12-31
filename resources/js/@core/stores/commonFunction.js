@@ -656,7 +656,8 @@ export const commonFunction = defineStore({
           : ["An unexpected error occurred"];
       }
     },
-    async getLeadStatus(searchQuery = "", page = 1, itemsPerPage = 10, sortBy = "", orderBy = "", healthType = null) {
+    async getLeadStatus(searchQuery = "", page = 1, itemsPerPage = 10, sortBy = "", orderBy = "", healthType = null, fetchAll = false) {
+
       try {
         const response = await $api("/lead-statuses", {
           method: "GET",
@@ -667,6 +668,7 @@ export const commonFunction = defineStore({
             sortBy,
             orderBy,
             health_type: healthType,
+            fetchAll,
           },
         });
         this.leadStatus = response.data;

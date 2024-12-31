@@ -135,13 +135,7 @@ export default [
     action: "read",
     subject: "lead",
     children: [
-      {
-        title: "Lead Status",
-        icon: { icon: "tabler-chart-line" },
-        to: "lead-status",
-        action: "create",
-        subject: "lead",
-      },
+
       {
         title: "All Leads",
         icon: { icon: "tabler-users" },
@@ -180,7 +174,7 @@ export default [
       // },
     ],
   },
- 
+
   {
     title: "Daily Task",
     icon: { icon: "tabler-clipboard-copy" },
@@ -278,6 +272,13 @@ export default [
         to: "applications-status",
         action: "read",
         subject: "dashboard",
+      },
+      {
+        title: "Lead Status",
+        icon: { icon: "tabler-chart-line" },
+        to: "lead-status",
+        action: "create",
+        subject: "lead",
       },
     ],
   },

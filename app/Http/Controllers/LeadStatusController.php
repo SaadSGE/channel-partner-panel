@@ -18,9 +18,13 @@ class LeadStatusController extends Controller
         $sortBy = $request->query('sortBy', 'created_at');
         $orderBy = $request->query('orderBy', 'desc');
         $healthType = $request->query('health_type', null);
+        $fetchAll = $request->query('fetchAll', false);
 
         $query = LeadStatus::query();
-
+        if ($fetchAll) {
+            $query->where('is_active', 1);
+            return $this->successJsonResponse('Lead statuses fetched successfully', $query->get());
+        }
         // Search functionality
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
