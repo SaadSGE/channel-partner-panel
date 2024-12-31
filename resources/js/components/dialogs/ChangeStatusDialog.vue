@@ -45,7 +45,7 @@ const updateStatus = () => {
       <VCardTitle>Select New Status</VCardTitle>
       <VCardText>
         <!-- Use leadStatuses as items in AppAutocomplete -->
-        <AppAutocomplete v-model="selectedStatus" :items="leadStatuses" :item-title="(item) => item.name"
+        <AppAutocomplete v-model="selectedStatus" :items="props.leadStatuses" :item-title="(item) => item.name"
           :item-value="(item) => item.id" label="Status" placeholder="Select Status" :rules="[requiredValidator]"
           clearable />
         <AppTextarea v-model="statusNote" class="mt-4" label="Status Note (optional)" placeholder="Enter status note"
