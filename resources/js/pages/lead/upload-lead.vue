@@ -29,7 +29,7 @@ const toggleUploadCard = () => {
 };
 
 const downloadSampleFile = () => {
-  // Logic to download sample file
+  window.open('https://channel-partner-panel.ams3.cdn.digitaloceanspaces.com/SGE%20CRM%20Upload%20Format.xlsx', '_blank');
 };
 
 const handleFileUpload = (event) => {
