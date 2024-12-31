@@ -43,7 +43,7 @@ class lead extends Model
 
     public function statusHistory()
     {
-        return $this->hasMany(LeadStatusTrack::class, 'lead_id');
+        return $this->hasMany(LeadStatusTrack::class, 'lead_id')->orderBy('created_at', 'desc');
     }
 
     public function student()
