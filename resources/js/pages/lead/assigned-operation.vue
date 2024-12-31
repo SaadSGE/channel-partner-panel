@@ -275,7 +275,8 @@ const saveAssignedLeads = async () => {
 
 onMounted(async () => {
   // Fetch parent users on mount from the Pinia store
-  getAllBranches();
+  await commonFunctionStore.getAllCountries();
+  await getAllBranches();
 });
 
 watch([searchQuery, selectedAssignedBranch], () => {
@@ -328,9 +329,16 @@ watch([selectedLeadType, selectedEvent, selectedCountry, selectedBranch], () => 
 
           <template v-if="selectedLeadType === 'social'">
             <VRow>
-              <Filters :selected-country="selectedCountry" :selected-branch="selectedBranch"
-                @update-country="selectedCountry = $event" @update-branch="selectedBranch = $event"
-                country-label="Lead Country" branch-label="Lead Branch" />
+              <VCol cols="12" md="4">
+                <AppAutocomplete v-model="selectedCountry" :items="commonFunctionStore.allCountries"
+                  :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Country"
+                  placeholder="Select Country" clearable class="slide-in" />
+              </VCol>
+              <VCol cols="12" md="4">
+                <AppAutocomplete v-model="selectedBranch" :items="commonFunctionStore.branches"
+                  :item-title="(item) => item.name" :item-value="(item) => item.id" label="Select Branch"
+                  placeholder="Select Branch" clearable class="slide-in" />
+              </VCol>
             </VRow>
           </template>
 
