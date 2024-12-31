@@ -371,7 +371,7 @@ const applyToUniversity = async (university) => {
         </VCard>
       </VDialog>
 
-      <VDialog v-model="showApplicationDialog" max-width="100%" class="centered-dialog" transition="dialog-transition">
+      <VDialog v-model="showApplicationDialog" max-width="80%" class="centered-dialog" transition="dialog-transition">
         <VCard>
           <VCardTitle class="d-flex justify-space-between align-center pa-4">
             University Information
@@ -399,10 +399,8 @@ const applyToUniversity = async (university) => {
                   <td>{{ university?.course_name || 'N/A' }}</td>
                   <td>{{ university?.course_type || 'N/A' }}</td>
                   <td>
-                    <template v-if="university?.document_status === 'false'">
-                      <span class="text-error font-weight-medium">Missing Document</span>
-                    </template>
-                    <template v-else>
+
+                    <template>
                       <VBtn @click="applyToUniversity(university)" v-if="university?.application_done === 'false'"
                         color="primary" size="small" class="px-4">
                         Apply
