@@ -30,6 +30,7 @@ use App\Http\Controllers\LeadStatusController;
 use App\Http\Controllers\ApplicationStatusListController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\DemoDashboardController;
+use App\Http\Controllers\LoginImageController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -118,7 +119,6 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/students/{id}/english-proficiency', [StudentController::class, 'updateEnglishProficiency']);
     Route::put('/students/{id}/employment-history', [StudentController::class, 'updateEmploymentHistory']);
     Route::put('/students/{id}/documents', [StudentController::class, 'updateDocuments']);
-
 });
 Route::get('/students/{id}/universities', [StudentController::class, 'getUniversitiesForStudent']);
 Route::apiResource('events', EventController::class);
@@ -164,3 +164,5 @@ Route::apiResource('leads', LeadController::class);
 Route::post('/application/{id}/aco-ao-communication', [ApplicationController::class, 'addAcoAoCommunication']);
 Route::post('/leads/upload', [LeadController::class, 'uploadLeads']);
 Route::post('/leads/{leadId}/add-note', [LeadController::class, 'addNoteToLead'])->middleware('auth:api');
+
+Route::get('/login-image', [LoginImageController::class, 'getLoginImage']);

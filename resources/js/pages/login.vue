@@ -5,7 +5,7 @@ import authV2LoginIllustrationBorderedDark from "@images/pages/auth-v2-login-ill
 import authV2LoginIllustrationBorderedLight from "@images/pages/auth-v2-login-illustration-bordered-light.png";
 import authV2LoginIllustrationDark from "@images/pages/auth-v2-login-illustration-dark.png";
 import authV2LoginIllustrationLight from "@images/pages/auth-v2-login-illustration-light.png";
-import loginImage from "@images/pages/login-image.png";
+// import loginImage from "@images/pages/login-image.png";
 import loginImageOrg from "@images/pages/login-org.gif";
 import authV2MaskDark from "@images/pages/misc-mask-dark.png";
 import authV2MaskLight from "@images/pages/misc-mask-light.png";
@@ -30,9 +30,9 @@ const authThemeImg = useGenerateImageVariant(
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
 const appUrl = import.meta.env.VITE_WEBSITE;
 
-console.log("hello2");
+// console.log("hello2");
 
-
+const loginImage = ref('')
 
 const loginImage2 = appUrl === 'org' ? useGenerateImageVariant(loginImageOrg) : useGenerateImageVariant(loginImage);
 
@@ -104,6 +104,23 @@ const onSubmit = () => {
     }
   });
 };
+
+
+const fetchLoginImage = async () => {
+  try {
+    const response = await $api('/login-image')
+    console.log(response.image_url);
+    loginImage.value = response.image_url
+  } catch (error) {
+    console.error('Error fetching login image:', error)
+    // Set a fallback image
+    loginImage.value = '@images/pages/login-image.png'
+  }
+}
+
+onMounted(() => {
+  fetchLoginImage()
+})
 </script>
 
 <template>
@@ -120,7 +137,8 @@ const onSubmit = () => {
     <VCol md="8" class="d-none d-md-flex">
       <div class="position-relative bg-background w-100 me-0">
         <div class="d-flex align-center justify-center w-100 h-100" style="padding-inline: 6.25rem;">
-          <VImg :src="loginImage" class="auth-illustration mt-16 mb-2" />
+          <VImg :src="loginImage" class="auth-illustration mt-16 mb-2 rounded-lg"
+            @error="loginImage = '@images/pages/login-image.png'" />
 
 
 
