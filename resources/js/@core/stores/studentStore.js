@@ -362,10 +362,6 @@ export const useStudentStore = defineStore({
 
     async updateInterestedUniversity(studentId, universityEntry) {
       try {
-        console.log("Updating university preferences with data:", {
-          studentId,
-          universityEntry,
-        });
 
         const requestBody = {
           interested_university: universityEntry?.length
@@ -396,11 +392,10 @@ export const useStudentStore = defineStore({
             body: JSON.stringify(requestBody),
           }
         );
-
-        console.log("API Response:", response);
-
-        this.studentInfo.interestedUniversity = response.data;
-        this.successMessage = "University preferences updated successfully";
+        if (response.status == true) {
+          this.studentInfo.interestedUniversity = response.data;
+          this.successMessage = "University preferences updated successfully";
+        }
         return response.data;
       } catch (error) {
         console.error("Error in updateInterestedUniversity:", error);

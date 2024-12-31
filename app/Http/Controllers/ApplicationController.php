@@ -709,7 +709,11 @@ class ApplicationController extends Controller
     private function createApplicationForExistingStudent(Student $student, Request $request)
     {
         $applicationId = $this->generateApplicationId($student);
-        $courseDetails = CourseDetails::findOrFail($request->course_details_id);
+        if ($request->course_details_id) {
+            $courseDetails = CourseDetails::findOrFail($request->course_details_id);
+        } else {
+            $courseDetails = CourseDetails::where('course_id', $request->course_id)->where('intake_id', $request->intake_id)->where('university_id', $request->university_id)->first();
+        }
         \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
         return ApplicationList::create([
             'application_id' => $applicationId,
