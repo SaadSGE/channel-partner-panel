@@ -257,6 +257,13 @@ export default [
         action: "create",
         subject: "dashboard",
       },
+      {
+        title: "Event",
+        icon: { icon: "tabler-calendar" },
+        to: "event",
+        action: "create",
+        subject: "dashboard",
+      },
 
       {
         title: "Country List",
