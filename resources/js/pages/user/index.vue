@@ -104,7 +104,9 @@ const fetchUsers = async () => {
       selectedUserStatus.value,
       selectedCountry.value,
       selectedMou.value,
-      selectedBranch.value
+      'null',
+      selectedBranch.value,
+
     );
     users.value = response.data;
     totalUsers.value = response.total;
