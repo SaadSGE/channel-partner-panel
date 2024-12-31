@@ -356,14 +356,12 @@ onMounted(async () => {
 
 const loadFilterOptions = async () => {
   try {
-    console.log('loading countries2');
-
-    // Conditionally load countries if selectedCountry is provided
     if (props.selectedCountry !== undefined) {
-      console.log('loading countries');
-      await commonFunctionStore.getCountries();
-      countries.value = commonFunctionStore.countries;
+      await commonFunctionStore.getAllCountries();
+      countries.value = commonFunctionStore.allCountries;
     }
+
+
 
     // Conditionally load intakes if selectedIntake is provided
     if (props.selectedIntake !== undefined && commonFunctionStore.intakes.length === 0) {
