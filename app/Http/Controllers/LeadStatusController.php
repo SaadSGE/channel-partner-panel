@@ -13,23 +13,24 @@ class LeadStatusController extends Controller
     public function index(Request $request)
     {
         $perPage = (int) $request->query('perPage', 10);
-        $page = (int) $request->query('page', 1);
         $searchQuery = strtoupper(trim($request->query('searchQuery', '')));
         $sortBy = $request->query('sortBy', 'created_at');
         $orderBy = $request->query('orderBy', 'desc');
         $healthType = $request->query('health_type', null);
-        $fetchAll = $request->query('fetchAll', false);
-
+        $fetchAll = filter_var($request->query('fetchAll', false), FILTER_VALIDATE_BOOLEAN);
         $query = LeadStatus::query();
+
         if ($fetchAll) {
             $query->where('is_active', 1);
             return $this->successJsonResponse('Lead statuses fetched successfully', $query->get());
         }
+
         // Search functionality
         $query->when($searchQuery, function ($q) use ($searchQuery) {
             return $q->where(function ($q) use ($searchQuery) {
                 $q->where('name', 'LIKE', "%$searchQuery%")
-                  ->orWhere('health_type', 'LIKE', "%$searchQuery%");
+                  ->orWhere('health_type', 'LIKE', "%$searchQuery%")
+                  ->orWhere('description', 'LIKE', "%$searchQuery%");
             });
         });
 
@@ -38,17 +39,23 @@ class LeadStatusController extends Controller
             return $q->where('health_type', $healthType);
         });
 
+        // Date range filters
+        $query->when($request->filled('dateFrom'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '>=', $request->query('dateFrom'));
+        })->when($request->filled('dateTo'), function ($q) use ($request) {
+            return $q->whereDate('created_at', '<=', $request->query('dateTo'));
+        });
+
         // Apply sorting
         $query->orderBy($sortBy, $orderBy);
 
         // Get paginated results
-        $leadStatuses = $query->paginate($perPage, ['*'], 'page', $page);
+        $leadStatuses = $query->paginate($perPage);
 
-        return $this->successJsonResponse(
-            'Lead statuses fetched successfully',
-            $leadStatuses->items(),
-            $leadStatuses->total()
-        );
+        // Log the activity (optional, if you want to track like ApplicationController)
+        //$this->logIndexActivity($request, $leadStatuses->total());
+
+        return $this->successJsonResponse("Lead statuses fetched successfully", $leadStatuses->items(), $leadStatuses->total());
     }
 
     /**
@@ -118,5 +125,35 @@ class LeadStatusController extends Controller
         }
         $leadStatus->delete();
         return $this->successJsonResponse('Lead status deleted successfully');
+    }
+
+    // Add this method if you want to log activities like ApplicationController
+    private function logIndexActivity(Request $request, int $totalResults)
+    {
+        $activityType = 'lead_status_index_view';
+        $properties = [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'total_results' => $totalResults,
+        ];
+
+        // Check if any filter or search is applied
+        $filterParams = ['health_type', 'dateFrom', 'dateTo'];
+        $appliedFilters = array_filter($request->only($filterParams));
+
+        if (!empty($appliedFilters)) {
+            $activityType = 'lead_status_filter';
+            $properties['filters'] = $appliedFilters;
+        }
+
+        if ($request->filled('searchQuery')) {
+            $activityType = 'lead_status_search';
+            $properties['search_query'] = $request->query('searchQuery');
+        }
+
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties($properties)
+            ->log($activityType);
     }
 }

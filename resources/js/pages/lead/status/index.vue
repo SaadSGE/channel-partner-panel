@@ -39,6 +39,7 @@ const editItem = item => {
   isNavDrawerOpenEdit.value = true
 }
 const updateOptions = options => {
+
   sortBy.value = options.sortBy[0]?.key
   orderBy.value = options.sortBy[0]?.order
   fetchLeadStatuses()
@@ -53,7 +54,7 @@ const fetchLeadStatuses = async () => {
     orderBy.value,
     selectedLeadHealthType.value
   );
-  console.log(response)
+
   leadStatuses.value = response.data;
   isLoading.value = false
   totalLeadStatuses.value = response.total
@@ -98,7 +99,8 @@ const deleteItem = async (item) => {
   }
 };
 
-watch(selectedLeadHealthType, () => {
+
+watch([selectedLeadHealthType, search], () => {
   fetchLeadStatuses();
 });
 </script>
