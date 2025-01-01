@@ -179,7 +179,7 @@ export default [
     title: "Daily Task",
     icon: { icon: "tabler-clipboard-copy" },
     action: "read",
-    subject: "dashboard",
+    subject: "daily-task",
     children: [
       {
         title: "Add New",
