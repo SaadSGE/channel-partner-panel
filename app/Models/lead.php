@@ -64,8 +64,11 @@ class lead extends Model
         if ($user->hasPermissionTo('lead.read', 'api') && $user->hasPermissionTo('lead.create', 'api')) {
             return;
         }
-
-        // If user only has read permission, show only assigned leads
+        //TO DO: check if user has permission to manager note
+        if ($user->hasPermissionTo('lead.edit', 'api')) {
+            $chilId = $user->fetchChildren;
+            $query->whereIn('assigned_user', $chilId);
+        }
         if ($user->hasPermissionTo('lead.read', 'api')) {
             $query->where('assigned_user', $user->id);
         }
