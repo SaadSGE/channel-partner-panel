@@ -68,6 +68,7 @@ class lead extends Model
         if ($user->hasPermissionTo('lead.edit', 'api')) {
             $chilId = $user->fetchChildren;
             $query->whereIn('assigned_user', $chilId);
+            return;
         }
         if ($user->hasPermissionTo('lead.read', 'api')) {
             $query->where('assigned_user', $user->id);
