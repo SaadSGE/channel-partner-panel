@@ -77,9 +77,11 @@ const headers = [
   { title: 'Phone', key: 'phone' },
   { title: 'Email', key: 'email' },
   { title: 'Interested Course & Country', key: 'course_country' },
-
-  ...can('edit', 'lead') ? [
+  ...can('create', 'lead') ? [
     { title: 'Assigned Status', key: 'assigned_user' },
+  ] : [],
+  ...can('edit', 'lead') ? [
+
     { title: 'Assigned User', key: 'assigned_user.name_with_email' },
   ] : [],
   ...can('edit', 'lead') ? [
