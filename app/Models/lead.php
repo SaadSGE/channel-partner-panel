@@ -58,11 +58,16 @@ class lead extends Model
     {
         return $this->belongsTo(Event::class, 'lead_event_id');
     }
-    public function scopeVisibleToUser($query, User $user, $id = null): void
+    public function scopeVisibleToUser($query, User $user, $id = null)
     {
-        if ($user->hasRole('Counsellor')) {
-            $query->where('assigned_user', $user->id);
+        // If user has both read and all permissions, don't restrict the query
+        if ($user->hasPermissionTo('read', 'lead') && $user->hasPermissionTo('create', 'lead')) {
+            return;
         }
 
+        // If user only has read permission, show only assigned leads
+        if ($user->hasPermissionTo('read', 'lead')) {
+            $query->where('assigned_user', $user->id);
+        }
     }
 }
