@@ -27,7 +27,7 @@ class UserController extends Controller
             $statusFilter = request()->query('status', null); // New status filter
             $branchId = request()->query('branch_id', null);
 
-            $user = auth('api')->user->id;
+            $user = auth('api')->user();
 
             if (auth('api')->user()->role != 'admin') {
                 if (!$user->hasPermissionTo('lead.create', 'api')) {
