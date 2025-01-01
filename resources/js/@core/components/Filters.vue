@@ -400,7 +400,7 @@ const fetchUsers = async () => {
   }
 };
 const fetchLeadStatus = async () => {
-  await commonFunctionStore.getLeadStatus();
+  await commonFunctionStore.getLeadStatus("", 1, 10, "", "", null, true);;
   leadStatuses.value = commonFunctionStore.leadStatus;
 }
 
