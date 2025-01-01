@@ -139,8 +139,8 @@ export default [
         title: "Event",
         icon: { icon: "tabler-calendar" },
         to: "event",
-        action: "create",
-        subject: "lead",
+        action: "read",
+        subject: "event",
       },
 
       {
