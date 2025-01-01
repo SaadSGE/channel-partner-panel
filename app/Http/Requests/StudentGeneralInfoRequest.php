@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class StudentGeneralInfoRequest extends FormRequest
 {
@@ -14,6 +15,10 @@ class StudentGeneralInfoRequest extends FormRequest
     public function rules(): array
     {
         $studentId = $this->route('id');
+
+        if (!$studentId) {
+            $studentId = $this->route('student');
+        }
 
 
         return [
@@ -27,7 +32,7 @@ class StudentGeneralInfoRequest extends FormRequest
                 'email',
                 'unique:students,email,' . ($studentId ?? 'NULL') . ',id',
             ],
-            'general_info.student_whatsapp_number' => 'required|string',
+            'general_info.student_whatsapp_number' => 'sometimes|string|unique:students,whatsapp_number,' . ($studentId ?? 'NULL') . ',id',
 
             // Nullable fields
             'general_info.student_passport_no' => [

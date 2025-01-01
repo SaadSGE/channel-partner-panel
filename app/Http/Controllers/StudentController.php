@@ -347,6 +347,7 @@ class StudentController extends Controller
 
             // Find the existing student record
             $student = Student::findOrFail($studentId);
+            Log::info('Student ID: ' .$studentId);
 
             // Update general info of the student
             $student = $studentService->storeGeneralInfo(array_merge(

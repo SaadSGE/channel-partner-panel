@@ -35,7 +35,7 @@ class StudentService
                     'state' => $data['student_region_state'] ?? null,
                     'date_of_birth' => $data['date_of_birth'] ?? null,
                     'gender' => $data['gender'] ?? null,
-                    'visa_refusal' => $data['visa_refusal'] ?? null,
+                    'visa_refusal' => $data['visa_refusal'] ?? 'no',
                     'lead_id' => $data['lead_id'] ?? null,
                 ]
             );
