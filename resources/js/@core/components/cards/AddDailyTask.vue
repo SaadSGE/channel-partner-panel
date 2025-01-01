@@ -8,8 +8,9 @@
 // })
 </script>
 
-<template v-if="$can('read', 'daily-task')">
-  <a class="daily-task-button d-print-none" role="button" rel="noopener noreferrer" target="_blank">
+<template>
+  <a class="daily-task-button d-print-none" role="button" rel="noopener noreferrer" target="_blank"
+    v-if="$can('read', 'daily-task')">
     Add Daily Task
     <span class="button-inner" />
   </a>
