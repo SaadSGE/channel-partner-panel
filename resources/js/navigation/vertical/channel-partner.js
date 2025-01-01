@@ -135,6 +135,13 @@ export default [
     action: "read",
     subject: "lead",
     children: [
+      {
+        title: "Event",
+        icon: { icon: "tabler-calendar" },
+        to: "event",
+        action: "create",
+        subject: "lead",
+      },
 
       {
         title: "All Leads",
@@ -257,13 +264,7 @@ export default [
         action: "create",
         subject: "dashboard",
       },
-      {
-        title: "Event",
-        icon: { icon: "tabler-calendar" },
-        to: "event",
-        action: "create",
-        subject: "dashboard",
-      },
+
 
       {
         title: "Country List",
