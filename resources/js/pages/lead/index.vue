@@ -59,7 +59,8 @@ const selectedAssignedStatus = ref(null)
 const selectedLeadType = ref(null);
 const selectedEvent = ref(null);
 const selectedBranch = ref(null);
-
+const activeLeads = ref(0);
+const pendingLeads = ref(0);
 
 // Function to toggle between showing all notes and only the first two for each lead
 const toggleShowNotes = (leadId) => {
@@ -137,7 +138,9 @@ const fetchLeads = async () => {
       selectedLeadCountry.value
     )
     leads.value = response.data;
-    total.value = response.total;
+    total.value = response.total.total;
+    activeLeads.value = response.total.active;
+    pendingLeads.value = response.total.pending;
   } catch (error) {
     console.error('Error fetching leads:', error)
   } finally {
@@ -181,6 +184,7 @@ const resolveLeadStatusColor = (statusId) => {
   const status = leadStatuses.value.find((status) => status.id === statusId);
   return status ? status.color_code : "#000";
 };
+const isAdmin = ref(getUserRole() === 'admin')
 
 const handleAddNote = async (leadId) => {
   if (!leadId) {
@@ -234,17 +238,18 @@ const toggleUploadCard = () => {
       <VCardText v-if="$can('read', 'lead')">
         <VRow>
 
-          <Filters v-if="$can('read', 'lead') && !$can('edit', 'lead')" :selected-lead-status="selectedLeadStatus"
-            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
-            @update-lead-status="selectedLeadStatus = $event" @update-dateFrom="selectedDateFrom = $event"
-            @update-dateTo="selectedDateTo = $event">
+          <Filters v-if="$can('read', 'lead') && !$can('edit', 'lead') && !isAdmin"
+            :selected-lead-status="selectedLeadStatus" :selected-dateFrom="selectedDateFrom"
+            :selected-dateTo="selectedDateTo" @update-lead-status="selectedLeadStatus = $event"
+            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event">
           </Filters>
 
-          <Filters v-if="$can('read', 'lead') && $can('edit', 'lead')" :selected-lead-status="selectedLeadStatus"
-            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
-            @update-lead-status="selectedLeadStatus = $event" @update-dateFrom="selectedDateFrom = $event"
-            @update-dateTo="selectedDateTo = $event" :selected-lead-type="selectedLeadType"
-            :selected-event="selectedEvent" :selected-country="selectedLeadCountry" :selected-branch="selectedBranch"
+          <Filters v-if="$can('read', 'lead') && $can('edit', 'lead') && !isAdmin"
+            :selected-lead-status="selectedLeadStatus" :selected-dateFrom="selectedDateFrom"
+            :selected-dateTo="selectedDateTo" @update-lead-status="selectedLeadStatus = $event"
+            @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event"
+            :selected-lead-type="selectedLeadType" :selected-event="selectedEvent"
+            :selected-country="selectedLeadCountry" :selected-branch="selectedBranch"
             @update-lead-type="selectedLeadType = $event" @update-event="selectedEvent = $event"
             @update-country="selectedLeadCountry = $event" @update-branch="selectedBranch = $event"
             country-label="Lead Country">
@@ -294,7 +299,7 @@ const toggleUploadCard = () => {
 
       <VDivider />
 
-      <VCardText class="d-flex flex-wrap gap-4">
+      <VCardText class="d-flex flex-wrap gap-4 justify-center">
         <div class="me-3 d-flex gap-3">
           <AppSelect :model-value="itemsPerPage" :items="[
             { value: 10, title: '10' },
@@ -305,8 +310,41 @@ const toggleUploadCard = () => {
           ]" style="inline-size: 6.25rem;" @update:model-value="itemsPerPage = parseInt($event, 10)" />
         </div>
         <VSpacer />
+
+        <!-- Here are 3 styled total leads cards with different colors -->
+        <div class="d-flex justify-center gap-4">
+          <VCard class="total-leads-card primary-gradient d-flex align-center" elevation="2">
+            <VCardText class="d-flex align-center gap-2 py-2">
+              <VIcon icon="tabler-users" size="24" color="white" />
+              <div>
+                <p class="text-white text-sm mb-0">Total Leads</p>
+                <p class="text-white text-h6 font-weight-bold mb-0">{{ total }}</p>
+              </div>
+            </VCardText>
+          </VCard>
+
+          <VCard class="total-leads-card success-gradient d-flex align-center" elevation="2">
+            <VCardText class="d-flex align-center gap-2 py-2">
+              <VIcon icon="tabler-check" size="24" color="white" />
+              <div>
+                <p class="text-white text-sm mb-0">Active Leads</p>
+                <p class="text-white text-h6 font-weight-bold mb-0">{{ activeLeads }}</p>
+              </div>
+            </VCardText>
+          </VCard>
+
+          <VCard class="total-leads-card warning-gradient d-flex align-center" elevation="2">
+            <VCardText class="d-flex align-center gap-2 py-2">
+              <VIcon icon="tabler-clock" size="24" color="white" />
+              <div>
+                <p class="text-white text-sm mb-0">Pending Calls</p>
+                <p class="text-white text-h6 font-weight-bold mb-0">{{ pendingLeads }}</p>
+              </div>
+            </VCardText>
+          </VCard>
+        </div>
+
         <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-          <!-- 👉 Search  -->
 
           <div style="inline-size: 15.625rem;">
             <AppTextField v-model="search" placeholder="Search ..." append-inner-icon="tabler-search" single-line
@@ -715,5 +753,35 @@ td {
   &:hover {
     background-color: #ffe0b2; // Darker orange on hover
   }
+}
+
+.total-leads-card {
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%);
+  min-inline-size: 180px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 25px rgba(79, 70, 229, 20%);
+    transform: translateY(-3px);
+  }
+
+  .v-card-text {
+    padding-block: 12px;
+    padding-inline: 20px;
+  }
+}
+
+/* Add these new gradient classes */
+.primary-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%) !important;
+}
+
+.success-gradient {
+  background: linear-gradient(135deg, #059669 0%, #34d399 100%) !important;
+}
+
+.warning-gradient {
+  background: linear-gradient(135deg, #d97706 0%, #fbbf24 100%) !important;
 }
 </style>

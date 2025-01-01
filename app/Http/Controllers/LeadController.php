@@ -78,6 +78,9 @@ class LeadController extends Controller
             // Sorting
             $query->orderBy($sortBy, $orderBy);
 
+            // Get counts using cloned queries to avoid modifying the main query
+            $activeLeads = (clone $query)->where('status', '!=', 1)->count();
+            $pendingLeads = (clone $query)->where('status', 1)->count();
 
             // Pagination
             $leads = $query->paginate($perPage);
@@ -85,7 +88,7 @@ class LeadController extends Controller
             // Log the activity
             //$this->logIndexActivity($request, $leads->total());
 
-            return $this->successJsonResponse("Leads found successfully!", $leads->items(), $leads->total());
+            return $this->successJsonResponse("Leads found successfully!", $leads->items(), ['total' => $leads->total(), 'active' => $activeLeads, 'pending' => $pendingLeads]);
         } catch (\Exception $e) {
             return $this->errorJsonResponse(
                 'Failed to retrieve leads.',
