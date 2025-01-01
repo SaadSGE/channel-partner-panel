@@ -381,7 +381,7 @@ const toggleUploadCard = () => {
                 </VListItem>
                 <!-- Add Note option with specific color -->
                 <VListItem @click="openAddNoteDialog(item.id)" class="add-note-option"
-                  v-if="$can('add', 'manager lead note')">
+                  v-if="$can('manager-note', 'lead')">
                   <template #prepend>
                     <VIcon icon="tabler-clipboard-text" />
                   </template>
