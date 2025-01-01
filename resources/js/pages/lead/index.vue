@@ -223,11 +223,17 @@ const toggleUploadCard = () => {
         <VCardTitle>Filter</VCardTitle>
       </VCardItem>
 
-      <VCardText v-if="$can('create', 'lead')">
+      <VCardText v-if="$can('read', 'lead')">
         <VRow>
-          <Filters :selected-assigned-status="selectedAssignedStatus" :selected-lead-status="selectedLeadStatus"
-            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
-            :selected-lead-type="selectedLeadType" :selected-event="selectedEvent"
+
+          <Filters v-if="$can('read', 'lead')" :selected-assigned-status="selectedAssignedStatus"
+            :selected-lead-status="selectedLeadStatus" :selected-dateFrom="selectedDateFrom"
+            :selected-dateTo="selectedDateTo">
+          </Filters>
+
+          <Filters v-if="$can('create', 'lead')" :selected-assigned-status="selectedAssignedStatus"
+            :selected-lead-status="selectedLeadStatus" :selected-dateFrom="selectedDateFrom"
+            :selected-dateTo="selectedDateTo" :selected-lead-type="selectedLeadType" :selected-event="selectedEvent"
             :selected-country="selectedLeadCountry" :selected-branch="selectedBranch"
             @update-assignedStatus="selectedAssignedStatus = $event" @update-lead-status="selectedLeadStatus = $event"
             @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event"
