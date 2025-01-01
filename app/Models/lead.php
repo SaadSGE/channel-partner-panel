@@ -61,12 +61,12 @@ class lead extends Model
     public function scopeVisibleToUser($query, User $user, $id = null)
     {
         // If user has both read and all permissions, don't restrict the query
-        if ($user->hasPermissionTo('read', 'lead') && $user->hasPermissionTo('create', 'lead')) {
+        if ($user->hasPermissionTo('lead.read') && $user->hasPermissionTo('lead.create')) {
             return;
         }
 
         // If user only has read permission, show only assigned leads
-        if ($user->hasPermissionTo('read', 'lead')) {
+        if ($user->hasPermissionTo('lead.read')) {
             $query->where('assigned_user', $user->id);
         }
     }
