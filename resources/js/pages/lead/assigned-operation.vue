@@ -115,7 +115,7 @@ const fetchUsers = async () => {
     const response = await userStore.fetchUsers(
       page.value,
       searchQuery.value,
-      'Counsellor',
+      null,
       null,
       null,
       null,
