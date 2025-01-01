@@ -69,20 +69,21 @@ const selectedLeadCountry = ref(null);
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
   { title: 'Lead Country', key: 'lead_type' },
+  { title: 'Current Status', key: 'status' },
+  { title: 'Status History', key: 'statusHistory' },
   { title: 'Name', key: 'name' },
   { title: 'Phone', key: 'phone' },
   { title: 'Email', key: 'email' },
   { title: 'Interested Course & Country', key: 'course_country' },
-  { title: 'Current Status', key: 'status' },
-  { title: 'Status History', key: 'statusHistory' },
-  { title: 'Assigned Status', key: 'assigned_user' },
-  { title: 'Assigned User', key: 'assigned_user.name_with_email' },
+
+  ...$can('create', 'lead') ? [
+    { title: 'Assigned Status', key: 'assigned_user' },
+    { title: 'Assigned User', key: 'assigned_user.name_with_email' },
+  ] : [],
   { title: 'Manager\'s Note', key: 'notes' },
-  { title: 'Assigned Branch', key: 'branch.branch_name_with_country' },
-
-
-
-
+  ...$can('create', 'lead') ? [
+    { title: 'Assigned Branch', key: 'branch.branch_name_with_country' },
+  ] : [],
 ];
 
 // Watchers
