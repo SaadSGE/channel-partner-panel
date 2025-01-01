@@ -234,15 +234,28 @@ const toggleUploadCard = () => {
       <VCardText v-if="$can('read', 'lead')">
         <VRow>
 
-          <Filters v-if="$can('read', 'lead')" :selected-lead-status="selectedLeadStatus"
+          <Filters v-if="$can('read', 'lead') && !$can('edit', 'lead')" :selected-lead-status="selectedLeadStatus"
             :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
             @update-lead-status="selectedLeadStatus = $event" @update-dateFrom="selectedDateFrom = $event"
             @update-dateTo="selectedDateTo = $event">
           </Filters>
 
-          <Filters v-if="$can('create', 'lead')" :selected-assigned-status="selectedAssignedStatus"
-            :selected-lead-status="selectedLeadStatus" :selected-dateFrom="selectedDateFrom"
-            :selected-dateTo="selectedDateTo" :selected-lead-type="selectedLeadType" :selected-event="selectedEvent"
+          <Filters v-if="$can('read', 'lead') && $can('edit', 'lead')" :selected-lead-status="selectedLeadStatus"
+            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
+            @update-lead-status="selectedLeadStatus = $event" @update-dateFrom="selectedDateFrom = $event"
+            @update-dateTo="selectedDateTo = $event" :selected-lead-type="selectedLeadType"
+            :selected-event="selectedEvent" :selected-country="selectedLeadCountry" :selected-branch="selectedBranch"
+            @update-lead-type="selectedLeadType = $event" @update-event="selectedEvent = $event"
+            @update-country="selectedLeadCountry = $event" @update-branch="selectedBranch = $event"
+            country-label="Lead Country">
+          </Filters>
+
+
+
+          <Filters v-if="$can('create', 'lead') && $can('edit', 'lead')"
+            :selected-assigned-status="selectedAssignedStatus" :selected-lead-status="selectedLeadStatus"
+            :selected-dateFrom="selectedDateFrom" :selected-dateTo="selectedDateTo"
+            :selected-lead-type="selectedLeadType" :selected-event="selectedEvent"
             :selected-country="selectedLeadCountry" :selected-branch="selectedBranch"
             @update-assignedStatus="selectedAssignedStatus = $event" @update-lead-status="selectedLeadStatus = $event"
             @update-dateFrom="selectedDateFrom = $event" @update-dateTo="selectedDateTo = $event"
