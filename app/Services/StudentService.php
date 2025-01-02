@@ -52,7 +52,7 @@ class StudentService
         foreach ($universitiesData as &$data) {
             $data['student_id'] = $student->id;
         }
-
+        \DB::connection('mysql')->statement('SET FOREIGN_KEY_CHECKS=0;');
 
         StudentInterestedUniversity::upsert(
             $universitiesData,
