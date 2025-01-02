@@ -81,11 +81,7 @@ const formattedDateOfBirth = computed({
 
     try {
       const date = new Date(dob);
-      return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
+      return date.toISOString().split('T')[0];
     } catch (e) {
       return '';
     }

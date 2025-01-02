@@ -10,11 +10,11 @@ const props = defineProps({
     required: true,
     default: () => [{
       proficiencyTitle: '',
-      overallScore: '',
-      reading: '',
-      writing: '',
-      speaking: '',
-      listening: ''
+      overallScore: null,
+      reading: null,
+      writing: null,
+      speaking: null,
+      listening: null
     }]
   },
   isEdit: {
@@ -31,8 +31,8 @@ const isEditing = ref(false);
 onMounted(() => {
   if (props.englishProficiency.length === 0) {
     props.englishProficiency.push({
-      proficiencyTitle: '', overallScore: '', reading: '',
-      writing: '', speaking: '', listening: ''
+      proficiencyTitle: '', overallScore: null, reading: null,
+      writing: null, speaking: null, listening: null
     });
   }
 
@@ -55,11 +55,11 @@ const addEnglishProficiency = () => {
 
   props.englishProficiency.push({
     proficiencyTitle: '',
-    overallScore: '',
-    reading: '',
-    writing: '',
-    speaking: '',
-    listening: ''
+    overallScore: null,
+    reading: null,
+    writing: null,
+    speaking: null,
+    listening: null
   });
 
 }
@@ -128,26 +128,30 @@ watch(() => props.englishProficiency, (newValue) => {
 
       <template v-else>
         <p class="text-center">Add English Proficiency</p>
-        <VRow v-for="(proficiency, index) in englishProficiency" :key="index">
+        <VRow v-for="(proficiency, index) in props.englishProficiency" :key="index">
           <VCol cols="12" md="3">
             <AppTextField v-model="proficiency.proficiencyTitle" label="Proficiency Title"
-              placeholder="Proficiency Title" density="compact" />
+              placeholder="Proficiency Title" density="compact" type="text" />
           </VCol>
           <VCol cols="12" md="3">
             <AppTextField v-model="proficiency.overallScore" label="Overall Score" placeholder="Overall Score"
-              density="compact" />
+              density="compact" type="number" />
           </VCol>
           <VCol cols="12" md="1">
-            <AppTextField v-model="proficiency.listening" label="Listening" placeholder="Listening" density="compact" />
+            <AppTextField v-model="proficiency.listening" label="Listening" placeholder="Listening" density="compact"
+              type="number" />
           </VCol>
           <VCol cols="12" md="1">
-            <AppTextField v-model="proficiency.speaking" label="Speaking" placeholder="Speaking" density="compact" />
+            <AppTextField v-model="proficiency.speaking" label="Speaking" placeholder="Speaking" density="compact"
+              type="number" />
           </VCol>
           <VCol cols="12" md="1">
-            <AppTextField v-model="proficiency.writing" label="Writing" placeholder="Writing" density="compact" />
+            <AppTextField v-model="proficiency.writing" label="Writing" placeholder="Writing" density="compact"
+              type="number" />
           </VCol>
           <VCol cols="12" md="1">
-            <AppTextField v-model="proficiency.reading" label="Reading" placeholder="Reading" density="compact" />
+            <AppTextField v-model="proficiency.reading" label="Reading" placeholder="Reading" density="compact"
+              type="number" />
           </VCol>
           <VCol cols="12" md="2" class="d-flex align-center mt-5">
             <VBtn v-if="index !== 0" icon="tabler-x" color="error" @click="removeEnglishProficiency(index)" class="me-2"

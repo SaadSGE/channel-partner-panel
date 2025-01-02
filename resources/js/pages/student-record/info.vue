@@ -53,11 +53,11 @@ const formData = ref({
   }],
   englishProficiency: [{
     proficiencyTitle: '',
-    overallScore: '',
-    reading: '',
-    writing: '',
-    speaking: '',
-    listening: ''
+    overallScore: null,
+    reading: null,
+    writing: null,
+    speaking: null,
+    listening: null
   }],
   employmentHistory: [{
     company_name: '',
