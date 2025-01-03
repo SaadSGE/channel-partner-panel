@@ -338,12 +338,9 @@ class ApplicationController extends Controller
 
     public function getAllApplicationStatuses()
     {
-        $statuses = collect(ApplicationStatusHistory::$statusTexts)->map(function ($name, $id) {
-            return [
-                'id' => $id,
-                'name' => $name,
-            ];
-        })->values();
+
+
+        $statuses = ApplicationStatusHistory::all();
         return $this->successJsonResponse('Status foound', $statuses);
     }
 
