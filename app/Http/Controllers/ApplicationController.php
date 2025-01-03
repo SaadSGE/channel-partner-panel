@@ -703,7 +703,7 @@ class ApplicationController extends Controller
             'counsellor_number' => $data['counsellor_number'],
             'counsellor_email' => $data['counsellor_email'],
             'temp_channel_partner_email' => $data['channel_partner_email'],
-            'status' => 0,
+            'status' => 1,
         ]);
     }
     private function createApplicationForExistingStudent(Student $student, Request $request)
@@ -726,7 +726,7 @@ class ApplicationController extends Controller
             'student_id' => $student->id,
             'counsellor_number' => $request->counsellor_number,
             'counsellor_email' => $request->counsellor_email,
-            'status' => 0,
+            'status' => 1,
         ]);
     }
 
